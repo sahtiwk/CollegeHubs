@@ -15,8 +15,12 @@ function text(value, name, max, required = false) {
 }
 
 function emailAddress(value) {
-  const email = text(value, 'Email', 254, true).toLowerCase();
+  let email = text(value, 'Email', 254, true).toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw badInput('A valid email is required');
+  try {
+    const { normalizeDomain } = require('../config/collegeRegistry');
+    email = email.slice(0, email.lastIndexOf('@') + 1) + normalizeDomain(email.slice(email.lastIndexOf('@') + 1));
+  } catch { throw badInput('A valid email domain is required'); }
   return email;
 }
 
@@ -32,7 +36,7 @@ function profileFields(body, onboarding = false) {
   bodyObject(body);
   const fields = { fullName: ['fullName', 100], bio: ['bio', 1000],
     leetcodeHandle: ['leetcodeHandle', 100], codeforcesHandle: ['codeforcesHandle', 100], githubHandle: ['githubHandle', 100] };
-  if (onboarding) Object.assign(fields, { college: ['college', 200],
+  if (onboarding) Object.assign(fields, {
     leetcodeUsername: ['leetcodeHandle', 100], githubUsername: ['githubHandle', 100] });
   const result = {};
   for (const [key, value] of Object.entries(body)) {

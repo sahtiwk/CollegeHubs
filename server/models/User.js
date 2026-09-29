@@ -4,10 +4,16 @@ const bcrypt = require('bcryptjs');
 const userSchema = new mongoose.Schema(
   {
     // Identity
-    googleId: { type: String, unique: true, sparse: true, select: false },
-    username: { type: String, required: true, unique: true, trim: true },
+    googleSubject: { type: String, maxlength: 255, select: false },
+    emailVerifiedAt: { type: Date, default: null, select: false },
+    hubId: { type: mongoose.Schema.Types.ObjectId, ref: 'Hub', default: null },
+    membershipStatus: { type: String, enum: ['unassigned', 'active', 'disabled'], default: 'unassigned' },
+    membershipVerified: { type: Boolean, default: false },
+    verificationMethod: { type: String, enum: ['none', 'domain-claim', 'google'], default: 'none' },
+    membershipVersion: { type: Number, default: 0, min: 0, validate: Number.isInteger },
+    username: { type: String, required: true, unique: true, trim: true, lowercase: true },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },
-    password: { type: String, required: true, select: false },
+    password: { type: String, required() { return !this.googleSubject; }, select: false },
     fullName: { type: String, trim: true },
     bio: { type: String, default: '' },
     profilePicture: { type: String, default: '' },
@@ -56,13 +62,19 @@ const userSchema = new mongoose.Schema(
 );
 
 // Index for faster lookups
-userSchema.index({ username: 1 });
-userSchema.index({ email: 1 });
+userSchema.index({ googleSubject: 1 }, { unique: true, partialFilterExpression: { googleSubject: { $type: 'string' } } });
+userSchema.index({ hubId: 1, membershipStatus: 1, _id: 1 });
 userSchema.index({ auraPoints: -1 });
+
+userSchema.pre('validate', function(next) {
+  if (this.membershipStatus === 'active' && !this.hubId) this.invalidate('hubId', 'Active membership requires a Hub');
+  if (this.membershipStatus === 'unassigned' && this.hubId) this.invalidate('hubId', 'Unassigned identity cannot have a Hub');
+  next();
+});
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+  if (!this.isModified('password') || !this.password) return next();
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });

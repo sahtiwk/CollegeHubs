@@ -10,12 +10,17 @@ const authenticate = async (req, res, next) => {
     }
 
     const decoded = verifyToken(token);
-    const user = await User.findById(decoded.id).select('-password');
+    const user = await User.findById(decoded.sub).select('-password');
 
     if (!user) {
       return res.status(401).json({ error: 'User not found' });
     }
 
+    const hubId = user.membershipStatus === 'active' && user.hubId ? String(user.hubId) : null;
+    if (decoded.membershipVersion !== (user.membershipVersion || 0) || decoded.hubId !== hubId) {
+      return res.status(401).json({ error: 'Membership changed. Please sign in again.' });
+    }
+    req.auth = decoded;
     req.user = user;
     next();
   } catch (err) {

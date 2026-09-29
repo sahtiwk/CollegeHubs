@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const { requireTenant, scopedFilter } = require('../services/hubAccess');
 const { authenticate } = require('../middleware/auth');
 const { userDto } = require('../utils/userDto');
 const { profileFields, respondError } = require('../utils/validation');
@@ -16,9 +17,9 @@ router.put('/onboarding', authenticate, async (req, res) => {
   }
 });
 
-router.get('/leaderboard', async (req, res) => {
+router.get('/leaderboard', authenticate, requireTenant, async (req, res) => {
   try {
-    const users = await User.find({}, 'username fullName profilePicture auraPoints rankTitle college')
+    const users = await User.find(scopedFilter(req.hub, { membershipStatus: 'active' }), 'username fullName profilePicture auraPoints rankTitle college')
       .sort({ auraPoints: -1 }).limit(50);
     res.json(users.map(user => userDto(user)));
   } catch (err) {
@@ -26,9 +27,9 @@ router.get('/leaderboard', async (req, res) => {
   }
 });
 
-router.get('/:username', authenticate, async (req, res) => {
+router.get('/:username', authenticate, requireTenant, async (req, res) => {
   try {
-    const user = await User.findOne({ username: req.params.username }).select('-password');
+    const user = await User.findOne(scopedFilter(req.hub, { username: req.params.username, membershipStatus: 'active' })).select('-password');
     if (!user) return res.status(404).json({ error: 'User not found' });
     res.json(userDto(user, String(user._id) === String(req.user._id)));
   } catch (err) {

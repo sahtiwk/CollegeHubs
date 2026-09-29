@@ -1,4 +1,4 @@
-# Core development baseline (P0.2)
+# Core development baseline (through P1.1)
 
 ## Independent package roots
 
@@ -69,10 +69,23 @@ Remove `--dry-run` only to delete the approved disposable data:
 npm run reset:demo -- --database=collegehubs_demo_local --confirm=collegehubs_demo_local --disposable-data-only
 ```
 
-Both forms require explicit confirmation and acknowledgment that all records are disposable. Before any delete, the command checks the actual connected database name and refuses unknown collections, users without an `@example.test` email, and any Google-linked account. These checks cannot prove that arbitrary post text is disposable; the operator declaration and stopping writers are required. If real data appears, stop and design a separate reviewed migration. Do not broaden the allowlist to bypass a refusal.
+Both forms require explicit confirmation and acknowledgment that all records are disposable. Before any delete, the command checks the actual connected database name and refuses unknown collections, users outside `example.test` and its synthetic subdomains, and any Google-linked account. These checks cannot prove that arbitrary post text is disposable; the operator declaration and stopping writers are required. If real data appears, stop and design a separate reviewed migration. Do not broaden the allowlist to bypass a refusal.
 
-P0.2 deletes only `posts` then `users`, preserving indexes; it never drops a database or unknown collections. It prints only the approved database name and collection counts, never a URI, credentials or record bodies. Deletion is not transactional; after a partial failure, keep writers stopped, inspect the target, then rerun only if it remains disposable. A dry run performs reads only.
+The reset deletes `posts`, `users`, `channels`, `hubs`, then `colleges`, preserving indexes; it never drops a database or unknown collections. It prints only the approved database name and collection counts, never a URI, credentials or record bodies. Deletion is not transactional; after a partial failure, keep writers stopped, inspect the target, then rerun only if it remains disposable. A dry run performs reads only.
 
-No user credentials, Hub, problem or calendar records are seeded yet. Future phases must explicitly extend the known collection list and the `seedDemo` hook with idempotent seeds; unknown future collections currently cause refusal. Module databases are outside this command's scope.
+No user credentials are seeded. The reset now runs the P1.1 idempotent college registry seed and provisions active Hubs/four channels. It respects the same inactive-until-confirmed registry. P5/P6 must add problem/calendar seeds once those models exist. Unknown future collections still cause refusal. Module databases are outside this command's scope.
 
 See [third-party notices](../THIRD_PARTY.md), [P0.1 evidence](p0.1-evidence.md), and [P0.2 evidence](p0.2-evidence.md).
+
+## P1.1 activation and identity
+
+1. Confirm the exact institutional domain and college name with the project owner. `cvr.ac.in` is presently a draft reference, not an active authorization.
+2. Edit `server/config/colleges.seed.json`: set the confirmed college to active, record each domain's confirmation date in `verifiedAt` and the confirmation reference in `evidenceRef`, and retain the four canonical channels. Do not activate another institution based on its name in a paper or theme list. Normalize domains exactly; no implicit subdomain match.
+3. Use a transaction-capable Core MongoDB replica set and run `npm run provision:hubs` from `server/`. It creates unique indexes and upserts the configuration and active Hubs/channels. Repeating it is safe. To retire an entry, keep it in the registry with status disabled; do not merely remove it from the file. No existing user is transferred or backfilled.
+4. Start the API (which waits for unique indexes before listening), register fresh demo accounts, and inspect `/api/me`. Existing unassigned users can retry using `{}` at `/api/me/assignment/retry`; save its replacement token. Existing old-format tokens require sign-in again.
+
+The Google UI uses the ID-token callback and sends JSON through Core's exact-origin API. It does not use Google's cookie-based redirect POST flow or create an ambient login cookie. Configure the Google OAuth client for the real frontend origin and verify the live flow before release. Matching hosted Workspace evidence is required for an institutional Google membership to be marked verified; password-domain matching and third-party Google-account email claims remain unverified. This is mailbox evidence, not a claim of current enrollment.
+
+The minimal unassigned screen and read-only college label are necessary for P1.1. Full AuthProvider/HubThemeProvider, pagination, mobile drawer, configured theme loading, and removal of remaining display-substring theming are still P1.2. Current display labels do not control authorization.
+
+See [P1.1 verification](p1.1-evidence.md). No production database was read or modified during implementation.

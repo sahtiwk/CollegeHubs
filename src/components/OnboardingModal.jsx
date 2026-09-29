@@ -1,18 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api.js';
-
-const COLLEGES = [
-  'CVR College of Engineering','JNTU Hyderabad','Vasavi College of Engineering',
-  'KMIT','Guru Nanak Institutions Technical Campus','Sri Indu College of Engineering',
-  'IIT Bombay','IIT Delhi','IIT Madras','IIT Hyderabad','IIT Kharagpur','IIT Roorkee',
-  'IIT Kanpur','IIT Guwahati','IIT BHU','IIT Tirupati','IIT Dharwad','IIT Palakkad',
-  'NIT Warangal','NIT Trichy','NIT Calicut','NIT Surathkal','NIT Rourkela','NIT Kurukshetra',
-  'BITS Pilani','BITS Hyderabad','BITS Goa','IIIT Hyderabad','IIIT Bangalore',
-  'Osmania University','Chaitanya Bharathi Institute of Technology',
-  'VNR Vignana Jyothi','Muffakham Jah College','Stanley College of Engineering',
-];
 
 const COOKING_MESSAGES = [
   'Syncing LeetCode handle...','Calibrating Aura levels...',
@@ -25,27 +13,14 @@ function OnboardingModal({ open, initialUser, onComplete }) {
   const [phase, setPhase] = useState('form');
   const [fullName, setFullName] = useState('');
   const [bio, setBio] = useState('');
-  const [collegeInput, setCollegeInput] = useState('');
-  const [collegeLocked, setCollegeLocked] = useState('');
   const [leetcodeUsername, setLeetcodeUsername] = useState('');
   const [codeforcesHandle, setCodeforcesHandle] = useState('');
   const [githubUsername, setGithubUsername] = useState('');
-  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [cookingStep, setCookingStep] = useState(0);
   const [progressWidth, setProgressWidth] = useState(0);
   const [cookingDone, setCookingDone] = useState(false);
-  const collegeWrapperRef = useRef(null);
   const completedData = useRef(null);
-
-  const filteredColleges = COLLEGES.filter((c) =>
-    c.toLowerCase().includes(collegeInput.trim().toLowerCase())
-  ).slice(0, 5);
-
-  const showAddCustom =
-    collegeInput.trim().length > 0 &&
-    !COLLEGES.some((c) => c.toLowerCase() === collegeInput.trim().toLowerCase()) &&
-    filteredColleges.length === 0;
 
   useEffect(() => {
     if (!open) { setCardVisible(false); setPhase('form'); setCookingDone(false); return; }
@@ -57,8 +32,6 @@ function OnboardingModal({ open, initialUser, onComplete }) {
     if (open && initialUser) {
       setFullName(initialUser.fullName || '');
       setBio(initialUser.bio || '');
-      setCollegeLocked(initialUser.college || '');
-      setCollegeInput(initialUser.college || '');
       setLeetcodeUsername(initialUser.leetcodeHandle || '');
       setCodeforcesHandle(initialUser.codeforcesHandle || '');
       setGithubUsername(initialUser.githubHandle || '');
@@ -71,15 +44,6 @@ function OnboardingModal({ open, initialUser, onComplete }) {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = prev; };
   }, [open]);
-
-  useEffect(() => {
-    const handleOutside = (e) => {
-      if (collegeWrapperRef.current && !collegeWrapperRef.current.contains(e.target))
-        setDropdownOpen(false);
-    };
-    document.addEventListener('mousedown', handleOutside);
-    return () => document.removeEventListener('mousedown', handleOutside);
-  }, []);
 
   useEffect(() => {
     if (phase !== 'cooking') return;
@@ -100,8 +64,6 @@ function OnboardingModal({ open, initialUser, onComplete }) {
     return () => { clearInterval(prog); clearInterval(msg); };
   }, [phase]);
 
-  const pickCollege = (name) => { setCollegeLocked(name); setCollegeInput(name); setDropdownOpen(false); };
-  const handleCollegeChange = (v) => { setCollegeInput(v); setCollegeLocked(''); setDropdownOpen(true); };
 
   const handleContinue = async () => {
     if (submitting) return;
@@ -109,7 +71,6 @@ function OnboardingModal({ open, initialUser, onComplete }) {
     try {
       const res = await api.put('/users/onboarding', {
         fullName: fullName.trim(), bio: bio.trim(),
-        college: collegeLocked || collegeInput.trim(),
         leetcodeUsername: leetcodeUsername.trim(),
         codeforcesHandle: codeforcesHandle.trim(),
         githubUsername: githubUsername.trim(),
@@ -185,23 +146,7 @@ function OnboardingModal({ open, initialUser, onComplete }) {
                   <label style={{display:'block',fontSize:13,fontWeight:500,color:'#9ca3af',marginBottom:7}}>Bio</label>
                   <textarea value={bio} onChange={(e)=>setBio(e.target.value)} rows={3} placeholder="CS Student • Competitive Programmer • Builder" className="ob-input" style={{resize:'none'}}/>
                 </div>
-                <div style={{...fd(2),position:'relative'}} ref={collegeWrapperRef}>
-                  <label style={{display:'block',fontSize:13,fontWeight:500,color:'#9ca3af',marginBottom:7}}>College</label>
-                  <div style={{position:'relative'}}>
-                    <Search size={15} style={{position:'absolute',left:12,top:'50%',transform:'translateY(-50%)',color:'#6b7280',pointerEvents:'none'}}/>
-                    <input type="text" value={collegeInput} onChange={(e)=>handleCollegeChange(e.target.value)} onFocus={()=>setDropdownOpen(true)} className="ob-input" style={{paddingLeft:38}} placeholder="Search your college..." autoComplete="off"/>
-                    {dropdownOpen && (filteredColleges.length > 0 || showAddCustom) && (
-                      <div className="ob-dropdown">
-                        {filteredColleges.map((c)=>(
-                          <button key={c} type="button" className="ob-opt" onMouseDown={(e)=>e.preventDefault()} onClick={()=>pickCollege(c)}>{c}</button>
-                        ))}
-                        {showAddCustom && (
-                          <button type="button" className="ob-opt" style={{color:'#a78bfa'}} onMouseDown={(e)=>e.preventDefault()} onClick={()=>pickCollege(collegeInput.trim())}>+ Add "{collegeInput.trim()}"</button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <p style={fd(2)}>College: {initialUser?.college || 'Assigned from your email domain'}</p>
                 <div style={fd(3)}>
                   <label style={{display:'block',fontSize:13,fontWeight:500,color:'#9ca3af',marginBottom:7}}>LeetCode Username</label>
                   <input type="text" value={leetcodeUsername} onChange={(e)=>setLeetcodeUsername(e.target.value)} className="ob-input" placeholder="leetcode_user"/>

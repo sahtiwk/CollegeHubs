@@ -50,6 +50,8 @@ function createApp({ connection = mongoose.connection } = {}) {
   const authRoutes = require('./routes/authRoutes');
   app.use('/api/auth', authRoutes);
 
+  app.use('/api/me', require('./routes/meRoutes'));
+
   // User routes
   const userRoutes = require('./routes/userRoutes');
   app.use('/api/users', userRoutes);

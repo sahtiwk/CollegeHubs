@@ -7,7 +7,7 @@ import RightSidebar from '../components/RightSidebar.jsx';
 import OnboardingModal from '../components/OnboardingModal.jsx';
 import AuraTicker from '../components/AuraTicker.jsx';
 import { getCollegeTheme } from '../utils/collegeThemes.js';
-import api from '../api';
+import api, { saveSession, logout } from '../api';
 
 function Dashboard() {
   const [userData, setUserData] = useState(null);
@@ -30,7 +30,7 @@ function Dashboard() {
 
   useEffect(() => {
     if (!username) return;
-    api.get(`/users/${username}`)
+    api.get('/me')
       .then((r) => setUserData(r.data))
       .catch((err) => {
         if (err.response?.status !== 401) setLoadError('Unable to load your profile. Please try again.');
@@ -45,6 +45,26 @@ function Dashboard() {
         <p style={{ color:'#9ca3af', fontSize:14 }}>{loadError || 'Loading SocialStream...'}</p>
         {loadError && <button onClick={() => window.location.reload()}>Try again</button>}
       </div>
+    );
+  }
+
+  if (!userData.hubId || userData.membershipStatus !== 'active' || !userData.hubs?.length) {
+    return (
+      <main style={{ minHeight: '100vh', background: '#F4ECD6', color: '#310A31', padding: 32, fontFamily: 'Archivo, sans-serif' }}>
+        <h1 style={{ fontFamily: 'Abril Fatface, Georgia, serif', fontSize: 32 }}>Your college Hub is not available yet</h1>
+        <p style={{ margin: '20px 0' }}>Your college email domain is not configured, or your membership is inactive. College assignment uses your saved email; changing a profile label cannot change access.</p>
+        {loadError && <p role="status">{loadError}</p>}
+        <button style={{ padding: 12, background: '#FFD3B6', borderRadius: 8 }} onClick={async () => {
+          try {
+            const response = await api.post('/me/assignment/retry', {});
+            saveSession(response.data);
+            const current = await api.get('/me');
+            setUserData(current.data);
+            setLoadError(response.data.assignment.message || 'Assignment checked.');
+          } catch (err) { setLoadError(err.response?.data?.error || 'Unable to retry. Please try again.'); }
+        }}>Retry assignment</button>
+        <button style={{ marginLeft: 16, padding: 12, background: '#DFF7FF', borderRadius: 8 }} onClick={() => logout()}>Sign out</button>
+      </main>
     );
   }
 
@@ -214,7 +234,7 @@ function Dashboard() {
         {/* Main */}
         <main style={{ maxWidth:1200, margin:'0 auto', display:'flex', gap:20, padding:'20px', position:'relative', zIndex:1 }}>
           <aside style={{ width:280, flexShrink:0 }}>
-            <Sidebar user={userProps} aura={auraProps} onProfileUpdated={setUserData} theme={theme} />
+            <Sidebar user={userProps} aura={auraProps} onProfileUpdated={(updated) => setUserData(previous => ({ ...previous, ...updated }))} theme={theme} />
           </aside>
           <section style={{ flex:1, minWidth:0 }}>
             <Feed accentColor={theme.accent} />
@@ -229,7 +249,7 @@ function Dashboard() {
           open={Boolean(userData && userData.onboardingComplete !== true)}
           initialUser={userData}
           onComplete={(updated) => {
-            setUserData(updated);
+            setUserData(previous => ({ ...previous, ...updated }));
             const raw = localStorage.getItem('socialstream_user') || localStorage.getItem('user');
             try {
               const prev = raw ? JSON.parse(raw) : {};
@@ -249,7 +269,7 @@ function Dashboard() {
                 <X size={16} />
               </button>
               <div style={{ marginTop:40 }}>
-                <Sidebar user={userProps} aura={auraProps} onProfileUpdated={setUserData} theme={theme} />
+                <Sidebar user={userProps} aura={auraProps} onProfileUpdated={(updated) => setUserData(previous => ({ ...previous, ...updated }))} theme={theme} />
               </div>
             </div>
           </div>

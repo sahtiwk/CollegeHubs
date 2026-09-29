@@ -7,7 +7,7 @@ const publicFields = [
 
 function userDto(user, own = false) {
   const source = user.toObject ? user.toObject() : user;
-  const fields = own ? [...publicFields, 'email', 'onboardingComplete', 'lastActiveDate', 'updatedAt'] : publicFields;
+  const fields = own ? [...publicFields, 'email', 'onboardingComplete', 'lastActiveDate', 'updatedAt', 'hubId', 'membershipStatus', 'membershipVerified', 'verificationMethod', 'membershipVersion'] : publicFields;
   return Object.fromEntries(fields.filter(key => source[key] !== undefined).map(key => [key, source[key]]));
 }
 

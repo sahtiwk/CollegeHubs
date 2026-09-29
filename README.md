@@ -43,4 +43,8 @@ Copy `.env.example` to a local environment file and configure `VITE_API_URL` (Co
 
 ## P0.2 development baseline
 
-See [development setup](docs/development.md) for package roots, ports, health endpoints and the guarded disposable demo reset. The legacy seed, automatic post rewards, external score overwrite and fabricated contest schedules are disabled. [Third-party notices](THIRD_PARTY.md) preserve the Interview MIT license. Only P0.1/P0.2 have been implemented; later MVP features remain pending.
+See [development setup](docs/development.md) for package roots, ports, health endpoints and the guarded disposable demo reset. The legacy seed, automatic post rewards, external score overwrite and fabricated contest schedules are disabled. [Third-party notices](THIRD_PARTY.md) preserve the Interview MIT license. P0.1/P0.2 establish the baseline; see the latest phase notes below.
+
+## P1.1 scoped identity
+
+Automatic domain-based Hub membership, transactional four-channel provisioning, `/api/me`, assignment retry, and the G1 isolation guard are implemented. The real college registry stays inactive until domain confirmation. See [activation and development instructions](docs/development.md) and [P1.1 evidence](docs/p1.1-evidence.md). P1.2's full scoped/theme/mobile shell remains pending.

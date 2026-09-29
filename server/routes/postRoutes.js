@@ -1,25 +1,27 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
+const { requireTenant, scopedFilter } = require('../services/hubAccess');
 const { authenticate } = require('../middleware/auth');
 
 // POST /api/posts - Create a new post (Require Auth)
-router.post('/', authenticate, async (req, res) => {
+router.post('/', authenticate, requireTenant, async (req, res) => {
   try {
     const { content } = req.body;
 
-    if (!content || !content.trim()) {
+    if (typeof content !== 'string' || !content.trim()) {
       return res.status(400).json({ error: 'Post content is required' });
     }
 
     const post = await Post.create({
+      hubId: req.hub.hubId,
       content: content.trim(),
       author: req.user._id,
       likes: [],
     });
 
     // Populate author fields
-    await post.populate('author', 'username fullName profilePicture rankTitle college');
+    await post.populate({ path: 'author', select: 'username fullName profilePicture rankTitle college', match: scopedFilter(req.hub, { membershipStatus: 'active' }) });
 
     res.status(201).json(post);
   } catch (err) {
@@ -29,10 +31,10 @@ router.post('/', authenticate, async (req, res) => {
 });
 
 // GET /api/posts - Get all posts, sorted by newest first
-router.get('/', async (req, res) => {
+router.get('/', authenticate, requireTenant, async (req, res) => {
   try {
-    const posts = await Post.find()
-      .populate('author', 'username fullName profilePicture rankTitle college')
+    const posts = await Post.find(scopedFilter(req.hub))
+      .populate({ path: 'author', select: 'username fullName profilePicture rankTitle college', match: scopedFilter(req.hub, { membershipStatus: 'active' }) })
       .sort({ createdAt: -1 })
       .exec();
 
@@ -44,12 +46,13 @@ router.get('/', async (req, res) => {
 });
 
 // PUT /api/posts/:id/like - Toggle like on a post
-router.put('/:id/like', authenticate, async (req, res) => {
+router.put('/:id/like', authenticate, requireTenant, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user._id;
 
-    const post = await Post.findById(id);
+    if (!/^[a-f0-9]{24}$/i.test(id)) return res.status(404).json({ error: 'Post not found' });
+    const post = await Post.findOne(scopedFilter(req.hub, { _id: id }));
     if (!post) {
       return res.status(404).json({ error: 'Post not found' });
     }
@@ -71,7 +74,7 @@ router.put('/:id/like', authenticate, async (req, res) => {
     await post.save();
 
     // Populate author fields
-    await post.populate('author', 'username fullName profilePicture rankTitle college');
+    await post.populate({ path: 'author', select: 'username fullName profilePicture rankTitle college', match: scopedFilter(req.hub, { membershipStatus: 'active' }) });
 
     res.json(post);
   } catch (err) {

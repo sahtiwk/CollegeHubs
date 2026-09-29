@@ -7,6 +7,8 @@ async function start() {
   if (!process.env.MONGO_URI) throw new Error('MONGO_URI is required');
   await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 5000 });
   await mongoose.connection.db.command({ ping: 1 });
+  // Unique provisioning keys must exist before the first registration transaction.
+  await Promise.all(['College', 'Hub', 'Channel', 'User'].map(name => require('./models/' + name).init()));
   const server = app.listen(process.env.PORT || 5000, () => console.log('Core API listening'));
   server.on('error', async () => {
     console.error('Core API listener failed');

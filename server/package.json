@@ -7,7 +7,9 @@
     "dev": "nodemon index.js",
     "start": "node index.js",
     "seed": "node seed.js",
-    "reset:demo": "node scripts/resetDemo.js"
+    "reset:demo": "node scripts/resetDemo.js",
+    "provision:hubs": "node scripts/provisionHubs.js",
+    "test:guards": "node --test ../tests/guards/hub-isolation.test.js"
   },
   "dependencies": {
     "axiom": "^0.43.0",

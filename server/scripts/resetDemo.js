@@ -2,7 +2,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 
 // Deliberate allowlist, extended only when later Core phases add their models.
-const resetCollections = ['posts', 'users'];
+const resetCollections = ['posts', 'users', 'channels', 'hubs', 'colleges'];
 class ResetGuardError extends Error {}
 
 function parseTarget(env, args) {
@@ -40,16 +40,16 @@ async function inspectDemo(db) {
   for (const name of resetCollections) counts[name] = await db.collection(name).countDocuments({});
   // P0.2 only recognizes synthetic identities. Never treat a real college domain as disposable.
   const nonDemoUser = await db.collection('users').findOne({
-    $or: [{ email: { $not: /@example\.test$/ } }, { googleId: { $exists: true } }],
+    $or: [{ email: { $not: /@(?:[a-z0-9-]+\.)*example\.test$/ } }, { googleId: { $exists: true } }, { googleSubject: { $exists: true } }],
   }, { projection: { _id: 1 } });
   if (nonDemoUser) throw new ResetGuardError('Non-synthetic identity found; stop reset and use a reviewed data migration');
   return counts;
 }
 
-async function seedDemo() {
-  // P1: add the idempotent Hub/channel seed here once its models exist.
-  // P5: add the idempotent problem seed; P6: add the calendar seed.
-  // P0.2 has no demo content seeds and never restores the retired sample account.
+async function seedDemo(connection) {
+  const { provisionConfiguredHubs } = require('../services/hubProvisioning');
+  await provisionConfiguredHubs(connection);
+  // P5/P6 will add their idempotent problem/calendar seeds after those models exist.
 }
 
 async function resetDemo({ env = process.env, args = process.argv.slice(2) } = {}) {
@@ -64,7 +64,7 @@ async function resetDemo({ env = process.env, args = process.argv.slice(2) } = {
     // API must be stopped during reset. Keep indexes; never drop a DB or unknown collections.
     for (const name of resetCollections) await connection.db.collection(name).deleteMany({});
     await seedDemo(connection);
-    console.log('Core demo reset complete. No content seeds exist at P0.2.');
+    console.log('Core demo reset complete. Configured colleges and active Hubs/channels seeded.');
   } finally {
     await connection.close();
   }
