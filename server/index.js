@@ -3,12 +3,19 @@ const mongoose = require('mongoose');
 const { createApp } = require('./app');
 
 async function start() {
+  // Build collections/indexes explicitly after connecting. With buffering disabled,
+  // model auto-initialization during app composition can race the connection.
+  mongoose.set('autoCreate', false).set('autoIndex', false);
   const app = createApp(); // Required auth/CORS configuration is validated first.
   if (!process.env.MONGO_URI) throw new Error('MONGO_URI is required');
   await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 5000 });
   await mongoose.connection.db.command({ ping: 1 });
-  // Unique provisioning keys must exist before the first registration transaction.
-  await Promise.all(['College', 'Hub', 'Channel', 'User', 'ModuleGrant', 'ServiceCredential'].map(name => require('./models/' + name).init()));
+  // Unique provisioning/receipt keys must exist before accepting any write.
+  await Promise.all(['College', 'Hub', 'Channel', 'User', 'Post', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'].map(async name => {
+    const model = require('./models/' + name);
+    await model.createCollection();
+    await model.createIndexes();
+  }));
   const server = app.listen(process.env.PORT || 5000, () => console.log('Core API listening'));
   server.on('error', async () => {
     console.error('Core API listener failed');

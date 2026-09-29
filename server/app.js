@@ -3,7 +3,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 
 // Composition only: importing this module never connects or listens.
-function createApp({ connection = mongoose.connection } = {}) {
+function createApp({ connection = mongoose.connection, auraRules = null } = {}) {
   require('./config/auth');
   mongoose.set('bufferCommands', false);
   const app = express();
@@ -16,6 +16,7 @@ function createApp({ connection = mongoose.connection } = {}) {
   })) throw new Error('ALLOWED_ORIGINS must contain exact http(s) origins without paths or wildcards');
   app.use((req, res, next) => {
     if (req.headers.origin && !allowedOrigins.includes(req.headers.origin)) {
+      if (req.path === '/api/aura/events') return res.status(403).json({ error: { code: 'ORIGIN_FORBIDDEN', message: 'Origin not allowed', retryable: false } });
       return res.status(403).json({ error: 'Origin not allowed' });
     }
     next();
@@ -45,13 +46,17 @@ function createApp({ connection = mongoose.connection } = {}) {
 
   app.use('/api', (req, res, next) => {
     res.set('Cache-Control', 'no-store');
-    if (connection.readyState !== 1) return res.status(503).json({ error: 'Core database unavailable' });
+    if (connection.readyState !== 1) {
+      if (req.path === '/aura/events') return res.status(503).json({ error: { code: 'AURA_UNAVAILABLE', message: 'Core database unavailable; retain the pending result', retryable: true } });
+      return res.status(503).json({ error: 'Core database unavailable' });
+    }
     next();
   });
   // Auth routes
   const authRoutes = require('./routes/authRoutes');
   app.use('/api/auth', authRoutes);
   app.use('/api/auth', require('./routes/moduleAuthRoutes').moduleAuthRoutes(modules));
+  app.use('/api/aura', require('./routes/auraEventRoutes').auraEventRoutes({ rules: auraRules }));
 
   app.use('/api/me', require('./routes/meRoutes'));
   app.use('/api/hubs', require('./routes/hubRoutes'));
@@ -73,6 +78,10 @@ function createApp({ connection = mongoose.connection } = {}) {
   app.use('/api/posts', postRoutes);
 
   app.use((err, req, res, next) => {
+    if (req.path === '/api/aura/events') {
+      const status = err.type === 'entity.too.large' ? 413 : err.type === 'entity.parse.failed' ? 400 : 503;
+      return res.status(status).json({ error: { code: status === 413 ? 'EVENT_TOO_LARGE' : status === 400 ? 'INVALID_JSON' : 'AURA_UNAVAILABLE', message: status === 413 ? 'Event exceeds 64 KiB' : status === 400 ? 'Invalid JSON' : 'Aura unavailable; retain the pending result', retryable: status === 503 } });
+    }
     if (err.type === 'entity.too.large') return res.status(413).json({ error: 'Request body too large' });
     if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Invalid JSON' });
     res.status(500).json({ error: 'Server error' });

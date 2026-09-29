@@ -1,0 +1,305 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CollegeHubs module event v1",
+  "description": "Core additionally validates current service/Hub/issuance binding, 30-day replay window, occurrence within access lifetime, cross-field sourceId and numeric pass/count relationships. Unknown fields including awardedAura and raw content are forbidden.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "eventId",
+    "userId",
+    "hubId",
+    "source",
+    "type",
+    "value",
+    "occurredAt",
+    "metadata"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "eventId": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$"
+    },
+    "userId": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{24}$"
+    },
+    "hubId": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{24}$"
+    },
+    "source": {
+      "enum": [
+        "arcade",
+        "interview",
+        "learn"
+      ]
+    },
+    "type": {
+      "enum": [
+        "arcade.game_completed",
+        "interview.completed",
+        "learn.quiz_completed",
+        "learn.node_mastered"
+      ]
+    },
+    "value": {
+      "const": 1
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+    },
+    "metadata": {
+      "type": "object"
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "type": {
+          "const": "arcade.game_completed"
+        },
+        "source": {
+          "const": "arcade"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourceId",
+            "accessJti",
+            "domainVersion",
+            "gameId",
+            "rulesVersion",
+            "outcome",
+            "serverDurationSeconds"
+          ],
+          "properties": {
+            "sourceId": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$"
+            },
+            "accessJti": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            },
+            "domainVersion": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$"
+            },
+            "gameId": {
+              "enum": [
+                "numberguess",
+                "mathamplitude",
+                "sorting"
+              ]
+            },
+            "rulesVersion": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$"
+            },
+            "outcome": {
+              "enum": [
+                "success",
+                "failed",
+                "casual"
+              ]
+            },
+            "serverDurationSeconds": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 86400
+            }
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "interview.completed"
+        },
+        "source": {
+          "const": "interview"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourceId",
+            "accessJti",
+            "domainVersion",
+            "rawScore",
+            "answeredCount",
+            "questionCount",
+            "serverDurationSeconds",
+            "rubricVersion"
+          ],
+          "properties": {
+            "sourceId": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$"
+            },
+            "accessJti": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            },
+            "domainVersion": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$"
+            },
+            "rawScore": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "answeredCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "questionCount": {
+              "const": 5
+            },
+            "serverDurationSeconds": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 86400
+            },
+            "rubricVersion": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$"
+            }
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "learn.quiz_completed"
+        },
+        "source": {
+          "const": "learn"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourceId",
+            "accessJti",
+            "domainVersion",
+            "nodeId",
+            "mode",
+            "attemptId",
+            "passed",
+            "correctCount",
+            "itemCount",
+            "curriculumVersion"
+          ],
+          "properties": {
+            "sourceId": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$"
+            },
+            "accessJti": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            },
+            "domainVersion": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$"
+            },
+            "nodeId": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$"
+            },
+            "mode": {
+              "enum": [
+                "checkpoint",
+                "test-out"
+              ]
+            },
+            "attemptId": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$"
+            },
+            "passed": {
+              "type": "boolean"
+            },
+            "correctCount": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "itemCount": {
+              "enum": [
+                5,
+                10
+              ]
+            },
+            "curriculumVersion": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$"
+            }
+          }
+        }
+      }
+    },
+    {
+      "properties": {
+        "type": {
+          "const": "learn.node_mastered"
+        },
+        "source": {
+          "const": "learn"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sourceId",
+            "accessJti",
+            "domainVersion",
+            "nodeId",
+            "curriculumVersion",
+            "masteryMethod"
+          ],
+          "properties": {
+            "sourceId": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$"
+            },
+            "accessJti": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+            },
+            "domainVersion": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$"
+            },
+            "nodeId": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$"
+            },
+            "curriculumVersion": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$"
+            },
+            "masteryMethod": {
+              "enum": [
+                "checkpoint",
+                "test-out"
+              ]
+            }
+          }
+        }
+      }
+    }
+  ]
+}

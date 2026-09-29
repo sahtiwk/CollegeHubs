@@ -14,6 +14,13 @@ const { getUserHubs, requireHubAccess, scopedFilter } = require('../../server/se
 const { normalizeDomain } = require('../../server/config/collegeRegistry');
 
 const id = value => value.toString(16).padStart(24, '0');
+
+test('G1: a signed Core user cannot submit module events for either Hub', async () => {
+  await withApi(async request => {
+    const response = await request('/aura/events', users[0], 'POST', { userId: id(2), hubId: id(20), awardedAura: 100 });
+    assert.equal(response.status, 401);
+  });
+});
 let users, hubs, colleges, posts, restores;
 function matches(row, filter) {
   return Object.entries(filter).every(([key, value]) => {

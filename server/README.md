@@ -73,3 +73,11 @@ Leave `ENABLE_MODULES` empty until module backends are released. To enable a mod
 Single-instance in-memory limits are 10 grants/minute/user and 120 exchanges/minute/service key, with Retry-After. New indexes are ready before accepting requests. Demo reset now deletes module grants and preserves servicecredentials as operator configuration; all existing reset safety checks remain. Do not use reset to rotate/revoke service credentials.
 
 Run `npm run test:guards` for G1 and G2. [P2.1 evidence](../docs/p2.1-evidence.md) includes real isolated MongoDB concurrency and a manual browser callback stub; real module apps and production credentials remain later activation work.
+
+## P2.2 Aura receipts and recovery
+
+`POST /api/aura/events` accepts only an active source/type-scoped service credential and typed domain facts. Core user JWTs, browser requests, reward fields, foreign/stale issuance bindings and unsupported types fail closed. Mongo transactions atomically store immutable receipt/business identity, balance, day counter and qualifying activity. Replay returns the original receipt; altered IDs conflict; capped zero receipts are terminal. Requests are capped at 64 KiB and 120/minute/service key. No client can choose weights or rule versions.
+
+Normal startup deliberately has no active scoring rules and valid authorized events receive retryable `503 AURA_RULES_INACTIVE`. Test composition injects only `fixture-*` rules. P6 will activate the versioned rules and native scoring/reads; real module result adapters follow in P7/P8/P9. No live external bonus, worker, outbox or periodic coordinator is introduced. Existing UI totals are unchanged.
+
+Four new models are indexed before listening and included in guarded disposable demo reset: AuraEvent, AuraBalance, AuraDayCounter, DailyActivity. Service credentials remain preserved. See [reconciliation](../packages/contracts/reconciliation.md) for exact fields/errors and future module recovery routes. There are no new runtime environment variables; GUARD_MONGO_URI belongs only to the guard runner and is never read by Core startup. Full G3 transaction verification needs an explicitly supplied local replica set; absent it, the guard prints a skip rather than pretending it tested transactions.

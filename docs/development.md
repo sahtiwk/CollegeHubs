@@ -106,6 +106,20 @@ No module is enabled by default. Ordinary Core development needs no module keys.
 
 Follow the [shared handoff contract](../packages/contracts/module-handoff.md). A successful manual flow is Core sign-in -> full-document module auth/start -> state-bound Core form -> POST module callback -> server-to-server exchange -> 303 clean module URL. Verify secure path cookies, no second login, empty private/service-key browser exposure, and logout CSRF. Do not replace Origin/state checks with a permissive fallback when testing localhost. Core HTML uses strict-origin because no-referrer makes native form POST Origin null.
 
+## P2.2 guard and recovery checks
+
+`npm run test:guards` in server runs only the named G1/G2/G3 suites. To include G3 transaction cases, set `GUARD_MONGO_URI` in the shell to an already-running **disposable local MongoDB replica set** (localhost or 127.0.0.1 only). The guard never loads .env. It creates a randomly named `collegehubs_demo_g3_<uuid>` database, builds indexes, uses synthetic identities/keys and drops only that generated database in finally. It never uses or resets the URI's existing database. Unset GUARD_MONGO_URI after running. Without the variable, the transaction group is explicitly skipped; that is not full P2.2 verification. No test dependency is installed by the guard.
+
+For example, against your disposable replica set:
+
+```powershell
+$env:GUARD_MONGO_URI = 'mongodb://127.0.0.1:27017/?replicaSet=rs0'
+npm --prefix server run test:guards
+Remove-Item Env:GUARD_MONGO_URI
+```
+
+Never substitute an application or production server. Full guard coverage includes service/principal binding, concurrent duplicate/semantic conflict, count and partial point caps, shared days, external replacement, transaction rollback and error/limit contracts. P2.2 fixture rules live inside G3; normal server startup cannot activate them from the environment or a request. The [event schema](../packages/contracts/module-events.schema.json) and [pending/reconciliation contract](../packages/contracts/reconciliation.md) are the implementation boundary for future module phases. Manual acceptance additionally persists a stub result in a separate disposable module DB, stops Core, observes saved/pending, then restores Core and discards/replays one receipt. Record observed status/receipt and clean up the fixture. No UI/browser test suite is added.
+
 The Core grant lasts at most 60 seconds and the module access/session at most 900 seconds. JWT verification and retention are separate; TTL cleanup does not authorize expired grants. Lost exchange responses require a new handoff. Service credentials are operator configuration and are preserved by the demo reset; module grants are disposable data. No event ingestion or module application conversion is included in P2.1.
 
 See [P2.1 verification](p2.1-evidence.md). Production key generation, secure storage and actual per-module release gating remain operator/deployment work.
