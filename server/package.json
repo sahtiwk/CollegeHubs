@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js",
-    "seed": "node seed.js"
+    "seed": "node seed.js",
+    "reset:demo": "node scripts/resetDemo.js"
   },
   "dependencies": {
     "axiom": "^0.43.0",

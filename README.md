@@ -40,3 +40,7 @@ npm run dev
 ## P0.1 protected baseline
 
 Copy `.env.example` to a local environment file and configure `VITE_API_URL` (Core origin or URL ending in `/api`) and `VITE_GOOGLE_CLIENT_ID` if using Google sign-in. Set the API's required secret and exact frontend origin allowlist as described in [server setup](server/README.md). Existing sessions need to sign in again after this update. See [verification evidence and remaining environment checks](docs/p0.1-evidence.md).
+
+## P0.2 development baseline
+
+See [development setup](docs/development.md) for package roots, ports, health endpoints and the guarded disposable demo reset. The legacy seed, automatic post rewards, external score overwrite and fabricated contest schedules are disabled. [Third-party notices](THIRD_PARTY.md) preserve the Interview MIT license. Only P0.1/P0.2 have been implemented; later MVP features remain pending.

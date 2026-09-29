@@ -8,13 +8,6 @@ const leaderboard = [
   { id: 3, name: 'BalaKrishna', handle: '@Balakrik', aura: 6969, streak: 69, rankDelta: '—' },
 ];
 
-const PLATFORM_COLORS = { Codeforces: '#3b82f6', LeetCode: '#f59e0b', CodeChef: '#8b5cf6' };
-
-const contests = [
-  { id: 1, title: 'Codeforces Round #980 (Div. 2)', platform: 'Codeforces', time: 'Today • 7:30 PM IST', auraReward: '+120 Aura for top 25%' },
-  { id: 2, title: 'LeetCode Weekly Contest 420', platform: 'LeetCode', time: 'Sunday • 8:00 AM IST', auraReward: '+80 Aura for 4+ solves' },
-];
-
 const RANK_COLORS = ['#f59e0b', '#94a3b8', '#b45309'];
 
 function RightSidebar({ theme }) {
@@ -121,7 +114,7 @@ function RightSidebar({ theme }) {
             </div>
             <div>
               <p style={{ fontSize: 13, fontWeight: 700, color: 'white' }}>Upcoming Contests</p>
-              <p style={{ fontSize: 11, color: '#4b5563' }}>Compete to multiply Aura</p>
+              <p style={{ fontSize: 11, color: '#4b5563' }}>Schedule updates unavailable</p>
             </div>
           </div>
           <Link to="/contests" style={{ fontSize: 11, color: accent, textDecoration: 'none', fontWeight: 500 }}>
@@ -130,36 +123,7 @@ function RightSidebar({ theme }) {
         </div>
 
         <div>
-          {contests.map((c, i) => {
-            const platformColor = PLATFORM_COLORS[c.platform] || accent;
-            return (
-              <div key={c.id} style={{
-                padding: '12px 16px',
-                borderBottom: i < contests.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                borderLeft: `3px solid ${platformColor}`,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                  <div>
-                    <p style={{ fontSize: 12, fontWeight: 600, color: 'white', marginBottom: 3 }}>{c.title}</p>
-                    <p style={{ fontSize: 11, color: platformColor, marginBottom: 2 }}>{c.platform}</p>
-                    <p style={{ fontSize: 11, color: '#6b7280', marginBottom: 4 }}>{c.time}</p>
-                    <p style={{ fontSize: 11, color: '#10b981' }}>{c.auraReward}</p>
-                  </div>
-                  <button style={{
-                    marginTop: 2, padding: '5px 10px', borderRadius: 8,
-                    background: `${platformColor}15`,
-                    border: `1px solid ${platformColor}35`,
-                    color: platformColor, fontSize: 10, fontWeight: 600,
-                    cursor: 'pointer', whiteSpace: 'nowrap',
-                    display: 'flex', alignItems: 'center', gap: 4,
-                    transition: 'background 0.2s',
-                  }}>
-                    Set reminder <ChevronRight size={10} />
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+          <p style={{ padding: 16, color: "#9ca3af", fontSize: 12 }}>Contest schedules and rewards are unavailable.</p>
         </div>
       </section>
     </div>

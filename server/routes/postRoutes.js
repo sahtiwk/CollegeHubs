@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/Post');
-const User = require('../models/User'); // FIX 1: Import the User model
 const { authenticate } = require('../middleware/auth');
 
 // POST /api/posts - Create a new post (Require Auth)
@@ -21,11 +20,6 @@ router.post('/', authenticate, async (req, res) => {
 
     // Populate author fields
     await post.populate('author', 'username fullName profilePicture rankTitle college');
-
-    // FIX 2: REWARD AURA POINTS FOR POSTING
-    await User.findByIdAndUpdate(req.user._id, {
-      $inc: { auraPoints: 50 }
-    });
 
     res.status(201).json(post);
   } catch (err) {

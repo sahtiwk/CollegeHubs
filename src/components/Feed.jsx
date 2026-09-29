@@ -112,7 +112,7 @@ function Feed({ accentColor }) {
                 fontSize: 11, color: accent,
               }}>
                 <Sparkles size={12} />
-                Posting boosts Aura
+                Post rewards are unavailable
               </div>
               <button
                 type="submit"

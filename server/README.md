@@ -1,6 +1,6 @@
 # SocialStream Core API
 
-Run `npm install`, copy `.env.example` to `.env`, configure the values below, then run `npm run dev` (or `npm start`). Keep secrets out of source control. P0.1 does not run or change the legacy seed command.
+Run `npm install`, copy `.env.example` to `.env`, configure the values below, then run `npm run dev` (or `npm start`). Keep secrets out of source control. The legacy seed command is disabled; ordinary setup never deletes or seeds data.
 
 ## Configuration
 
@@ -25,6 +25,10 @@ Registration normalizes email, permits usernames of 3-50 letters/numbers/dots/un
 
 Google access tokens are checked through `getTokenInfo`, then checked for the configured audience, verified email, subject and expiry. Accounts are identified by a private, unique sparse `googleId`. An email collision with a password/legacy Google account returns 409; there is no automatic linking or migration in P0.1. New Google users get a randomized username suffix and a cryptographically random, bcrypt-hashed schema password that is never disclosed. See the [Google library documentation](https://github.com/googleapis/google-auth-library-nodejs#checking-access_token-information).
 
-`POST /api/users/:username/refresh` and `POST /api/google/calendar` return 410 without provider calls or writes. Their UI controls are disabled. Feed behavior remains available. Hub isolation, readiness, demo reset and other phases are not implemented here; `/api/health` remains the legacy process response and does not establish DB readiness.
+`POST /api/users/:username/refresh` and `POST /api/google/calendar` return 410 without provider calls or writes. Their UI controls are disabled. Feed behavior remains available. Hub isolation and ledger scoring remain later phases. P0.2 now awaits the database before listening and exposes `/health/live` and `/health/ready`; `/api/health` aliases readiness and returns 503 when the Core database is unavailable.
 
 Verification and limitations are recorded in [P0.1 evidence](../docs/p0.1-evidence.md).
+
+## P0.2 development and reset
+
+See [development instructions](../docs/development.md) for independent package roots/ports, readiness behavior, and the manually confirmed demo reset. `npm run seed` refuses. `npm run reset:demo` requires `NODE_ENV=development` or `test`, `DEMO_RESET_ENABLED=true`, an exact `DEMO_DB_NAME_ALLOWLIST`, a matching URI/database/confirmation, and `--disposable-data-only`. Use `--dry-run` first. Never reset real data or a running app. No Hub/problem/calendar seeds exist yet.
