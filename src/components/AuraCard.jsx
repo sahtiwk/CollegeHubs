@@ -1,7 +1,7 @@
 import React from 'react';
 import { Flame, Medal, Target, RotateCcw } from 'lucide-react';
 
-function AuraCard({ aura, isRefreshing, onRefresh, accentColor }) {
+function AuraCard({ aura, accentColor }) {
   const level = aura?.level || 1;
   const progress = aura?.progress || 0;
   const totalAura = aura?.totalAura || 0;
@@ -82,19 +82,20 @@ function AuraCard({ aura, isRefreshing, onRefresh, accentColor }) {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <button
-                onClick={onRefresh}
-                disabled={isRefreshing}
+                disabled
+                title="External stats refresh is unavailable"
+                aria-label="External stats refresh is unavailable"
                 style={{
                   width: 28, height: 28, borderRadius: '50%',
                   border: '1px solid rgba(245,158,11,0.3)',
                   background: 'rgba(245,158,11,0.08)',
-                  color: '#fbbf24', cursor: 'pointer',
+                  color: '#fbbf24', cursor: 'not-allowed',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   transition: 'background 0.2s',
-                  opacity: isRefreshing ? 0.5 : 1,
+                  opacity: 0.5,
                 }}
               >
-                <RotateCcw size={13} style={{ animation: isRefreshing ? 'spin 1s linear infinite' : 'none' }} />
+                <RotateCcw size={13} style={{ animation: 'none' }} />
               </button>
               <div style={{
                 padding: '4px 10px', borderRadius: 8,

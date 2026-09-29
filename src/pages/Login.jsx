@@ -2,27 +2,28 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Lock, Mail, ArrowRight } from 'lucide-react';
 import { useGoogleLogin } from '@react-oauth/google';
-import api from '../api.js';
+import api, { saveSession } from '../api.js';
 
 function Login() {
   const pampinchu = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(() => new URLSearchParams(window.location.search).get('reason') === 'expired' ? 'Your session expired. Please sign in again.' : '');
 
   const gLogin = useGoogleLogin({
     onSuccess: async (jaldires) => {
+      setLoading(true);
+      setError('');
       try {
         const mastres = await api.post('/google/auth', {
           accessToken: jaldires.access_token,
         });
-        localStorage.setItem('socialstream_token', mastres.data.token);
-        localStorage.setItem('socialstream_user', JSON.stringify(mastres.data.user));
+        saveSession(mastres.data);
         pampinchu('/');
       } catch (lafda) {
-        setError('Google sign-in failed. Try again.');
-      }
+        setError(lafda.response?.data?.error || 'Google sign-in failed. Try again.');
+      } finally { setLoading(false); }
     },
     onError: () => setError('Google sign-in failed. Try again.'),
   });
@@ -33,8 +34,7 @@ function Login() {
     setLoading(true);
     try {
       const res = await api.post('/auth/login', { email, password });
-      localStorage.setItem('socialstream_token', res.data.token);
-      localStorage.setItem('socialstream_user', JSON.stringify(res.data.user));
+      saveSession(res.data);
       pampinchu('/');
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed. Check your credentials.');
@@ -350,7 +350,7 @@ function Login() {
               <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
             </div>
 
-            <button onClick={() => gLogin()} className="google-btn">
+            <button onClick={() => gLogin()} disabled={loading} className="google-btn">
               <svg width="16" height="16" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>

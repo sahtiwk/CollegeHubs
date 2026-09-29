@@ -36,3 +36,7 @@ npm run dev
 
 3. Open the app in your browser (by default `http://localhost:5173`) to see the SocialStream dashboard.
 
+
+## P0.1 protected baseline
+
+Copy `.env.example` to a local environment file and configure `VITE_API_URL` (Core origin or URL ending in `/api`) and `VITE_GOOGLE_CLIENT_ID` if using Google sign-in. Set the API's required secret and exact frontend origin allowlist as described in [server setup](server/README.md). Existing sessions need to sign in again after this update. See [verification evidence and remaining environment checks](docs/p0.1-evidence.md).

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Lock, Mail, User2, ArrowRight } from 'lucide-react';
-import api from '../api.js';
+import api, { saveSession } from '../api.js';
 
 function Register() {
   const navigate = useNavigate();
@@ -17,8 +17,7 @@ function Register() {
     setLoading(true);
     try {
       const res = await api.post('/auth/register', { username, email, password });
-      localStorage.setItem('socialstream_token', res.data.token);
-      localStorage.setItem('socialstream_user', JSON.stringify(res.data.user));
+      saveSession(res.data);
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to register. Please try again.');

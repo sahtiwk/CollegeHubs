@@ -1,85 +1,48 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
+const { randomBytes } = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
-
+const { generateToken } = require('../config/auth');
+const { userDto } = require('../utils/userDto');
+const { bodyObject, text, emailAddress, respondError } = require('../utils/validation');
 const router = express.Router();
-
-const JWT_SECRET = process.env.JWT_SECRET || 'dev_jwt_secret_change_me';
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 
-function generateToken(user) {
-  return jwt.sign(
-    {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      college: user.college || '',
-      onboardingComplete: !!user.onboardingComplete,
-    },
-    JWT_SECRET,
-    { expiresIn: '7d' },
-  );
-}
-
-// POST /api/google/auth
-// Verifies a Google OAuth access token and finds/creates a matching user in MongoDB.
 router.post('/auth', async (req, res) => {
   try {
-    const { accessToken } = req.body;
-
-    if (!accessToken) {
-      return res.status(400).json({ error: 'Google access token is required' });
-    }
-
-    if (!GOOGLE_CLIENT_ID) {
-      return res
-        .status(500)
-        .json({ error: 'GOOGLE_CLIENT_ID is not configured on the server' });
-    }
-
+    const accessToken = text(bodyObject(req.body).accessToken, 'Google access token', 8192, true);
+    if (!GOOGLE_CLIENT_ID) return res.status(503).json({ error: 'Google sign-in is not configured' });
     const client = new OAuth2Client(GOOGLE_CLIENT_ID);
-
-    // Validate the access token and get basic profile data.
-    // This does not require a refresh token or client secret for verification.
-    const tokenInfo = await client.getTokenInfo(accessToken);
-
-    const googleUserId = tokenInfo.sub;
-    const email = tokenInfo.email;
-
-    if (!email) {
-      return res.status(400).json({ error: 'Google token is missing email information' });
+    let info;
+    try {
+      info = await client.getTokenInfo(accessToken);
+    } catch (err) {
+      const invalid = [400, 401, 403].includes(err.response?.status);
+      return res.status(invalid ? 401 : 503).json({ error: invalid ? 'Invalid Google token' : 'Google sign-in unavailable; try again' });
     }
-
-    let user = await User.findOne({ email });
-
+    if (info.aud !== GOOGLE_CLIENT_ID || info.email_verified !== true ||
+        typeof info.sub !== 'string' || !info.sub || !Number.isFinite(info.expiry_date) || info.expiry_date <= Date.now()) {
+      return res.status(401).json({ error: 'Invalid Google identity' });
+    }
+    const email = emailAddress(info.email);
+    let user = await User.findOne({ googleId: info.sub });
     if (!user) {
-      // Create a new user based on Google identity.
-      // A random password is set because the schema requires it, but it is not used for Google logins.
-      const randomPassword = Math.random().toString(36).slice(-12);
-
+      // Do not silently link a password account based on matching email.
+      if (await User.findOne({ email })) {
+        return res.status(409).json({ error: 'An account with this email exists. Sign in with its existing method.' });
+      }
+      const suffix = randomBytes(6).toString('hex');
+      const prefix = email.split('@')[0].replace(/[^a-zA-Z0-9_.-]/g, '_').slice(0, 30) || 'user';
       user = await User.create({
-        username: email.split('@')[0],
-        email,
-        password: randomPassword,
-        fullName: tokenInfo.name || '',
+        googleId: info.sub, username: `${prefix}_${suffix}`, email,
+        // Schema still requires a password; it is random, never returned, and bcrypt hashed.
+        password: randomBytes(32).toString('hex'),
       });
     }
-
-    const token = generateToken(user);
-    const safeUser = user.toObject();
-    delete safeUser.password;
-
-    res.json({
-      token,
-      user: safeUser,
-      googleUserId,
-    });
+    res.json({ token: generateToken(user), user: userDto(user, true) });
   } catch (err) {
-    console.error('Error in Google auth:', err.message);
-    res.status(500).json({ error: 'Server error during Google authentication' });
+    respondError(res, err, 'Server error during Google authentication');
   }
 });
 
 module.exports = router;
-

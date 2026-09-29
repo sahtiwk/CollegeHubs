@@ -1,9 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { useGoogleLogin } from '@react-oauth/google';
 import { Calendar, ExternalLink, Clock, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api.js';
 import { getCollegeTheme } from '../utils/collegeThemes.js';
 
 const PLATFORM_CONFIG = {
@@ -42,7 +40,7 @@ function useCountdown(startTimeStr) {
   return timeLeft;
 }
 
-function ContestCard({ item, onAddToCalendar, accentColor }) {
+function ContestCard({ item, accentColor }) {
   const cfg = getConfig(item.site);
   const countdown = useCountdown(item.start_time);
   const isUrgent = countdown.includes('m') && !countdown.includes('h') && !countdown.includes('d');
@@ -124,19 +122,19 @@ function ContestCard({ item, onAddToCalendar, accentColor }) {
           </a>
         )}
         <button
-          onClick={() => onAddToCalendar(item)}
+          disabled title="Calendar export is unavailable"
           style={{
             display: 'flex', alignItems: 'center', gap: 6,
             padding: '7px 14px', borderRadius: 10,
             background: `linear-gradient(135deg,${cfg.color},${cfg.color}cc)`,
             border: 'none', color: 'white',
-            fontSize: 12, fontWeight: 600, cursor: 'pointer',
+            fontSize: 12, fontWeight: 600, cursor: 'not-allowed', opacity: 0.5,
             transition: 'transform 0.15s, box-shadow 0.2s',
           }}
           onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.04)'; e.currentTarget.style.boxShadow = `0 0 16px ${cfg.color}60`; }}
           onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = 'none'; }}
         >
-          <Calendar size={12} /> Add
+          <Calendar size={12} /> Export unavailable
         </button>
       </div>
     </div>
@@ -147,33 +145,11 @@ function Contests() {
   const navigate = useNavigate();
   const [contests, setContests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [googleToken, setGoogleToken] = useState(null);
-  const [googleProfile, setGoogleProfile] = useState(null);
-  const [addedIds, setAddedIds] = useState(new Set());
 
   const currentUser = (() => {
     try { return JSON.parse(localStorage.getItem('socialstream_user')); } catch { return null; }
   })();
   const theme = getCollegeTheme(currentUser?.college || '');
-
-  const handleGoogleLogin = useGoogleLogin({
-    scope: 'openid profile email https://www.googleapis.com/auth/calendar.events',
-    onSuccess: async (tokenResponse) => {
-      try {
-        setGoogleToken(tokenResponse.access_token);
-        const profileRes = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-        });
-        setGoogleProfile(profileRes.data);
-        const authRes = await api.post('/google/auth', { accessToken: tokenResponse.access_token });
-        localStorage.setItem('socialstream_token', authRes.data.token);
-        localStorage.setItem('socialstream_user', JSON.stringify(authRes.data.user));
-        setError('');
-      } catch { setError('Google sign-in failed. Please try again.'); }
-    },
-    onError: () => setError('Google sign-in was cancelled or failed.'),
-  });
 
   useEffect(() => {
     let active = true;
@@ -206,20 +182,6 @@ function Contests() {
     load();
     return () => { active = false; };
   }, []);
-
-  const handleSaveToCalendar = async (contest) => {
-    if (!googleToken) {
-      setError('Sign in with Google first (top right) to save contests to your calendar.');
-      return;
-    }
-    try {
-      await api.post('/google/calendar', { accessToken: googleToken, contest });
-      setAddedIds((prev) => new Set([...prev, contest.name]));
-      setError('');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to add to Google Calendar.');
-    }
-  };
 
   return (
     <>
@@ -277,55 +239,13 @@ function Contests() {
                   Coding Contests
                 </h1>
                 <p style={{ fontSize: 14, color: '#6b7280' }}>
-                  Upcoming contests across platforms. Add them to your Google Calendar.
+                  Upcoming contests across platforms.
                 </p>
               </div>
 
-              {/* Google auth */}
-              <div>
-                {googleProfile ? (
-                  <div style={{
-                    padding: '10px 16px', borderRadius: 12,
-                    background: 'rgba(16,185,129,0.08)',
-                    border: '1px solid rgba(16,185,129,0.2)',
-                    fontSize: 12, textAlign: 'right',
-                  }}>
-                    <p style={{ color: '#10b981', fontWeight: 700 }}>{googleProfile.name}</p>
-                    <p style={{ color: '#6b7280', fontSize: 11 }}>✓ Calendar connected</p>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => { setError(''); handleGoogleLogin(); }}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 8,
-                      padding: '10px 18px', borderRadius: 12,
-                      background: '#111118',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      color: 'white', fontSize: 13, fontWeight: 600,
-                      cursor: 'pointer', transition: 'all 0.2s',
-                    }}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = `${theme.accent}60`; e.currentTarget.style.boxShadow = `0 0 16px ${theme.accent}30`; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; e.currentTarget.style.boxShadow = 'none'; }}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                    </svg>
-                    Sign in with Google
-                  </button>
-                )}
-              </div>
+              <p style={{ color: "#9ca3af", fontSize: 12 }}>Calendar export unavailable</p>
             </div>
           </div>
-
-          {/* Error */}
-          {error && (
-            <div style={{ borderRadius: 12, border: '1px solid rgba(239,68,68,0.2)', background: 'rgba(239,68,68,0.08)', padding: '12px 16px', marginBottom: 16, fontSize: 13, color: '#f87171' }}>
-              {error}
-            </div>
-          )}
 
           {/* Contest list */}
           {loading ? (
@@ -340,14 +260,9 @@ function Contests() {
                 <div key={item.name + item.start_time} className="contest-card" style={{ animationDelay: `${i * 60}ms` }}>
                   <ContestCard
                     item={item}
-                    onAddToCalendar={handleSaveToCalendar}
                     accentColor={theme.accent}
                   />
-                  {addedIds.has(item.name) && (
-                    <p style={{ fontSize: 11, color: '#10b981', marginTop: 4, marginLeft: 4 }}>
-                      ✓ Added to Google Calendar
-                    </p>
-                  )}
+
                 </div>
               ))}
             </div>

@@ -11,7 +11,7 @@ import api from '../api';
 
 function Dashboard() {
   const [userData, setUserData] = useState(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const [username, setUsername] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -32,29 +32,18 @@ function Dashboard() {
     if (!username) return;
     api.get(`/users/${username}`)
       .then((r) => setUserData(r.data))
-      .catch(() => {
-        localStorage.removeItem('socialstream_user');
-        localStorage.removeItem('user');
-        navigate('/login');
+      .catch((err) => {
+        if (err.response?.status !== 401) setLoadError('Unable to load your profile. Please try again.');
       });
   }, [username, navigate]);
-
-  const handleRefreshAura = async () => {
-    if (!username) return;
-    try {
-      setIsRefreshing(true);
-      const r = await api.post(`/users/${username}/refresh`);
-      setUserData(r.data);
-    } catch (e) { console.error(e); }
-    finally { setIsRefreshing(false); }
-  };
 
   if (!userData) {
     return (
       <div style={{ display:'flex', minHeight:'100vh', alignItems:'center', justifyContent:'center', background:'#050812', flexDirection:'column', gap:16 }}>
         <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
         <div style={{ width:40, height:40, borderRadius:'50%', border:'3px solid rgba(59,130,246,0.2)', borderTopColor:'#3b82f6', animation:'spin 1s linear infinite' }} />
-        <p style={{ color:'#4b5563', fontSize:14 }}>Loading SocialStream...</p>
+        <p style={{ color:'#9ca3af', fontSize:14 }}>{loadError || 'Loading SocialStream...'}</p>
+        {loadError && <button onClick={() => window.location.reload()}>Try again</button>}
       </div>
     );
   }
@@ -225,7 +214,7 @@ function Dashboard() {
         {/* Main */}
         <main style={{ maxWidth:1200, margin:'0 auto', display:'flex', gap:20, padding:'20px', position:'relative', zIndex:1 }}>
           <aside style={{ width:280, flexShrink:0 }}>
-            <Sidebar user={userProps} aura={auraProps} isRefreshing={isRefreshing} onRefresh={handleRefreshAura} onProfileUpdated={setUserData} theme={theme} />
+            <Sidebar user={userProps} aura={auraProps} onProfileUpdated={setUserData} theme={theme} />
           </aside>
           <section style={{ flex:1, minWidth:0 }}>
             <Feed accentColor={theme.accent} />
@@ -260,7 +249,7 @@ function Dashboard() {
                 <X size={16} />
               </button>
               <div style={{ marginTop:40 }}>
-                <Sidebar user={userProps} aura={auraProps} isRefreshing={isRefreshing} onRefresh={handleRefreshAura} onProfileUpdated={setUserData} theme={theme} />
+                <Sidebar user={userProps} aura={auraProps} onProfileUpdated={setUserData} theme={theme} />
               </div>
             </div>
           </div>

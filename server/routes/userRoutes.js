@@ -1,121 +1,56 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const { updateUserAura } = require('../services/auraService');
 const { authenticate } = require('../middleware/auth');
+const { userDto } = require('../utils/userDto');
+const { profileFields, respondError } = require('../utils/validation');
 
-// PUT /api/users/onboarding - Logged-in user only
 router.put('/onboarding', authenticate, async (req, res) => {
   try {
-    const { fullName, bio, college, leetcodeUsername, codeforcesHandle, githubUsername } = req.body;
-
-    const updateFields = {
-      onboardingComplete: true,
-    };
-    if (typeof fullName !== 'undefined') updateFields.fullName = fullName;
-    if (typeof bio !== 'undefined') updateFields.bio = bio;
-    if (typeof college !== 'undefined') updateFields.college = college;
-    if (typeof leetcodeUsername !== 'undefined') updateFields.leetcodeHandle = leetcodeUsername;
-    if (typeof codeforcesHandle !== 'undefined') updateFields.codeforcesHandle = codeforcesHandle;
-    if (typeof githubUsername !== 'undefined') updateFields.githubHandle = githubUsername;
-
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user._id,
-      { $set: updateFields },
-      { new: true },
-    ).select('-password');
-
-    if (!updatedUser) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json(updatedUser);
+    const user = await User.findByIdAndUpdate(req.user._id,
+      { $set: profileFields(req.body, true) }, { new: true, runValidators: true });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(userDto(user, true));
   } catch (err) {
-    console.error('Error updating onboarding:', err.message);
-    res.status(500).json({ error: 'Failed to save onboarding' });
+    respondError(res, err, 'Failed to save onboarding');
   }
 });
 
-// GET /api/users/leaderboard - Top users by Aura
 router.get('/leaderboard', async (req, res) => {
   try {
-    const users = await User.find(
-      {},
-      'username fullName profilePicture auraPoints rankTitle college',
-    )
-      .sort({ auraPoints: -1 })
-      .limit(50);
-
-    res.json(users);
+    const users = await User.find({}, 'username fullName profilePicture auraPoints rankTitle college')
+      .sort({ auraPoints: -1 }).limit(50);
+    res.json(users.map(user => userDto(user)));
   } catch (err) {
-    console.error('Error fetching leaderboard:', err.message);
-    res.status(500).json({ error: 'Failed to fetch leaderboard' });
+    respondError(res, err, 'Failed to fetch leaderboard');
   }
 });
 
-// GET /api/users/:username - Fetch user by username
-router.get('/:username', async (req, res) => {
+router.get('/:username', authenticate, async (req, res) => {
   try {
-    const { username } = req.params;
-    const user = await User.findOne({ username }).select('-password');
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json(user);
+    const user = await User.findOne({ username: req.params.username }).select('-password');
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(userDto(user, String(user._id) === String(req.user._id)));
   } catch (err) {
-    console.error('Error fetching user:', err.message);
-    res.status(500).json({ error: 'Server error' });
+    respondError(res, err, 'Failed to fetch profile');
   }
 });
 
-// POST /api/users/:username/refresh - Refresh Aura stats from external services
-router.post('/:username/refresh', async (req, res) => {
-  try {
-    const { username } = req.params;
-    const updatedUser = await updateUserAura(username);
-
-    if (!updatedUser) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json(updatedUser);
-  } catch (err) {
-    console.error('Error refreshing user aura:', err.message);
-    res.status(500).json({ error: 'Failed to refresh user aura' });
-  }
+// Legacy provider refresh is deliberately unavailable (no provider call or score write).
+router.post('/:username/refresh', (req, res) => {
+  res.status(410).json({ error: 'External stats refresh is disabled' });
 });
 
-// PUT /api/users/:username - Update profile fields
-router.put('/:username', async (req, res) => {
+router.put('/:username', authenticate, async (req, res) => {
+  if (req.params.username !== req.user.username) return res.status(403).json({ error: 'You can only update your own profile' });
   try {
-    const { username } = req.params;
-    const { bio, leetcodeHandle, codeforcesHandle, githubHandle, fullName , } = req.body;
-
-    const updateFields = {};
-    if (typeof bio !== 'undefined') updateFields.bio = bio;
-    if (typeof leetcodeHandle !== 'undefined') updateFields.leetcodeHandle = leetcodeHandle;
-    if (typeof codeforcesHandle !== 'undefined') updateFields.codeforcesHandle = codeforcesHandle;
-    if (typeof githubHandle !== 'undefined') updateFields.githubHandle = githubHandle;
-    if (typeof fullName !== 'undefined') updateFields.fullName = fullName;
-
-    const updatedUser = await User.findOneAndUpdate(
-      { username }, // use exact casing from URL
-      { $set: updateFields },
-      { new: true },
-    ).select('-password');
-
-    if (!updatedUser) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json(updatedUser);
+    const user = await User.findByIdAndUpdate(req.user._id,
+      { $set: profileFields(req.body) }, { new: true, runValidators: true });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(userDto(user, true));
   } catch (err) {
-    console.error('Error updating user profile:', err.message);
-    res.status(500).json({ error: 'Failed to update profile' });
+    respondError(res, err, 'Failed to update profile');
   }
 });
 
 module.exports = router;
-

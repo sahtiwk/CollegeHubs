@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link2, MapPin, Settings } from 'lucide-react';
+import { logout } from '../api.js';
 import AuraCard from './AuraCard.jsx';
 import EditProfileModal from './EditProfileModal.jsx';
 
-function Sidebar({ user, aura, isRefreshing, onRefresh, onProfileUpdated, theme }) {
+function Sidebar({ user, aura, onProfileUpdated, theme }) {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const accent = theme?.accent || '#7c3aed';
   const secondary = theme?.secondary || '#4c1d95';
@@ -103,12 +104,13 @@ function Sidebar({ user, aura, isRefreshing, onRefresh, onProfileUpdated, theme 
               <button className="sidebar-btn sidebar-btn-ghost" onClick={() => setIsEditingProfile(true)}>
                 <Settings size={11} /> Edit profile
               </button>
+              <button className="sidebar-btn sidebar-btn-ghost" onClick={() => logout()}>Sign out</button>
             </div>
           </div>
         </section>
 
         {/* ── AURA CARD ── */}
-        <AuraCard aura={aura} isRefreshing={isRefreshing} onRefresh={onRefresh} accentColor={accent} />
+        <AuraCard aura={aura} accentColor={accent} />
 
         <EditProfileModal
           isOpen={isEditingProfile}

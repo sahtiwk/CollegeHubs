@@ -2,14 +2,26 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const axios = require('axios');
+// Validate signing configuration before any connection or listener is started.
+require('./config/auth');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors({ origin: '*' })); // Allow all origins (for dev; restrict in production)
-app.use(express.json());
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(value => value.trim()).filter(Boolean);
+if (!allowedOrigins.length || allowedOrigins.some(origin => {
+  try { const url = new URL(origin); return !['http:', 'https:'].includes(url.protocol) || url.origin !== origin; }
+  catch { return true; }
+})) throw new Error('ALLOWED_ORIGINS must contain exact http(s) origins without paths or wildcards');
+app.use((req, res, next) => {
+  if (req.headers.origin && !allowedOrigins.includes(req.headers.origin)) {
+    return res.status(403).json({ error: 'Origin not allowed' });
+  }
+  next();
+});
+app.use(cors({ origin: allowedOrigins, methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization'] }));
+app.use(express.json({ limit: '64kb' }));
 
 // MongoDB connection
 const MONGO_URI = process.env.MONGO_URI;
@@ -43,46 +55,19 @@ app.use('/api/users', userRoutes);
 const googleAuthRoutes = require('./routes/googleAuthRoutes');
 app.use('/api/google', googleAuthRoutes);
 
-app.post('/api/google/calendar', async (req, res) => {
-  try {
-    const { accessToken, contest } = req.body;
-    if (!accessToken) {
-      return res.status(400).json({ error: 'accessToken is required' });
-    }
-    if (!contest || !contest.name || !contest.start_time) {
-      return res.status(400).json({ error: 'contest with name and start_time is required' });
-    }
-    const startIso = new Date(contest.start_time).toISOString();
-    const endIso = contest.end_time
-      ? new Date(contest.end_time).toISOString()
-      : new Date(new Date(contest.start_time).getTime() + 60 * 60 * 1000).toISOString();
-    const payload = {
-      summary: contest.name,
-      location: contest.url || '',
-      start: { dateTime: startIso, timeZone: 'UTC' },
-      end: { dateTime: endIso, timeZone: 'UTC' },
-    };
-    await axios.post(
-      'https://www.googleapis.com/calendar/v3/calendars/primary/events',
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    res.status(201).json({ status: 'ok' });
-  } catch (err) {
-    const detail = err.response?.data || err.message;
-    console.error('Google Calendar API error:', detail);
-    res.status(500).json({ error: 'Failed to create calendar event' });
-  }
+app.post('/api/google/calendar', (req, res) => {
+  res.status(410).json({ error: 'Google Calendar export is disabled' });
 });
 
 // Post routes
 const postRoutes = require('./routes/postRoutes');
 app.use('/api/posts', postRoutes);
+
+app.use((err, req, res, next) => {
+  if (err.type === 'entity.too.large') return res.status(413).json({ error: 'Request body too large' });
+  if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'Invalid JSON' });
+  res.status(500).json({ error: 'Server error' });
+});
 
 // Start server
 app.listen(PORT, () => {

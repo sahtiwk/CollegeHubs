@@ -1,97 +1,42 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-
+const { generateToken } = require('../config/auth');
+const { userDto } = require('../utils/userDto');
+const { bodyObject, text, emailAddress, passwordValue, respondError, badInput } = require('../utils/validation');
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev_jwt_secret_change_me';
-
-function generateToken(user) {
-  return jwt.sign(
-    {
-      id: user._id,
-      username: user.username,
-      email: user.email,
-      college: user.college || '',
-      onboardingComplete: !!user.onboardingComplete,
-    },
-    JWT_SECRET,
-    { expiresIn: '7d' },
-  );
-}
-
-// POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
-
-    if (!username || !email || !password) {
-      return res.status(400).json({ error: 'Username, email, and password are required' });
+    const body = bodyObject(req.body);
+    const username = text(body.username, 'Username', 50, true);
+    if (!/^[a-zA-Z0-9_.-]{3,50}$/.test(username)) throw badInput('Username must be 3-50 letters, numbers, dots, underscores or hyphens');
+    const email = emailAddress(body.email);
+    const password = passwordValue(body.password, true);
+    if (await User.findOne({ $or: [{ email }, { username }] })) {
+      return res.status(409).json({ error: 'Email or username already in use' });
     }
-
-    const existingUser = await User.findOne({
-      $or: [{ email }, { username }],
-    });
-
-    if (existingUser) {
-      return res.status(400).json({ error: 'User with that email or username already exists' });
-    }
-
-    // Password will be hashed by the User model pre-save hook
-    const user = await User.create({
-      username,
-      email,
-      password,
-      auraPoints: 0,
-    });
-
-    const token = generateToken(user);
-    const safeUser = user.toObject();
-    delete safeUser.password;
-
-    res.status(201).json({
-      token,
-      user: safeUser,
-    });
+    // The model save hook retains bcrypt cost 12.
+    const user = await User.create({ username, email, password, auraPoints: 0 });
+    res.status(201).json({ token: generateToken(user), user: userDto(user, true) });
   } catch (err) {
-    console.error('Error in register:', err.message);
-    res.status(500).json({ error: 'Server error during registration' });
+    respondError(res, err, 'Server error during registration');
   }
 });
 
-// POST /api/auth/login
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
-    }
-
+    const body = bodyObject(req.body);
+    const email = emailAddress(body.email);
+    const password = passwordValue(body.password);
     const user = await User.findOne({ email }).select('+password');
-    if (!user) {
-      return res.status(400).json({ error: 'Invalid credentials' });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid credentials' });
-    }
-
-    const token = generateToken(user);
-    const safeUser = user.toObject();
-    delete safeUser.password;
-
-    res.json({
-      token,
-      user: safeUser,
-    });
+    res.json({ token: generateToken(user), user: userDto(user, true) });
   } catch (err) {
-    console.error('Error in login:', err.message);
-    res.status(500).json({ error: 'Server error during login' });
+    respondError(res, err, 'Server error during login');
   }
 });
 
 module.exports = router;
-
