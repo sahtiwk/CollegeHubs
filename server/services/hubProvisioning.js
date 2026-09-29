@@ -22,11 +22,12 @@ async function ensureHubForCollege(collegeId, session, connection = mongoose.con
   await college.validate();
   const id = new mongoose.Types.ObjectId();
   const hub = await HubModel.findOneAndUpdate({ collegeId: college._id }, { $setOnInsert: {
-    _id: id, hubId: id, collegeId: college._id, slug: college.slug, name: college.name,
+    _id: id, hubId: id, collegeId: college._id, status: 'active',
+  }, $set: { slug: college.slug, name: college.name,
     verifiedEmailDomains: college.domains.map(item => item.normalizedDomain),
-    themeTokens: safeTheme(college.themeTokens), themeVersion: college.themeVersion,
+    themeTokens: safeTheme(college.themeTokens), themeVersion: college.themeVersion, logoUrl: college.logoUrl,
     timezone: college.timezone, defaultChannelSet: college.defaultChannels.map(item => item.slug),
-    provisionVersion: college.configVersion, status: 'active',
+    provisionVersion: college.configVersion,
   } }, { upsert: true, new: true, session, runValidators: true, setDefaultsOnInsert: false });
   if (hub.status !== 'active') throw new Error('Hub is disabled');
   for (const channel of college.defaultChannels) {
@@ -75,11 +76,18 @@ async function seedColleges(connection = mongoose.connection) {
   const channels = connection.model('Channel', Channel.schema);
   await Promise.all([colleges.init(), hubs.init(), channels.init()]);
   for (const entry of config.colleges) {
-    const fields = { ...entry, themeTokens: entry.themeTokens || config.defaultTheme, defaultChannels: config.defaultChannels };
+    const fields = { ...entry, logoUrl: entry.logoUrl || null, themeTokens: entry.themeTokens || config.defaultTheme, defaultChannels: config.defaultChannels };
     const candidate = new colleges(fields);
     await candidate.validate();
     const existing = await colleges.findOne({ slug: entry.slug });
-    if (existing) { existing.set(fields); await existing.save(); }
+    if (existing) {
+      const brandingChanged = existing.name !== candidate.name || existing.logoUrl !== candidate.logoUrl ||
+        JSON.stringify(safeTheme(existing.themeTokens)) !== JSON.stringify(safeTheme(candidate.themeTokens));
+      if (candidate.themeVersion < existing.themeVersion || (brandingChanged && candidate.themeVersion <= existing.themeVersion)) {
+        throw new Error('Increase themeVersion when changing college branding');
+      }
+      existing.set(fields); await existing.save();
+    }
     else await candidate.save();
   }
 }

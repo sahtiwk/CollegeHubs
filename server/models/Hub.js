@@ -7,6 +7,7 @@ const schema = new mongoose.Schema({
   verifiedEmailDomains: [{ type: String }],
   themeTokens: { type: Object, required: true, validate: value => { safeTheme(value); return true; } },
   themeVersion: { type: Number, required: true }, timezone: { type: String, required: true },
+  logoUrl: { type: String, default: null },
   defaultChannelSet: [{ type: String }], provisionVersion: { type: Number, default: 1 },
   status: { type: String, enum: ['active', 'disabled'], default: 'active' },
 }, { timestamps: true });

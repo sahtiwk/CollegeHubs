@@ -7,6 +7,8 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 8192,
+      validate: value => Buffer.byteLength(value, 'utf8') <= 8192,
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,

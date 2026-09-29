@@ -43,6 +43,7 @@ function createApp({ connection = mongoose.connection } = {}) {
   });
 
   app.use('/api', (req, res, next) => {
+    res.set('Cache-Control', 'no-store');
     if (connection.readyState !== 1) return res.status(503).json({ error: 'Core database unavailable' });
     next();
   });
@@ -51,6 +52,7 @@ function createApp({ connection = mongoose.connection } = {}) {
   app.use('/api/auth', authRoutes);
 
   app.use('/api/me', require('./routes/meRoutes'));
+  app.use('/api/hubs', require('./routes/hubRoutes'));
 
   // User routes
   const userRoutes = require('./routes/userRoutes');

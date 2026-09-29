@@ -42,7 +42,7 @@ Only Core's own database participates in readiness; optional modules/providers d
 
 `npm run seed` now refuses immediately; it cannot install a fixed password or delete an account. Creating a post preserves its persistence behavior but awards no Aura. The external Aura service fails explicitly without network calls or balance writes. Existing stored balances are not rewritten.
 
-Contests and the sidebar schedule show unavailable; no client provider fetch or fabricated future dates remain there. Calendar export remains disabled. The Feed no longer promises rewards for posting. Other inherited dashboard/marketing mock content is not a completed Aura implementation; the truthful dashboard and scoring arrive in P6. The contest unavailable page uses the plan palette and Abril/Archivo font stacks with system fallbacks; actual font loading and full theme conversion remain P1.2.
+Contests and the sidebar schedule show unavailable; no client provider fetch or fabricated future dates remain there. Calendar export remains disabled. The Feed no longer promises rewards for posting. Other inherited dashboard/marketing mock content is not a completed Aura implementation; the truthful dashboard and scoring arrive in P6. The contest unavailable page uses the plan palette and Abril/Archivo font stacks with system fallbacks; P1.2 now loads these fonts and applies configured theme tokens across the scoped shell.
 
 ## Explicit disposable demo reset
 
@@ -86,6 +86,16 @@ See [third-party notices](../THIRD_PARTY.md), [P0.1 evidence](p0.1-evidence.md),
 
 The Google UI uses the ID-token callback and sends JSON through Core's exact-origin API. It does not use Google's cookie-based redirect POST flow or create an ambient login cookie. Configure the Google OAuth client for the real frontend origin and verify the live flow before release. Matching hosted Workspace evidence is required for an institutional Google membership to be marked verified; password-domain matching and third-party Google-account email claims remain unverified. This is mailbox evidence, not a claim of current enrollment.
 
-The minimal unassigned screen and read-only college label are necessary for P1.1. Full AuthProvider/HubThemeProvider, pagination, mobile drawer, configured theme loading, and removal of remaining display-substring theming are still P1.2. Current display labels do not control authorization.
+The minimal unassigned screen and read-only college label are necessary for P1.1. P1.2 now supplies AuthProvider/HubThemeProvider, bounded pagination, the keyboard-accessible mobile drawer, configured theme loading, and removal of display-substring theming. Current display labels do not control authorization.
 
 See [P1.1 verification](p1.1-evidence.md). No production database was read or modified during implementation.
+
+## P1.2 UI and branding checks
+
+Generic brand colors are plum `#310A31`, cream `#F4ECD6`, peach `#FFD3B6`, and pale sky `#DFF7FF`. The pre-membership fallback lives in `src/utils/collegeThemes.js`; keep it aligned with the registry default palette. Assigned college palettes come only from the authenticated Hub response and are cached by Hub ID plus theme version. Changing a local display label has no effect on membership or palette selection. Logos require the registry's exact HTTPS asset-origin allowlist. Google Fonts supplies Abril Fatface and Archivo; offline visitors receive Georgia/sans-serif fallbacks.
+
+For a manual local check, use an isolated disposable replica set with two active synthetic `example.test` colleges and distinct palettes. Create accounts through normal provisioning or a local fixture, sign in as each, and verify that only their feed, subjects, and college standings appear. At a 360px viewport, open Menu by keyboard, cycle Tab and Shift+Tab, close with Escape, and confirm focus returns to Menu. Check profile editing without a college input, and sign in as an unassigned account to exercise its explanation/retry. Do not activate the real draft college to run these checks.
+
+After changing registry branding, increase `themeVersion` and rerun `npm run provision:hubs`. The next account refresh/navigation to a freshly loaded app fetches the current Hub version. API failure falls back to generic branding with a retry message, without selecting another college. A failed `/me` check blocks the workspace until retry succeeds.
+
+No additional automated UI suite or dependencies were introduced. G1 is the named regression guard. See [P1.2 evidence and screenshots](p1.2-evidence.md).

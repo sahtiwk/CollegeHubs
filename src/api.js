@@ -18,6 +18,7 @@ export function logout(reason = '') {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
   localStorage.removeItem('user');
+  window.dispatchEvent(new Event('core-session'));
   const path = reason === 'expired' ? '/login?reason=expired' : '/login';
   if (window.location.pathname !== '/login' && window.location.pathname !== '/register') window.location.replace(path);
 }
@@ -36,6 +37,7 @@ export function saveSession({ token, user }) {
   localStorage.setItem(USER_KEY, JSON.stringify(user));
   localStorage.removeItem('user');
   scheduleExpiry(token);
+  window.dispatchEvent(new Event('core-session'));
 }
 
 const baseURL = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '');

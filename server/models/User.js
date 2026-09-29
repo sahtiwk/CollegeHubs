@@ -64,6 +64,7 @@ const userSchema = new mongoose.Schema(
 // Index for faster lookups
 userSchema.index({ googleSubject: 1 }, { unique: true, partialFilterExpression: { googleSubject: { $type: 'string' } } });
 userSchema.index({ hubId: 1, membershipStatus: 1, _id: 1 });
+userSchema.index({ hubId: 1, membershipStatus: 1, auraPoints: -1, _id: 1 });
 userSchema.index({ auraPoints: -1 });
 
 userSchema.pre('validate', function(next) {

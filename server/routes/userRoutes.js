@@ -5,6 +5,7 @@ const { requireTenant, scopedFilter } = require('../services/hubAccess');
 const { authenticate } = require('../middleware/auth');
 const { userDto } = require('../utils/userDto');
 const { profileFields, respondError } = require('../utils/validation');
+const { pageInput, cursorFor } = require('../utils/pagination');
 
 router.put('/onboarding', authenticate, async (req, res) => {
   try {
@@ -19,9 +20,18 @@ router.put('/onboarding', authenticate, async (req, res) => {
 
 router.get('/leaderboard', authenticate, requireTenant, async (req, res) => {
   try {
-    const users = await User.find(scopedFilter(req.hub, { membershipStatus: 'active' }), 'username fullName profilePicture auraPoints rankTitle college')
-      .sort({ auraPoints: -1 }).limit(50);
-    res.json(users.map(user => userDto(user)));
+    const { limit, after } = pageInput(req.query, 'leaderboard', req.hub.hubId);
+    const scope = scopedFilter(req.hub, { membershipStatus: 'active' });
+    const rows = await User.find({ ...scope, ...after }, 'username fullName profilePicture auraPoints rankTitle')
+      .sort({ auraPoints: -1, _id: 1 }).limit(limit + 1);
+    const users = rows.slice(0, limit);
+    const rankOf = user => User.countDocuments({ ...scope, $or: [
+      { auraPoints: { $gt: user.auraPoints } }, { auraPoints: user.auraPoints, _id: { $lt: user._id } },
+    ] }).then(count => count + 1);
+    const [ownRank, start] = await Promise.all([rankOf(req.user), users.length ? rankOf(users[0]) : 0]);
+    res.set('Cache-Control', 'no-store').json({ items: users.map((user, i) => ({ ...userDto(user), rank: start + i })),
+      ownRank: { rank: ownRank, auraPoints: req.user.auraPoints },
+      nextCursor: rows.length > limit ? cursorFor('leaderboard', req.hub.hubId, users.at(-1)) : null });
   } catch (err) {
     respondError(res, err, 'Failed to fetch leaderboard');
   }

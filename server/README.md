@@ -1,4 +1,4 @@
-# SocialStream Core API
+# CollegeHubs Core API
 
 Run `npm install`, copy `.env.example` to `.env`, configure the values below, then run `npm run dev` (or `npm start`). Keep secrets out of source control. The legacy seed command is disabled; ordinary setup never deletes or seeds data.
 
@@ -25,13 +25,13 @@ Registration normalizes email, permits usernames of 3-50 letters/numbers/dots/un
 
 Google sign-in now accepts `{credential}` containing a Google ID token from the frontend GoogleLogin callback. The installed Google library verifies signature, issuer, audience and expiry; Core also requires a stable subject and verified-email claim. Identity is stored in private `googleSubject`, with no password for OAuth-only accounts. Google is authoritative for Gmail or a matching hosted Workspace domain; other third-party email claims do not receive `membershipVerified=true`. There is no silent email merge or email/domain transfer. Legacy P0.1 Google accounts need a deliberate linking path; no backfill is performed. See [Google's verification guidance](https://developers.google.com/identity/gsi/web/guides/verify-google-id-token).
 
-`POST /api/users/:username/refresh` and `POST /api/google/calendar` return 410 without provider calls or writes. Their UI controls are disabled. Feed behavior remains available. Hub isolation and ledger scoring remain later phases. P0.2 now awaits the database before listening and exposes `/health/live` and `/health/ready`; `/api/health` aliases readiness and returns 503 when the Core database is unavailable.
+`POST /api/users/:username/refresh` and `POST /api/google/calendar` return 410 without provider calls or writes. Their UI controls are disabled. Feed behavior remains available. Hub isolation is implemented through P1.2; ledger scoring remains a later phase. P0.2 now awaits the database before listening and exposes `/health/live` and `/health/ready`; `/api/health` aliases readiness and returns 503 when the Core database is unavailable.
 
 Verification and limitations are recorded in [P0.1 evidence](../docs/p0.1-evidence.md).
 
 ## P0.2 development and reset
 
-See [development instructions](../docs/development.md) for independent package roots/ports, readiness behavior, and the manually confirmed demo reset. `npm run seed` refuses. `npm run reset:demo` requires `NODE_ENV=development` or `test`, `DEMO_RESET_ENABLED=true`, an exact `DEMO_DB_NAME_ALLOWLIST`, a matching URI/database/confirmation, and `--disposable-data-only`. Use `--dry-run` first. Never reset real data or a running app. No Hub/problem/calendar seeds exist yet.
+See [development instructions](../docs/development.md) for independent package roots/ports, readiness behavior, and the manually confirmed demo reset. `npm run seed` refuses. `npm run reset:demo` requires `NODE_ENV=development` or `test`, `DEMO_RESET_ENABLED=true`, an exact `DEMO_DB_NAME_ALLOWLIST`, a matching URI/database/confirmation, and `--disposable-data-only`. Use `--dry-run` first. Never reset real data or a running app. Hub seeds now follow the confirmed registry; problem/calendar seeds remain later phases.
 
 ## P1.1 Hub identity
 
@@ -43,6 +43,21 @@ An active exact normalized domain maps to one Hub with DSA, Web Development, Mac
 - `PATCH /api/me`: allowlisted profile fields only.
 - `POST /api/me/assignment/retry`: empty JSON object; uses stored email, returns updated user, assignment state and replacement token.
 - Core tokens now contain sub, hubId, scope, membershipVersion and jti as well as pinned issuer/audience/expiry. Sign in again after this update. Current membership is rechecked; old membership-version tokens are rejected.
-- Missing/disabled Hub membership cannot read tenant routes. Basic feed/profile/leaderboard/like filters use the authorized Hub; private profile mutation still requires the owner. Full pagination/theme/mobile shell remains P1.2.
+- Missing/disabled Hub membership cannot read tenant routes. Basic feed/profile/leaderboard/like filters use the authorized Hub; private profile mutation still requires the owner. P1.2 adds the pagination/theme/mobile shell documented below.
 
 Run `npm run test:guards` from `server/`, or `node --test tests/guards/hub-isolation.test.js` from the root. G1 uses isolated in-process fixtures; no DB or provider credentials are needed. See [P1.1 evidence](../docs/p1.1-evidence.md) for separate real local MongoDB transaction verification and remaining deployment steps.
+
+## P1.2 scoped presentation and pagination
+
+All API responses use `Cache-Control: no-store`. Each protected route reloads current membership before reading data. The server applies the Hub filter before population, sorting, or limits.
+
+- `GET /api/me/hub` and `GET /api/hubs/:hubId/theme`: authorized Hub name, ID, timezone, theme version, sanitized `tokens`, and optional approved HTTPS `logoUrl`. Private registry domains/evidence are never included. A foreign Hub is 403.
+- `GET /api/hubs/:hubId/channels`: `{items}` with public channel fields only; archived/foreign channels excluded. These are discovery endpoints, not chat delivery.
+- `GET /api/posts?limit=20&cursor=...`: `{items,nextCursor}`, ordered by creation time descending, ID ascending for ties. Limit is 1-50. Cursors are HMAC-signed and bound to Hub and resource; invalid, foreign, or altered cursors return 400 without data.
+- `PUT /api/posts/:id/like` adds the current user once; `DELETE` removes them. Both are atomic and idempotent. Missing/foreign post IDs return 404. PUT no longer toggles.
+- `GET /api/users/leaderboard?limit=50&cursor=...`: `{items,nextCursor,ownRank}`. Every item includes its server-calculated rank. `ownRank` contains `rank` and `auraPoints`, including when the caller is outside the first 50. Active college members only; Aura descending, ID ascending for ties. No global/city/client-label filtering.
+- Post text is bounded at 8 KiB UTF-8. Post author population uses active membership in the same Hub and a public projection; invalid legacy authors become null.
+
+Configure branding in `config/colleges.seed.json`. All 11 theme tokens must be six-digit hex values. Optional logos must use HTTPS on an exact origin in `assetOrigins` (empty by default). Unsafe stored branding falls back to the generic configured palette and no logo. Names render as plain React text. Increment `themeVersion` whenever name, logo, or palette changes; provisioning refuses changed branding without a version increase, syncs Hub metadata, and preserves IDs/channel sequence counters. No theme-write or college-selection endpoint is exposed to students.
+
+P1.2 adds no environment variable. The existing names-only examples remain sufficient. See [P1.2 evidence](../docs/p1.2-evidence.md).

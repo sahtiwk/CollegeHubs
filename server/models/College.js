@@ -9,6 +9,7 @@ const schema = new mongoose.Schema({
   domains: [{ _id: false, normalizedDomain: { type: String, required: true, set: normalizeDomain }, verifiedAt: Date, evidenceRef: String }],
   themeTokens: { type: Object, required: true, default: () => ({ ...config.defaultTheme }), validate: value => { safeTheme(value); return true; } },
   themeVersion: { type: Number, default: 1, min: 1 },
+  logoUrl: { type: String, default: null },
   timezone: { type: String, required: true, validate: value => { new Intl.DateTimeFormat('en', { timeZone: value }); return true; } },
   defaultChannels: { type: [{ _id: false, slug: String, title: String, kind: { type: String, enum: ['subject'] } }], default: () => config.defaultChannels },
   configVersion: { type: Number, default: 1, min: 1 },

@@ -8,6 +8,7 @@ const User = require('../../server/models/User');
 const Hub = require('../../server/models/Hub');
 const College = require('../../server/models/College');
 const Post = require('../../server/models/Post');
+const Channel = require('../../server/models/Channel');
 const { generateToken, verifyToken } = require('../../server/config/auth');
 const { getUserHubs, requireHubAccess, scopedFilter } = require('../../server/services/hubAccess');
 const { normalizeDomain } = require('../../server/config/collegeRegistry');
@@ -15,11 +16,36 @@ const { normalizeDomain } = require('../../server/config/collegeRegistry');
 const id = value => value.toString(16).padStart(24, '0');
 let users, hubs, colleges, posts, restores;
 function matches(row, filter) {
-  return Object.entries(filter).every(([key, value]) => String(row[key]) === String(value));
+  return Object.entries(filter).every(([key, value]) => {
+    if (key === '$or') return value.some(part => matches(row, part));
+    const actual = row[key] instanceof Date ? row[key].getTime() : row[key];
+    if (value && typeof value === 'object' && !(value instanceof Date)) {
+      return Object.entries(value).every(([op, expected]) => {
+        expected = expected instanceof Date ? expected.getTime() : expected;
+        return op === '$lt' ? actual < expected : op === '$gt' ? actual > expected : false;
+      });
+    }
+    return String(actual) === String(value instanceof Date ? value.getTime() : value);
+  });
 }
 function query(value) {
-  return { select() { return this; }, sort() { return this; }, limit() { return this; },
-    populate() { return this; }, exec: async () => value,
+  return { select() { return this; }, sort(order) {
+    if (Array.isArray(value)) value.sort((a, b) => {
+      for (const [key, direction] of Object.entries(order)) {
+        if (a[key] < b[key]) return -direction;
+        if (a[key] > b[key]) return direction;
+      }
+      return 0;
+    });
+    return this;
+  }, limit(count) { if (Array.isArray(value)) value = value.slice(0, count); return this; },
+    populate(options) {
+      if (options.path === 'author') {
+        const populate = row => row && row.author ? { ...row, author: users.filter(user => matches(user, options.match)).find(user => user._id === String(row.author)) || null } : row;
+        value = Array.isArray(value) ? value.map(populate) : populate(value);
+      }
+      return this;
+    }, exec: async () => value,
     then(resolve, reject) { return Promise.resolve(value).then(resolve, reject); } };
 }
 function patch(model, name, fn) { const original = model[name]; restores.push(() => { model[name] = original; }); model[name] = fn; }
@@ -33,17 +59,32 @@ test.beforeEach(() => {
     { _id: id(5), username: 'peer', email: 'peer@a.example.test', hubId: id(10), membershipStatus: 'active', membershipVersion: 1 },
   ];
   hubs = [{ _id: id(10), hubId: id(10), collegeId: id(100), status: 'active' }, { _id: id(20), hubId: id(20), collegeId: id(200), status: 'active' }];
+  users.forEach(user => { user.auraPoints = 0; });
   colleges = [{ _id: id(100), status: 'active' }, { _id: id(200), status: 'active' }];
   posts = [{ _id: id(30), hubId: id(10), likes: [] }, { _id: id(40), hubId: id(20), likes: [] }, { _id: id(50), likes: [] }];
   for (const post of posts) { post.save = async () => post; post.populate = async () => post; }
+  posts.forEach(post => { post.createdAt = new Date('2026-09-29T00:00:00Z'); });
   patch(User, 'findById', value => query(users.find(user => user._id === String(value)) || null));
   patch(User, 'findOne', filter => query(users.find(user => matches(user, filter)) || null));
   patch(User, 'find', filter => query(users.filter(user => matches(user, filter))));
+  patch(User, 'countDocuments', filter => Promise.resolve(users.filter(user => matches(user, filter)).length));
+  patch(Channel, 'find', filter => query([
+    { _id: id(60), hubId: id(10), slug: 'dsa', title: 'DSA', kind: 'subject', archivedAt: null, nextMessageSeq: 9 },
+    { _id: id(70), hubId: id(20), slug: 'dsa', title: 'Foreign', kind: 'subject', archivedAt: null },
+  ].filter(row => matches(row, filter))));
   patch(User, 'findByIdAndUpdate', (value, update) => { const user = users.find(item => item._id === String(value)); Object.assign(user, update.$set); return query(user); });
   patch(Hub, 'findOne', filter => query(hubs.find(hub => matches(hub, filter)) || null));
   patch(College, 'exists', filter => query(colleges.find(college => matches(college, filter)) || null));
   patch(Post, 'find', filter => query(posts.filter(post => matches(post, filter))));
   patch(Post, 'findOne', filter => query(posts.find(post => matches(post, filter)) || null));
+  patch(Post, 'findOneAndUpdate', (filter, update) => {
+    const post = posts.find(row => matches(row, filter));
+    if (post) {
+      if (update.$addToSet && !post.likes.includes(update.$addToSet.likes)) post.likes.push(update.$addToSet.likes);
+      if (update.$pull) post.likes = post.likes.filter(value => value !== update.$pull.likes);
+    }
+    return query(post || null);
+  });
 });
 test.afterEach(() => restores.reverse().forEach(restore => restore()));
 async function withApi(work) {
@@ -63,17 +104,84 @@ test('G1: anonymous callers cannot read tenant leaderboard', () => withApi(async
   assert.equal((await request('/users/leaderboard')).status, 401);
   assert.equal((await request('/posts')).status, 401);
 }));
+test('G1: invalid pagination must fail closed without returning tenant rows', () => withApi(async request => {
+  assert.equal((await request('/posts?cursor=forged', users[0])).status, 400);
+  assert.equal((await request('/posts?limit=51', users[0])).status, 400);
+  assert.equal((await request('/users/leaderboard?cursor=forged', users[0])).status, 400);
+}));
+test('G1: scoped pages remain stable across ties and reject other-Hub/resource cursors', () => withApi(async request => {
+  const date = new Date('2026-09-29T00:00:00Z');
+  posts.unshift({ _id: id(29), hubId: id(20), createdAt: new Date('2026-09-30'), likes: [] });
+  posts.push({ _id: id(31), hubId: id(10), createdAt: date, likes: [] });
+  const first = await request('/posts?limit=1', users[0]);
+  assert.deepEqual(first.data.items.map(row => row._id), [id(30)]);
+  assert.ok(first.data.nextCursor);
+  const next = await request('/posts?limit=1&cursor=' + first.data.nextCursor, users[0]);
+  assert.deepEqual(next.data.items.map(row => row._id), [id(31)]);
+  assert.equal(next.data.nextCursor, null);
+  assert.equal((await request('/posts?cursor=' + first.data.nextCursor, users[1])).status, 400);
+  assert.equal((await request('/users/leaderboard?cursor=' + first.data.nextCursor, users[0])).status, 400);
+  const rank = await request('/users/leaderboard?limit=1', users[4]);
+  assert.equal(rank.data.ownRank.rank, 2);
+  assert.equal(rank.data.items[0].username, 'alice');
+  const rankNext = await request('/users/leaderboard?cursor=' + rank.data.nextCursor, users[4]);
+  assert.deepEqual(rankNext.data.items.map(row => [row.username, row.rank]), [['peer', 2]]);
+  assert.equal((await request('/users/leaderboard?cursor=' + rank.data.nextCursor, users[1])).status, 400);
+}));
+test('G1: own rank counts only this Hub even outside the first fifty', () => withApi(async request => {
+  for (let index = 0; index < 55; index++) users.push({ _id: id(500 + index), username: 'rank' + index, hubId: id(10), membershipStatus: 'active', auraPoints: 10 });
+  users[1].auraPoints = 999;
+  const response = await request('/users/leaderboard?limit=50', users[0]);
+  assert.equal(response.data.items.length, 50);
+  assert.equal(response.data.ownRank.rank, 56);
+  assert.ok(response.data.items.every(row => row.username !== 'bob'));
+}));
+test('G1: themes/channels are scoped, allowlisted DTOs; labels never change membership', () => withApi(async request => {
+  const { config } = require('../../server/config/collegeRegistry');
+  hubs[0].themeTokens = { ...config.defaultTheme }; hubs[0].themeVersion = 2;
+  hubs[0].name = '<script>literal name</script>'; hubs[0].logoUrl = 'https://unapproved.example/logo.svg';
+  users[0].college = 'B iiit iit'; hubs[0].verifiedEmailDomains = ['private.example.test'];
+  assert.equal((await request('/hubs/' + id(20) + '/theme', users[0])).status, 403);
+  assert.equal((await request('/hubs/' + id(20) + '/channels', users[0])).status, 403);
+  assert.equal((await request('/me/hub', users[2])).status, 403);
+  const theme = await request('/me/hub', users[0]);
+  assert.equal(theme.data.hubId, id(10)); assert.equal(theme.data.themeVersion, 2);
+  assert.equal(theme.data.logoUrl, null);
+  assert.equal(Object.hasOwn(theme.data, 'verifiedEmailDomains'), false);
+  assert.deepEqual(theme.data.tokens, config.defaultTheme);
+  hubs[0].themeTokens = { ...config.defaultTheme, accent: 'url(javascript:bad)', extra: 'injection' };
+  assert.deepEqual((await request('/hubs/' + id(10) + '/theme', users[0])).data.tokens, config.defaultTheme);
+  const channels = await request('/hubs/' + id(10) + '/channels', users[0]);
+  assert.deepEqual(channels.data.items.map(row => row._id), [id(60)]);
+  assert.equal(Object.hasOwn(channels.data.items[0], 'nextMessageSeq'), false);
+}));
+test('G1: retries are idempotent and foreign unlikes cannot mutate a post', () => withApi(async request => {
+  const url = '/posts/' + id(30) + '/like';
+  await request(url, users[0], 'PUT'); await request(url, users[0], 'PUT');
+  assert.deepEqual(posts[0].likes, [id(1)]);
+  assert.equal((await request(url, users[1], 'DELETE')).status, 404);
+  assert.deepEqual(posts[0].likes, [id(1)]);
+  await request(url, users[0], 'DELETE'); await request(url, users[0], 'DELETE');
+  assert.deepEqual(posts[0].likes, []);
+}));
+test('G1: author population cannot expose a foreign or unassigned profile', () => withApi(async request => {
+  posts[0].author = users[1]._id;
+  assert.equal((await request('/posts', users[0])).data.items[0].author, null);
+  posts[0].author = users[3]._id;
+  assert.equal((await request('/posts', users[0])).data.items[0].author, null);
+  assert.equal((await request('/posts/' + id(30) + '/like', users[0], 'PUT')).data.author, null);
+}));
 test('G1: other-Hub and missing-Hub posts never appear, including a forged query Hub', () => withApi(async request => {
   const response = await request('/posts?hubId=' + id(20), users[0]);
   assert.equal(response.status, 200);
-  assert.deepEqual(response.data.map(post => post._id), [id(30)]);
+  assert.deepEqual(response.data.items.map(post => post._id), [id(30)]);
 }));
 test('G1: profiles and rankings hide foreign and missing-Hub users', () => withApi(async request => {
   assert.equal((await request('/users/bob', users[0])).status, 404);
   assert.equal((await request('/users/legacy', users[0])).status, 404);
   const response = await request('/users/leaderboard', users[0]);
-  assert.deepEqual(response.data.map(user => user.username), ['alice', 'peer']);
-  assert.ok(response.data.every(user => !Object.hasOwn(user, 'email')));
+  assert.deepEqual(response.data.items.map(user => user.username), ['alice', 'peer']);
+  assert.ok(response.data.items.every(user => !Object.hasOwn(user, 'email')));
 }));
 test('G1: foreign and missing-Hub likes are denied; own-Hub like works', () => withApi(async request => {
   for (const postId of [id(40), id(50)]) assert.equal((await request('/posts/' + postId + '/like', users[0], 'PUT', {})).status, 404);

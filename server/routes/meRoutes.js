@@ -8,6 +8,13 @@ const { generateToken } = require('../config/auth');
 const { userDto } = require('../utils/userDto');
 const { bodyObject, profileFields, respondError } = require('../utils/validation');
 router.use(authenticate);
+router.get('/hub', require('../services/hubAccess').requireTenant, async (req, res) => {
+  try {
+    const hub = await require('../models/Hub').findOne({ _id: req.hub.hubId, status: 'active' });
+    if (!hub) return res.status(403).json({ error: 'Hub unavailable' });
+    res.set('Cache-Control', 'no-store').json(require('../services/hubPresentation').hubPresentation(hub));
+  } catch { res.status(503).json({ error: 'Hub unavailable' }); }
+});
 router.get('/', async (req, res) => {
   try { res.set('Cache-Control', 'no-store').json({ ...userDto(req.user, true), hubs: await getUserHubs(req.user) }); }
   catch { res.status(503).json({ error: 'Membership check unavailable' }); }

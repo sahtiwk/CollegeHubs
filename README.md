@@ -1,50 +1,25 @@
-# SocialStream Landing Dashboard
+# CollegeHubs Core
 
-This is the landing / home dashboard for **SocialStream**, a professional networking platform for developers that layers a gamified **Aura Points** system on top of a LinkedIn-style experience.
+A college-scoped community built with React/Vite and Express/Mongoose. The P1.2 shell uses configured college branding, a private college feed, profile editing, subject-channel discovery, and college-only Aura standings.
 
-## Tech Stack
+## Run locally
 
-- React + Vite
-- Tailwind CSS
-- lucide-react (icons)
+Install dependencies in both the repository root and `server/`. Copy each package's `.env.example` to a local environment file and configure the names listed there. Start Core with `npm run dev` in `server/`, and Vite with `npm run dev` at the root. See [server setup](server/README.md) and [development instructions](docs/development.md).
 
-## Features
+Core requires a transaction-capable MongoDB replica set. Real college entries stay draft until their exact domains are confirmed; then run `npm run provision:hubs` from `server/`. Unknown domains receive an explanation and assignment retry, without access to a college feed.
 
-- **3-column layout** (LinkedIn-style):
-  - Left: profile hub + Aura Box
-  - Middle: activity feed (create post + mock posts)
-  - Right: community leaderboard + upcoming contests
-- **Aura Box** with glowing gradient treatment, Aura total, rank, streak, quest, and next-level progress bar.
-- Responsive:
-  - Mobile: center feed only
-  - Large screens: left sidebar visible
-  - Extra-large screens: right sidebar visible
+## Implemented through P1.2
 
-## Getting Started
+- Current identity and membership come from `/api/me`; cached display names never select a Hub.
+- Server-scoped feed, profile access, author population, bounded cursor pages, idempotent likes/unlikes, and server-calculated college ranking.
+- Safe Hub/theme/channel endpoints, hexadecimal token allowlists, approved HTTPS logos, and versioned theme refresh.
+- Plum/cream default with peach/pale-sky accents; Abril Fatface headings and Archivo body text, loaded from Google Fonts with system fallbacks.
+- Responsive navigation drawer with focus containment, Escape, focus restoration, profile dialogs, and keyboard-accessible forms.
 
-1. Install dependencies:
+Chat, module handoff, new Aura scoring, live contest schedules, and calendar export remain later phases. Existing stored Aura is displayed without fabricated scores or post rewards. The inherited About page is outside this scoped application-shell phase.
 
-```bash
-npm install
-```
+Run the existing G1 guard with `node --test tests/guards/hub-isolation.test.js`. Build with `npx vite build`. No UI test suite was added.
 
-2. Start the dev server:
+## Evidence
 
-```bash
-npm run dev
-```
-
-3. Open the app in your browser (by default `http://localhost:5173`) to see the SocialStream dashboard.
-
-
-## P0.1 protected baseline
-
-Copy `.env.example` to a local environment file and configure `VITE_API_URL` (Core origin or URL ending in `/api`) and `VITE_GOOGLE_CLIENT_ID` if using Google sign-in. Set the API's required secret and exact frontend origin allowlist as described in [server setup](server/README.md). Existing sessions need to sign in again after this update. See [verification evidence and remaining environment checks](docs/p0.1-evidence.md).
-
-## P0.2 development baseline
-
-See [development setup](docs/development.md) for package roots, ports, health endpoints and the guarded disposable demo reset. The legacy seed, automatic post rewards, external score overwrite and fabricated contest schedules are disabled. [Third-party notices](THIRD_PARTY.md) preserve the Interview MIT license. P0.1/P0.2 establish the baseline; see the latest phase notes below.
-
-## P1.1 scoped identity
-
-Automatic domain-based Hub membership, transactional four-channel provisioning, `/api/me`, assignment retry, and the G1 isolation guard are implemented. The real college registry stays inactive until domain confirmation. See [activation and development instructions](docs/development.md) and [P1.1 evidence](docs/p1.1-evidence.md). P1.2's full scoped/theme/mobile shell remains pending.
+[P0.1 security baseline](docs/p0.1-evidence.md) Â· [P0.2 development baseline](docs/p0.2-evidence.md) Â· [P1.1 identity](docs/p1.1-evidence.md) Â· [P1.2 shell and isolation](docs/p1.2-evidence.md). Imported module notices remain in [THIRD_PARTY.md](THIRD_PARTY.md).
