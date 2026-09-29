@@ -7,6 +7,7 @@ function createApp({ connection = mongoose.connection } = {}) {
   require('./config/auth');
   mongoose.set('bufferCommands', false);
   const app = express();
+  const modules = require('./config/modules').moduleConfig();
   // Middleware
   const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(value => value.trim()).filter(Boolean);
   if (!allowedOrigins.length || allowedOrigins.some(origin => {
@@ -50,6 +51,7 @@ function createApp({ connection = mongoose.connection } = {}) {
   // Auth routes
   const authRoutes = require('./routes/authRoutes');
   app.use('/api/auth', authRoutes);
+  app.use('/api/auth', require('./routes/moduleAuthRoutes').moduleAuthRoutes(modules));
 
   app.use('/api/me', require('./routes/meRoutes'));
   app.use('/api/hubs', require('./routes/hubRoutes'));

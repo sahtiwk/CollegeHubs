@@ -104,6 +104,11 @@ test('G1: anonymous callers cannot read tenant leaderboard', () => withApi(async
   assert.equal((await request('/users/leaderboard')).status, 401);
   assert.equal((await request('/posts')).status, 401);
 }));
+test('G1: module handoff requires current active Hub membership', () => withApi(async request => {
+  for (const user of [users[2], users[3]]) {
+    assert.equal((await request('/auth/module-grants', user, 'POST', { module: 'arcade', state: 'fixture', returnPath: '/arcade' })).status, 403);
+  }
+}));
 test('G1: invalid pagination must fail closed without returning tenant rows', () => withApi(async request => {
   assert.equal((await request('/posts?cursor=forged', users[0])).status, 400);
   assert.equal((await request('/posts?limit=51', users[0])).status, 400);

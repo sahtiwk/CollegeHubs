@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { logout } from '../api';
+import ModuleNavigation from './ModuleNavigation';
 export default function Sidebar({ onNavigate = () => {}, onEdit }) {
   const { user } = useAuth();
   return <div className="sidebar-content">
@@ -12,6 +13,7 @@ export default function Sidebar({ onNavigate = () => {}, onEdit }) {
       <NavLink to="/leaderboard" onClick={onNavigate}>Leaderboard <span aria-hidden="true">&#8599;</span></NavLink>
       <NavLink to="/contests" onClick={onNavigate}>Contests <span aria-hidden="true">&#8599;</span></NavLink>
     </nav>
+    <ModuleNavigation />
     <div className="sidebar-note"><p className="eyebrow">Your space to grow</p><p>Share your work. Meet your peers. Build something together.</p></div>
     <button onClick={() => { onNavigate(); onEdit(); }}>Edit profile</button>
     <button className="quiet" onClick={() => logout()}>Sign out</button>

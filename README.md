@@ -16,10 +16,16 @@ Core requires a transaction-capable MongoDB replica set. Real college entries st
 - Plum/cream default with peach/pale-sky accents; Abril Fatface headings and Archivo body text, loaded from Google Fonts with system fallbacks.
 - Responsive navigation drawer with focus containment, Escape, focus restoration, profile dialogs, and keyboard-accessible forms.
 
-Chat, module handoff, new Aura scoring, live contest schedules, and calendar export remain later phases. Existing stored Aura is displayed without fabricated scores or post rewards. The inherited About page is outside this scoped application-shell phase.
+Chat, module application integration, new Aura scoring, live contest schedules, and calendar export remain later phases. Existing stored Aura is displayed without fabricated scores or post rewards. The inherited About page is outside this scoped application-shell phase.
 
 Run the existing G1 guard with `node --test tests/guards/hub-isolation.test.js`. Build with `npx vite build`. No UI test suite was added.
 
 ## Evidence
 
-[P0.1 security baseline](docs/p0.1-evidence.md) Â· [P0.2 development baseline](docs/p0.2-evidence.md) Â· [P1.1 identity](docs/p1.1-evidence.md) Â· [P1.2 shell and isolation](docs/p1.2-evidence.md). Imported module notices remain in [THIRD_PARTY.md](THIRD_PARTY.md).
+[P0.1 security baseline](docs/p0.1-evidence.md) | [P0.2 development baseline](docs/p0.2-evidence.md) | [P1.1 identity](docs/p1.1-evidence.md) | [P1.2 shell and isolation](docs/p1.2-evidence.md). Imported module notices remain in [THIRD_PARTY.md](THIRD_PARTY.md).
+
+## P2.1 module handoff
+
+Core now issues one-use 60-second grants and module-specific RS256 access credentials of at most 15 minutes. Current Hub membership is checked at both issuance and exchange. Service credentials remain server-only and hashed; grant consumption is atomic. Browser navigation uses a state-bound form POST and a clean module URL.
+
+Modules remain unavailable by default until an operator provisions keys and deploys each module's callback/session adapter. Core continues to run without module keys. See the [handoff contract](packages/contracts/module-handoff.md), [server configuration](server/README.md), and [P2.1 verification](docs/p2.1-evidence.md). Run both named guards with `npm run test:guards` in `server/`.

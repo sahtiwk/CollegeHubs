@@ -2,7 +2,9 @@ const path = require('path');
 const mongoose = require('mongoose');
 
 // Deliberate allowlist, extended only when later Core phases add their models.
-const resetCollections = ['posts', 'users', 'channels', 'hubs', 'colleges'];
+const resetCollections = ['modulegrants', 'posts', 'users', 'channels', 'hubs', 'colleges'];
+// Operator-provisioned service credentials are configuration, not disposable user data.
+const preservedCollections = ['servicecredentials'];
 class ResetGuardError extends Error {}
 
 function parseTarget(env, args) {
@@ -33,11 +35,11 @@ function parseTarget(env, args) {
 
 async function inspectDemo(db) {
   const collections = await db.listCollections({}, { nameOnly: true }).toArray();
-  if (collections.some(({ name }) => !resetCollections.includes(name))) {
+  if (collections.some(({ name }) => ![...resetCollections, ...preservedCollections].includes(name))) {
     throw new ResetGuardError('Unknown collections found; stop and review the target before resetting');
   }
   const counts = {};
-  for (const name of resetCollections) counts[name] = await db.collection(name).countDocuments({});
+  for (const name of [...resetCollections, ...preservedCollections]) counts[name] = await db.collection(name).countDocuments({});
   // P0.2 only recognizes synthetic identities. Never treat a real college domain as disposable.
   const nonDemoUser = await db.collection('users').findOne({
     $or: [{ email: { $not: /@(?:[a-z0-9-]+\.)*example\.test$/ } }, { googleId: { $exists: true } }, { googleSubject: { $exists: true } }],

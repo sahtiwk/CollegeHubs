@@ -10,6 +10,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Contests from './pages/Contests';
 import AboutPage from './pages/Aboutpage';
+import ModuleHandoff from './pages/ModuleHandoff';
 function MembershipGate() {
   const { user, loading, error, refresh } = useAuth();
   const [message, setMessage] = useState('');
@@ -37,7 +38,9 @@ export default function App() {
   return <AuthProvider><HubThemeProvider><Routes>
     <Route path="/login" element={<Login />} /><Route path="/register" element={<Register />} />
     <Route path="/about" element={<AboutPage />} />
-    <Route element={<MembershipGate />}><Route element={<HubShell />}>
+    <Route element={<MembershipGate />}>
+      <Route path="/module-handoff" element={<ModuleHandoff />} />
+      <Route element={<HubShell />}>
       <Route path="/" element={<Dashboard />} /><Route path="/leaderboard" element={<Leaderboard />} /><Route path="/contests" element={<Contests />} />
     </Route></Route>
     <Route path="*" element={<Navigate to="/" replace />} />

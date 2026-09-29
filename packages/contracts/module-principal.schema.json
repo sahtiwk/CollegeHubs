@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CollegeHubs module access principal",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "iss",
+    "aud",
+    "sub",
+    "hubId",
+    "college",
+    "username",
+    "scope",
+    "iat",
+    "nbf",
+    "exp",
+    "jti",
+    "membershipVersion",
+    "themeVersion"
+  ],
+  "properties": {
+    "iss": {
+      "type": "string",
+      "minLength": 1
+    },
+    "aud": {
+      "enum": [
+        "collegehubs-arcade",
+        "collegehubs-interview",
+        "collegehubs-learn"
+      ]
+    },
+    "sub": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{24}$"
+    },
+    "hubId": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{24}$"
+    },
+    "college": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Display only; never an authorization field."
+    },
+    "username": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_.-]{3,50}$"
+    },
+    "scope": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "enum": [
+          "module:arcade",
+          "module:interview",
+          "module:learn"
+        ]
+      }
+    },
+    "iat": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "nbf": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "exp": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "jti": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "membershipVersion": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "themeVersion": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "description": "Structural contract only. Also require verified RS256 with pinned kid/issuer/audience/scope, nbf=iat<=now<exp, exp-iat<=900. Use module-token.cjs; decoding or schema validation alone never authenticates."
+}

@@ -71,7 +71,7 @@ npm run reset:demo -- --database=collegehubs_demo_local --confirm=collegehubs_de
 
 Both forms require explicit confirmation and acknowledgment that all records are disposable. Before any delete, the command checks the actual connected database name and refuses unknown collections, users outside `example.test` and its synthetic subdomains, and any Google-linked account. These checks cannot prove that arbitrary post text is disposable; the operator declaration and stopping writers are required. If real data appears, stop and design a separate reviewed migration. Do not broaden the allowlist to bypass a refusal.
 
-The reset deletes `posts`, `users`, `channels`, `hubs`, then `colleges`, preserving indexes; it never drops a database or unknown collections. It prints only the approved database name and collection counts, never a URI, credentials or record bodies. Deletion is not transactional; after a partial failure, keep writers stopped, inspect the target, then rerun only if it remains disposable. A dry run performs reads only.
+The reset deletes `modulegrants`, `posts`, `users`, `channels`, `hubs`, then `colleges`, preserving indexes and operator-managed `servicecredentials`; it never drops a database or unknown collections. It prints only the approved database name and collection counts, never a URI, credentials or record bodies. Deletion is not transactional; after a partial failure, keep writers stopped, inspect the target, then rerun only if it remains disposable. A dry run performs reads only.
 
 No user credentials are seeded. The reset now runs the P1.1 idempotent college registry seed and provisions active Hubs/four channels. It respects the same inactive-until-confirmed registry. P5/P6 must add problem/calendar seeds once those models exist. Unknown future collections still cause refusal. Module databases are outside this command's scope.
 
@@ -99,3 +99,13 @@ For a manual local check, use an isolated disposable replica set with two active
 After changing registry branding, increase `themeVersion` and rerun `npm run provision:hubs`. The next account refresh/navigation to a freshly loaded app fetches the current Hub version. API failure falls back to generic branding with a retry message, without selecting another college. A failed `/me` check blocks the workspace until retry succeeds.
 
 No additional automated UI suite or dependencies were introduced. G1 is the named regression guard. See [P1.2 evidence and screenshots](p1.2-evidence.md).
+
+## P2.1 local module integration
+
+No module is enabled by default. Ordinary Core development needs no module keys. For an isolated handoff fixture, generate ephemeral RSA/service credentials outside frontend env, provision a synthetic college/user plus a service credential in a disposable replica set, and serve Core plus a callback stub through one localhost gateway origin. Set ENABLE_MODULES to only the stub module. The gateway must route auth/API requests before SPA fallbacks. Module UI ports alone cannot implement callback/session cookies.
+
+Follow the [shared handoff contract](../packages/contracts/module-handoff.md). A successful manual flow is Core sign-in -> full-document module auth/start -> state-bound Core form -> POST module callback -> server-to-server exchange -> 303 clean module URL. Verify secure path cookies, no second login, empty private/service-key browser exposure, and logout CSRF. Do not replace Origin/state checks with a permissive fallback when testing localhost. Core HTML uses strict-origin because no-referrer makes native form POST Origin null.
+
+The Core grant lasts at most 60 seconds and the module access/session at most 900 seconds. JWT verification and retention are separate; TTL cleanup does not authorize expired grants. Lost exchange responses require a new handoff. Service credentials are operator configuration and are preserved by the demo reset; module grants are disposable data. No event ingestion or module application conversion is included in P2.1.
+
+See [P2.1 verification](p2.1-evidence.md). Production key generation, secure storage and actual per-module release gating remain operator/deployment work.

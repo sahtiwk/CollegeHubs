@@ -148,3 +148,6 @@ dialog::backdrop { background: rgba(20, 5, 20, .5); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
 
 .hub-logo { display: inline-block; width: 28px; height: 28px; object-fit: contain; margin-right: 10px; vertical-align: middle; }
+.module-navigation { border-top: 1px solid var(--border); padding-top: 18px; }
+.module-unavailable { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px; font-size: .85rem; color: var(--text-muted); }
+.module-unavailable small { font-size: .65rem; }

@@ -9,7 +9,8 @@
     "seed": "node seed.js",
     "reset:demo": "node scripts/resetDemo.js",
     "provision:hubs": "node scripts/provisionHubs.js",
-    "test:guards": "node --test ../tests/guards/hub-isolation.test.js"
+    "test:guards": "node --test ../tests/guards/hub-isolation.test.js ../tests/guards/module-grants.test.js",
+    "provision:module-service": "node scripts/provisionModuleService.js"
   },
   "dependencies": {
     "axiom": "^0.43.0",
