@@ -35,3 +35,7 @@ Modules remain unavailable by default until an operator provisions keys and depl
 Core now has a service-only event endpoint, immutable receipts, semantic deduplication, transactional daily caps/balances and shared activity-day storage. Scoring remains inactive in normal startup until P6; existing profile/leaderboard reads are unchanged. Fixture rules verify the foundation without awarding live users.
 
 The [recovery contract](packages/contracts/reconciliation.md) specifies saved/pending results, bounded delivery, lost-receipt replay and owned-read/manual reconciliation for later module adapters. There is no automatic-delivery scheduler. Run G1/G2/G3 via `npm run test:guards` in server; G3 transaction cases require a disposable local replica set as described in the [development guide](docs/development.md). See [P2.2 evidence](docs/p2.2-evidence.md).
+
+## P3.1 Learn session spike
+
+The standalone Next app now has a Clerk-free Core handoff, PostgreSQL-backed opaque sessions, protected session page/API and CSRF-protected logout. All unconverted Learn routes remain gated. Local browser and outage checks pass; production module navigation stays disabled pending P3.2 staging/routing checks. See [Learn setup](MargaAI-master/README.md) and [P3.1 evidence](docs/p3.1-evidence.md).

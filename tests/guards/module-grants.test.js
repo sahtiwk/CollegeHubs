@@ -1,5 +1,49 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+
+test('G2: Learn validates its actual exchange boundary and rejects an Arcade credential', () => {
+  const { validateExchange } = require('../../MargaAI-master/src/lib/sessionBoundary.cjs');
+  const claims = { iss: 'collegehubs-core', aud: 'collegehubs-arcade', sub: id(1), hubId: id(10), college: 'Fixture College', username: 'alice', scope: ['module:arcade'], iat: Math.floor(Date.now() / 1000), nbf: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 900, jti: require('node:crypto').randomUUID(), membershipVersion: 1, themeVersion: 1 };
+  const token = jwt.sign(claims, keyPair.privateKey, { algorithm: 'RS256', keyid: 'fixture-rsa' });
+  assert.throws(() => validateExchange({ token }, { issuer: claims.iss, publicKeys: { 'fixture-rsa': keyPair.publicKey } }));
+});
+
+test('G2: Learn consumes callback state once; outage requires a fresh handoff and cannot save a session', async () => {
+  const { createSessionStore } = require('../../MargaAI-master/src/lib/sessionBoundary.cjs');
+  const state = opaque(); let available = true, saved = false, calls = 0;
+  const pool = { query: async sql => {
+    if (sql.startsWith('DELETE FROM module_handoff WHERE state_hash=')) { const rowCount = available ? 1 : 0; available = false; return { rowCount }; }
+    saved = true; return { rowCount: 1 };
+  } };
+  const store = createSessionStore(pool, { origin: 'http://localhost:5173', core: 'http://localhost:5000', serviceKey: 'fixture' }, async () => { calls++; throw new Error('Core stopped'); });
+  const input = { origin: 'http://localhost:5173', cookieState: state, state, grant: opaque(), module: 'learn' };
+  await assert.rejects(store.callback({ ...input, origin: 'https://foreign.example' }), { code: 'CALLBACK_STATE_INVALID' });
+  await assert.rejects(store.callback({ ...input, state: opaque() }), { code: 'CALLBACK_STATE_INVALID' });
+  await assert.rejects(store.callback(input), { code: 'HANDOFF_RESTART_REQUIRED' });
+  await assert.rejects(store.callback(input), { code: 'CALLBACK_REPLAYED' });
+  assert.equal(calls, 1); assert.equal(saved, false);
+});
+
+test('G2: Learn validates Hub theme, stores opaque hashes and exposes no JWT in the session DTO', async () => {
+  const { validateExchange, createSessionStore, sessionDto } = require('../../MargaAI-master/src/lib/sessionBoundary.cjs');
+  const iat = Math.floor(Date.now() / 1000);
+  const claims = { iss: 'collegehubs-core', aud: 'collegehubs-learn', sub: id(1), hubId: id(10), college: 'Fixture College', username: 'alice', scope: ['module:learn'], iat, nbf: iat, exp: iat + 900, jti: require('node:crypto').randomUUID(), membershipVersion: 1, themeVersion: 1 };
+  const result = { token: jwt.sign(claims, keyPair.privateKey, { algorithm: 'RS256', keyid: 'fixture-rsa' }), returnPath: '/learn', theme: { hubId: id(10), name: 'Fixture College', themeVersion: 1, tokens: registry.defaultTheme } };
+  const cfg = { origin: 'http://localhost:5173', core: 'http://localhost:5000', issuer: claims.iss, publicKeys: { 'fixture-rsa': keyPair.publicKey }, serviceKey: 'fixture' };
+  assert.equal(validateExchange(result, cfg).principal.sub, id(1));
+  assert.throws(() => validateExchange({ ...result, theme: { ...result.theme, hubId: id(20) } }, cfg));
+  assert.throws(() => validateExchange({ ...result, theme: { ...result.theme, tokens: { ...registry.defaultTheme, accent: 'url(https://foreign.example)' } } }, cfg));
+  let stored;
+  const pool = { query: async (sql, params) => { if (sql.startsWith('INSERT')) stored = params; return { rowCount: 1 }; } };
+  const store = createSessionStore(pool, cfg, async () => new Response(JSON.stringify(result)));
+  const state = opaque();
+  const session = await store.callback({ origin: cfg.origin, cookieState: state, state, grant: opaque(), module: 'learn' });
+  assert.equal(stored[0], digest(session.handle)); assert.notEqual(stored[0], session.handle);
+  assert.equal(stored.some(value => value === result.token), false);
+  const dto = sessionDto({ user_id: stored[1], hub_id: stored[2], principal: JSON.parse(stored[3]), theme: JSON.parse(stored[4]), expires_at: stored[5] }, session.handle);
+  assert.deepEqual(Object.keys(dto).sort(), ['college','csrfToken','expiresAt','hubId','theme','userId','username']);
+  assert.equal(digest(dto.csrfToken), stored[6]);
+});
 process.env.JWT_SECRET = 'g2-isolated-fixture-core-secret';
 process.env.ALLOWED_ORIGINS = 'http://localhost:5173';
 process.env.ENABLE_MODULES = '';

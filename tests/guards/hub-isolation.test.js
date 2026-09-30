@@ -15,6 +15,15 @@ const { normalizeDomain } = require('../../server/config/collegeRegistry');
 
 const id = value => value.toString(16).padStart(24, '0');
 
+test('G1: Learn session ownership denies foreign, missing-Hub and expired rows', () => {
+  const { authorizeSession } = require('../../MargaAI-master/src/lib/sessionBoundary.cjs');
+  const row = { user_id: id(1), hub_id: id(10), expires_at: new Date((Math.floor(Date.now() / 1000) + 60) * 1000), principal: { sub: id(1), hubId: id(10), exp: Math.floor(Date.now() / 1000) + 60 } };
+  assert.ok(authorizeSession(row, { userId: id(1), hubId: id(10) }));
+  for (const owner of [{ userId: id(2), hubId: id(10) }, { userId: id(1), hubId: id(20) }]) assert.throws(() => authorizeSession(row, owner));
+  assert.throws(() => authorizeSession({ ...row, hub_id: null }));
+  assert.throws(() => authorizeSession({ ...row, expires_at: new Date(0) }));
+});
+
 test('G1: a signed Core user cannot submit module events for either Hub', async () => {
   await withApi(async request => {
     const response = await request('/aura/events', users[0], 'POST', { userId: id(2), hubId: id(20), awardedAura: 100 });

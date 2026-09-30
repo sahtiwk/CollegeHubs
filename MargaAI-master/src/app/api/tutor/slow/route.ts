@@ -1,0 +1,25 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { TutorAgent } from '@/services/tutorAgent';
+import { auth } from '@clerk/nextjs/server';
+
+export async function POST(req: NextRequest) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { nodeId, query } = body;
+
+    if (!query) {
+      return NextResponse.json({ success: false, message: 'query is required' }, { status: 400 });
+    }
+
+    const result = await TutorAgent.getSlowPathAnswer(userId, nodeId, query);
+    return NextResponse.json(result);
+  } catch (error: any) {
+    console.error('Error in tutor slow path:', error);
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  }
+}

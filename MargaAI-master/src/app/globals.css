@@ -1,0 +1,289 @@
+@import "tailwindcss";
+
+:root {
+  /* =========================================
+     CORE PALETTE (Studio Light)
+     ========================================= */
+  --bg-page: #FCFCFD;
+  --bg-surface: #FFFFFF;
+
+  --text-primary: #111827; /* Deep slate for high contrast */
+  --text-secondary: #4B5563; /* Medium slate */
+  --text-tertiary: #9CA3AF;
+  
+  --brand-slate-deep: #0F172A;
+  --brand-slate-primary: #334155;
+  --brand-blue-navy: #1E3A8A;
+  --brand-blue-soft: #EFF6FF;
+  
+  --brand-gradient: linear-gradient(135deg, var(--brand-slate-deep), var(--brand-blue-navy));
+
+  /* =========================================
+     NODE STATUS PALETTE
+     ========================================= */
+  --status-locked-bg: #F3F4F6;
+  --status-locked-text: #9CA3AF;
+  
+  --status-unlocked-bg: #EFF6FF;
+  --status-unlocked-text: #1E3A8A;
+  
+  --status-in-progress-bg: #FFF7ED;
+  --status-in-progress-text: #EA580C;
+  
+  --status-completed-bg: #F0FDF4;
+  --status-completed-text: #16A34A;
+  
+  --status-test-out-bg: #FEFCE8;
+  --status-test-out-text: #CA8A04;
+  --status-test-out-shadow: 0 4px 14px 0 rgba(202, 138, 4, 0.15);
+
+  /* =========================================
+     TYPOGRAPHY
+     ========================================= */
+  --font-sans: 'Space Grotesk', system-ui, sans-serif;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+
+  /* =========================================
+     SPACING & LAYOUT
+     ========================================= */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-pill: 9999px;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-glass: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+}
+
+/* =========================================
+   RESET & BASE STYLES
+   ========================================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--brand-slate-deep);
+  letter-spacing: -0.02em;
+}
+
+p {
+  color: var(--text-secondary);
+}
+
+a {
+  color: var(--brand-blue-navy);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--brand-slate-deep);
+}
+
+/* =========================================
+   UTILITIES
+   ========================================= */
+.text-gradient {
+  background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: var(--space-6);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.1);
+}
+
+/* =========================================
+   COMPONENTS: PILL BUTTONS
+   ========================================= */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  gap: var(--space-2);
+}
+
+.pill:active {
+  transform: scale(0.96);
+}
+
+.pill:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Primary: Navy Blue */
+.pill-primary {
+  background-color: var(--brand-blue-navy);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px 0 rgba(30, 58, 138, 0.2);
+}
+
+.pill-primary:hover:not(:disabled) {
+  background-color: #172554;
+  box-shadow: 0 6px 20px 0 rgba(30, 58, 138, 0.3);
+}
+
+/* Secondary: Deep Slate */
+.pill-secondary {
+  background-color: var(--brand-slate-deep);
+  color: #FFFFFF;
+}
+
+.pill-secondary:hover:not(:disabled) {
+  background-color: var(--text-primary);
+}
+
+/* Outline: Subtle */
+.pill-outline {
+  background-color: transparent;
+  color: var(--brand-slate-primary);
+  border: 1px solid #E5E7EB;
+}
+
+.pill-outline:hover:not(:disabled) {
+  background-color: var(--bg-surface);
+  border-color: #D1D5DB;
+  color: var(--brand-slate-deep);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Ghost: Soft Blue Tint */
+.pill-ghost {
+  background-color: var(--brand-blue-soft);
+  color: var(--brand-blue-navy);
+}
+
+.pill-ghost:hover:not(:disabled) {
+  background-color: #DBEAFE;
+}
+
+/* =========================================
+   COMPONENTS: NODE STATUS BADGES
+   ========================================= */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+}
+
+.status-badge.locked {
+  background-color: var(--status-locked-bg);
+  color: var(--status-locked-text);
+}
+
+.status-badge.unlocked {
+  background-color: var(--status-unlocked-bg);
+  color: var(--status-unlocked-text);
+}
+
+.status-badge.in-progress {
+  background-color: var(--status-in-progress-bg);
+  color: var(--status-in-progress-text);
+}
+
+.status-badge.completed {
+  background-color: var(--status-completed-bg);
+  color: var(--status-completed-text);
+}
+
+.status-badge.test-out {
+  background-color: var(--status-test-out-bg);
+  color: var(--status-test-out-text);
+  box-shadow: var(--status-test-out-shadow);
+}
+
+/* =========================================
+   ANIMATIONS
+   ========================================= */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(30, 58, 138, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(30, 58, 138, 0.8);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
