@@ -3,9 +3,9 @@ const assert = require('node:assert/strict');
 process.env.JWT_SECRET = 'g3-disposable-fixture-secret';
 process.env.ALLOWED_ORIGINS = 'http://localhost:5173';
 process.env.ENABLE_MODULES = '';
-require('../../server/node_modules/mongoose').set('autoCreate', false).set('autoIndex', false);
-const { createApp } = require('../../server/app');
-const { validateEvent, canonicalJson } = require('../../server/services/auraEventService');
+require('mongoose').set('autoCreate', false).set('autoIndex', false);
+const { createApp } = require('../../services/core/app');
+const { validateEvent, canonicalJson } = require('../../services/core/services/auraEventService');
 
 test('G3: payload hashing is independent of property order and unsupported/unsafe payloads fail', () => {
   assert.equal(canonicalJson({ b: 2, a: { d: 4, c: 3 } }), canonicalJson({ a: { c: 3, d: 4 }, b: 2 }));
@@ -27,10 +27,10 @@ test('G3: event ingestion requires a service credential, never a browser score',
 // Run with GUARD_MONGO_URI pointing ONLY to a disposable replica-set database.
 // No .env loading, provider calls, dependency downloads or existing database reset.
 test('G3: transactional receipt, caps, principal and recovery boundaries', { skip: !process.env.GUARD_MONGO_URI }, async t => {
-  const mongoose = require('../../server/node_modules/mongoose');
+  const mongoose = require('mongoose');
   const { randomUUID } = require('node:crypto');
-  const { digest, opaque } = require('../../server/services/moduleTokenService');
-  const { createAuraEventService } = require('../../server/services/auraEventService');
+  const { digest, opaque } = require('../../services/core/services/moduleTokenService');
+  const { createAuraEventService } = require('../../services/core/services/auraEventService');
   const rules = { version: 'fixture-v1', timezone: 'Asia/Kolkata', timezonePolicyVersion: 1,
     types: {
       'arcade.game_completed': { weight: 5, countCap: 3, sourceCap: 30 },
@@ -39,7 +39,7 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
       'learn.node_mastered': { weight: 15, countCap: 100, sourceCap: 100 },
     } };
   const names = ['College', 'Hub', 'User', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'];
-  const models = Object.fromEntries(names.map(name => [name, require('../../server/models/' + name)]));
+  const models = Object.fromEntries(names.map(name => [name, require('../../services/core/models/' + name)]));
   const dbName = 'collegehubs_demo_g3_' + randomUUID().replaceAll('-', '');
   const uri = new URL(process.env.GUARD_MONGO_URI);
   assert.ok(['127.0.0.1', 'localhost'].includes(uri.hostname), 'Guard DB must be local and disposable');
@@ -47,7 +47,7 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
   let server;
   try {
     await Promise.all(Object.values(models).map(async model => { await model.createCollection(); await model.createIndexes(); }));
-    const theme = require('../../server/config/collegeRegistry').config.defaultTheme;
+    const theme = require('../../services/core/config/collegeRegistry').config.defaultTheme;
     const college = await models.College.create({ name: 'G3 Fixture', slug: dbName.replaceAll('_', '-'), status: 'active', timezone: 'Asia/Kolkata',
       domains: [{ normalizedDomain: 'g3.example.test', verifiedAt: new Date(), evidenceRef: 'synthetic fixture' }] });
     const hub = await models.Hub.create({ name: college.name, slug: college.slug, collegeId: college.id, themeTokens: theme, themeVersion: 1, timezone: college.timezone });
@@ -144,7 +144,8 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
       await models.ModuleGrant.updateOne({ _id: bindings.arcade.id }, { $set: { accessExpiresAt: new Date(Date.now() - 1000) } });
       const past = { ...event(), occurredAt: new Date(Date.now() - 2000).toISOString() };
       assert.equal((await post(past)).status, 201);
-      assert.equal((await post(event())).status, 403);
+      // Use a fact after expiry, not the suite's captured start timestamp.
+      assert.equal((await post({ ...event(), occurredAt: new Date().toISOString() })).status, 403);
       assert.equal((await post({ ...event(), occurredAt: new Date(Date.now() + 60000).toISOString() })).status, 400);
       assert.equal((await post({ ...past, eventId: past.eventId + ':old', occurredAt: new Date(Date.now() - 31 * 86400000).toISOString() })).status, 400);
       await models.ModuleGrant.updateOne({ _id: bindings.arcade.id }, { $set: { retainUntil: new Date(Date.now() - 1000) } });

@@ -1,22 +1,79 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+
+test('G1: real Learn SQL keeps two users, Hubs and themes separate through the gateway', { skip: !process.env.GUARD_APP_ORIGIN || !process.env.GUARD_LEARN_DATABASE_URL }, async () => {
+  const { Pool } = require('pg');
+  const { createSessionStore } = require('../../services/learn/src/auth/sessionBoundary.cjs');
+  const base = process.env.GUARD_APP_ORIGIN, db = new URL(process.env.GUARD_LEARN_DATABASE_URL);
+  assert.ok(['localhost', '127.0.0.1'].includes(new URL(base).hostname));
+  assert.ok(['localhost', '127.0.0.1'].includes(db.hostname)); assert.match(db.pathname, /^\/collegehubs_demo_learn_/);
+  const pool = new Pool({ connectionString: db.toString() });
+  async function account(email) {
+    const jar = new Map();
+    const call = async (path, body, token) => {
+      const response = await fetch(base + path, { method: body ? 'POST' : 'GET', headers: { Origin: base, ...(body ? { 'Content-Type': 'application/json' } : {}), ...(token ? { Authorization: 'Bearer ' + token } : {}), Cookie: [...jar].map(([k,v]) => k + '=' + v).join('; ') }, ...(body ? { body: JSON.stringify(body) } : {}) });
+      for (const value of response.headers.getSetCookie()) { const [k,v] = value.split(';')[0].split('='); jar.set(k,v); }
+      assert.ok(response.ok, path + ': ' + response.status); return response.json();
+    };
+    const core = await call('/api/auth/login', { email, password: 'Preview-only-32!' });
+    const { state } = await call('/api/learn/auth/start', {});
+    const issued = await call('/api/auth/module-grants', { module: 'learn', state, returnPath: '/learn' }, core.token);
+    await call('/api/learn/auth/callback', { module: 'learn', state, grant: issued.grant });
+    const dto = await call('/api/learn/session'), graph = await call('/api/learn/spike/graph');
+    assert.equal(dto.userId, core.user._id); assert.equal(dto.hubId, core.user.hubId);
+    assert.equal(graph.userId, dto.userId); assert.equal(graph.hubId, dto.hubId);
+    return { dto, handle: jar.get('ch_learn_session') };
+  }
+  try {
+    const a = await account('preview@cvr.ac.in'), b = await account('preview@sky.example.test');
+    assert.notEqual(a.dto.userId, b.dto.userId); assert.notEqual(a.dto.hubId, b.dto.hubId);
+    assert.equal(a.dto.theme.tokens.background, '#F4ECD6'); assert.equal(b.dto.theme.tokens.background, '#DFF7FF');
+    const store = createSessionStore(pool, { origin: base });
+    await assert.rejects(store.get(a.handle, { userId: b.dto.userId, hubId: b.dto.hubId }), { status: 401 });
+    await assert.rejects(store.get(a.handle, { userId: b.dto.userId, hubId: a.dto.hubId }), { status: 401 });
+    assert.equal((await store.get(a.handle, { userId: a.dto.userId, hubId: a.dto.hubId })).hub_id, a.dto.hubId);
+  } finally { await pool.end(); }
+});
 process.env.JWT_SECRET = 'isolated-guard-fixture-secret-not-for-deployment';
 process.env.ALLOWED_ORIGINS = 'http://localhost:5173';
 process.env.GOOGLE_CLIENT_ID = 'guard-google-client';
-const { createApp } = require('../../server/app');
-const User = require('../../server/models/User');
-const Hub = require('../../server/models/Hub');
-const College = require('../../server/models/College');
-const Post = require('../../server/models/Post');
-const Channel = require('../../server/models/Channel');
-const { generateToken, verifyToken } = require('../../server/config/auth');
-const { getUserHubs, requireHubAccess, scopedFilter } = require('../../server/services/hubAccess');
-const { normalizeDomain } = require('../../server/config/collegeRegistry');
+process.env.ENABLE_MODULES = '';
+const { createApp } = require('../../services/core/app');
+const User = require('../../services/core/models/User');
+const Hub = require('../../services/core/models/Hub');
+const College = require('../../services/core/models/College');
+const Post = require('../../services/core/models/Post');
+const Channel = require('../../services/core/models/Channel');
+const { generateToken, verifyToken } = require('../../services/core/config/auth');
+const { getUserHubs, requireHubAccess, scopedFilter } = require('../../services/core/services/hubAccess');
+const { normalizeDomain } = require('../../services/core/config/collegeRegistry');
 
 const id = value => value.toString(16).padStart(24, '0');
 
+test('G1: confirmed CVR registry uses only the exact active domain', () => {
+  const cvr = require('../../services/core/config/collegeRegistry').config.colleges.find(item => item.slug === 'cvr');
+  assert.equal(cvr.status, 'active');
+  assert.deepEqual(cvr.domains.map(item => item.normalizedDomain), ['cvr.ac.in']);
+  assert.match(cvr.domains[0].evidenceRef, /user-confirmed/);
+});
+
+test('G1: Learn theme cache is bound to Hub and version, sanitized and isolated', async () => {
+  const { createThemeCache } = await import('../../apps/web/src/features/learn/hubTheme.ts');
+  const cache = createThemeCache();
+  const tokens = require('../../services/core/config/collegeRegistry').config.defaultTheme;
+  const a = { hubId: id(10), themeVersion: 1, name: 'A', tokens };
+  const b = { hubId: id(20), themeVersion: 1, name: 'B', tokens: { ...tokens, background: '#DFF7FF' } };
+  assert.equal(cache.read(a, id(10), 1).tokens.background, '#F4ECD6');
+  assert.equal(cache.read(b, id(20), 1).tokens.background, '#DFF7FF');
+  assert.equal(cache.read(a, id(10), 1).tokens.background, '#F4ECD6');
+  assert.throws(() => cache.read(b, id(10), 1));
+  assert.throws(() => cache.read(a, id(10), 2));
+  assert.throws(() => cache.read({ ...a, tokens: { ...tokens, background: 'url(evil)' } }, id(10), 1));
+  assert.equal(cache.read({ ...a, themeVersion: 2, tokens: { ...tokens, background: '#FFD3B6' } }, id(10), 2).tokens.background, '#FFD3B6');
+});
+
 test('G1: Learn session ownership denies foreign, missing-Hub and expired rows', () => {
-  const { authorizeSession } = require('../../MargaAI-master/src/lib/sessionBoundary.cjs');
+  const { authorizeSession } = require('../../services/learn/src/auth/sessionBoundary.cjs');
   const row = { user_id: id(1), hub_id: id(10), expires_at: new Date((Math.floor(Date.now() / 1000) + 60) * 1000), principal: { sub: id(1), hubId: id(10), exp: Math.floor(Date.now() / 1000) + 60 } };
   assert.ok(authorizeSession(row, { userId: id(1), hubId: id(10) }));
   for (const owner of [{ userId: id(2), hubId: id(10) }, { userId: id(1), hubId: id(20) }]) assert.throws(() => authorizeSession(row, owner));
@@ -158,7 +215,7 @@ test('G1: own rank counts only this Hub even outside the first fifty', () => wit
   assert.ok(response.data.items.every(row => row.username !== 'bob'));
 }));
 test('G1: themes/channels are scoped, allowlisted DTOs; labels never change membership', () => withApi(async request => {
-  const { config } = require('../../server/config/collegeRegistry');
+  const { config } = require('../../services/core/config/collegeRegistry');
   hubs[0].themeTokens = { ...config.defaultTheme }; hubs[0].themeVersion = 2;
   hubs[0].name = '<script>literal name</script>'; hubs[0].logoUrl = 'https://unapproved.example/logo.svg';
   users[0].college = 'B iiit iit'; hubs[0].verifiedEmailDomains = ['private.example.test'];
@@ -271,7 +328,7 @@ test('G1: OAuth-only identities validate without a password; password identities
   await assert.rejects(new User({ username: 'passwordfixture', email: 'p@a.example.test' }).validate());
 });
 test('G1: untrusted Google identity claims cannot enter membership assignment', async () => {
-  const { OAuth2Client } = require('../../server/node_modules/google-auth-library');
+  const { OAuth2Client } = require('google-auth-library');
   const original = OAuth2Client.prototype.verifyIdToken;
   const valid = { iss: 'https://accounts.google.com', aud: 'guard-google-client', sub: 'guard-sub', email: 'g@a.example.test', email_verified: true, exp: Math.floor(Date.now() / 1000) + 60 };
   try {

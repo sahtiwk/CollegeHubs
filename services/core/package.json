@@ -1,0 +1,29 @@
+{
+  "name": "@collegehubs/core",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js",
+    "seed": "node seed.js",
+    "reset:demo": "node scripts/resetDemo.js",
+    "provision:hubs": "node scripts/provisionHubs.js",
+    "test:guards": "npm run test:guards --prefix ../..",
+    "provision:module-service": "node scripts/provisionModuleService.js",
+    "build": "node ../../scripts/check-core.cjs"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.19.2",
+    "google-auth-library": "^9.15.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.10.0",
+    "@collegehubs/contracts": "1.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

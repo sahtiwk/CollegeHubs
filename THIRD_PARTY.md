@@ -1,10 +1,10 @@
 # Third-party notices
 
-The imported applications remain in their original directories with independent package manifests and lockfiles. Reuse rights are settled under decision D1 in `implementation_plan_mvp.md`; this file preserves attribution and does not replace dependency or media notices.
+The imported applications remain in their legacy reference directories with their original manifests, lockfiles and notices. Reuse rights are settled under decision D1 in `implementation_plan_mvp.md`; this file preserves attribution and does not replace dependency or media notices.
 
 ## CollegeHubs Interview / AI-Interviewer-main
 
-Source location: `AI-Interviewer-main/`. The original `AI-Interviewer-main/LICENSE` is retained. Its complete MIT notice follows verbatim:
+Source location: `legacy/AI-Interviewer-main/`. The original `legacy/AI-Interviewer-main/LICENSE` is retained. Its complete MIT notice follows verbatim:
 
 ```text
 MIT License
@@ -32,12 +32,14 @@ SOFTWARE.
 
 ## CollegeHubs Arcade / digital-arcade-main
 
-Source location: `digital-arcade-main/code and stuff/`. Preserve the rights notice in `digital-arcade-main/README.md`; do not relicense it as MIT. Module code and assets have not been moved into the Core build.
+Source location: `legacy/digital-arcade-main/code and stuff/`. Preserve the rights notice in `legacy/digital-arcade-main/README.md`; do not relicense it as MIT. Module code and assets have not been moved into the Core build.
 
 ## CollegeHubs Learn / MargaAI-master
 
-Source location: `MargaAI-master/`. The supplied snapshot has no standalone license notice identified in the module audit. D1 records the project's reuse authorization; this file does not invent an upstream license.
+Source location: `legacy/MargaAI-master/`. The supplied snapshot has no standalone license notice identified in the module audit. D1 records the project's reuse authorization; this file does not invent an upstream license.
 
 ## Dependencies and assets
 
 Retain each package's dependency licenses and notices when distributing it. Repository rights do not automatically establish rights to third-party portraits, images, audio, fonts or externally linked learning resources. Human notice/media-provenance review remains part of the plan; no such review or external license certification is claimed here.
+
+P3.2 ports the MargaAI RoadmapView topological layout into the shared frontend, and its P3.1 SQL/session boundary into the Learn API. The remaining source is retained for later phases.

@@ -1,0 +1,77 @@
+# Repo-root context includes the lock and shared contracts.
+previews:
+  generation: "off"
+services:
+  - type: web
+    name: collegehubs-core
+    runtime: node
+    plan: free
+    buildCommand: node deploy/build.mjs core
+    startCommand: npm start --workspace @collegehubs/core
+    healthCheckPath: /health/ready
+    buildFilter:
+      paths:
+        - services/core/**
+        - packages/contracts/**
+        - scripts/check-core.cjs
+        - deploy/build.mjs
+        - package.json
+        - package-lock.json
+        - render.yaml
+    envVars:
+      - key: NODE_VERSION
+        value: 24.12.0
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: APP_ORIGIN
+        sync: false
+      - key: ENABLE_MODULES
+        value: learn
+      - key: CORE_MODULE_PRIVATE_KEY
+        sync: false
+      - key: CORE_MODULE_KEY_ID
+        sync: false
+      - key: CORE_MODULE_PUBLIC_KEYS
+        sync: false
+  - type: web
+    name: collegehubs-learn
+    runtime: node
+    plan: free
+    buildCommand: node deploy/build.mjs learn
+    startCommand: npm start --workspace @collegehubs/learn
+    healthCheckPath: /health/ready
+    buildFilter:
+      paths:
+        - services/learn/**
+        - packages/contracts/**
+        - deploy/build.mjs
+        - package.json
+        - package-lock.json
+        - render.yaml
+    envVars:
+      - key: NODE_VERSION
+        value: 24.12.0
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: APP_ORIGIN
+        sync: false
+      - key: CORE_API_BASE_URL
+        sync: false
+      - key: CORE_TOKEN_ISSUER
+        value: collegehubs-core
+      - key: CORE_TOKEN_AUDIENCE
+        value: collegehubs-learn
+      - key: CORE_PUBLIC_KEY
+        sync: false
+      - key: CORE_KEY_ID
+        sync: false
+      - key: CORE_SERVICE_KEY
+        sync: false

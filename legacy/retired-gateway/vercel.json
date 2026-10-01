@@ -1,0 +1,16 @@
+{
+    "rewrites": [
+      {
+        "source": "/learn",
+        "destination": "/api/learn-unavailable"
+      },
+      {
+        "source": "/learn/:path*",
+        "destination": "/api/learn-unavailable"
+      },
+      {
+        "source": "/(.*)",
+        "destination": "/"
+      }
+    ]
+  }

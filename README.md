@@ -1,41 +1,19 @@
-# CollegeHubs Core
+# CollegeHubs
 
-A college-scoped community built with React/Vite and Express/Mongoose. The P1.2 shell uses configured college branding, a private college feed, profile editing, subject-channel discovery, and college-only Aura standings.
+One npm monorepo, one React frontend, independently deployable Core and Learn backends.
 
-## Run locally
+- `apps/web`: shared Vite SPA, Core shell/auth/theme and lazy Learn roadmap preview.
+- `services/core`: Express/MongoDB identity, Hub/feed and durable reward receipt foundation.
+- `services/learn`: Express/TypeScript/PostgreSQL session API and scoped synthetic graph.
+- `packages/contracts`: shared server credential contracts, no cross-service database access.
+- `legacy`: preserved imported projects/notices; excluded from active builds.
 
-Install dependencies in both the repository root and `server/`. Copy each package's `.env.example` to a local environment file and configure the names listed there. Start Core with `npm run dev` in `server/`, and Vite with `npm run dev` at the root. See [server setup](server/README.md) and [development instructions](docs/development.md).
+Use Node 24.12+ and `npm ci` at the root. Configure workspace `.env` files from their names-only examples, then `npm run dev`. Core needs a MongoDB replica set. Learn is started only when Core's `ENABLE_MODULES` includes `learn`; it needs its own PostgreSQL database and service configuration. The browser uses `/api`; it never connects to another UI application.
 
-Core requires a transaction-capable MongoDB replica set. Real college entries stay draft until their exact domains are confirmed; then run `npm run provision:hubs` from `server/`. Unknown domains receive an explanation and assignment retry, without access to a college feed.
+`npm run build` builds each active workspace. `npm run test:guards` runs G1?G3; full database checks require explicit disposable fixture inputs. See [development setup](docs/development.md), [free deployment](deploy/README.md), [migration record](docs/monorepo-migration.md), and [P3.2 acceptance status](docs/learn-spike.md).
 
-## Implemented through P1.2
+CVR's exact `cvr.ac.in` domain is active based on user confirmation. Provision explicitly with `npm run provision:hubs -w @collegehubs/core`; no startup reset runs. Unknown domains remain onboarding-only. The default palette remains plum/cream/peach/sky with Abril Fatface and Archivo.
 
-- Current identity and membership come from `/api/me`; cached display names never select a Hub.
-- Server-scoped feed, profile access, author population, bounded cursor pages, idempotent likes/unlikes, and server-calculated college ranking.
-- Safe Hub/theme/channel endpoints, hexadecimal token allowlists, approved HTTPS logos, and versioned theme refresh.
-- Plum/cream default with peach/pale-sky accents; Abril Fatface headings and Archivo body text, loaded from Google Fonts with system fallbacks.
-- Responsive navigation drawer with focus containment, Escape, focus restoration, profile dialogs, and keyboard-accessible forms.
+P0?P2 behavior is preserved. Learn currently demonstrates secure sessions and an integrated synthetic roadmap, not complete courses, progress, quizzes or rewards. Arcade/Interview ports, chat, rooms and live scoring remain later phases. Local browser acceptance and hosted acceptance are recorded separately; deployment configuration is not proof of deployment.
 
-Chat, module application integration, new Aura scoring, live contest schedules, and calendar export remain later phases. Existing stored Aura is displayed without fabricated scores or post rewards. The inherited About page is outside this scoped application-shell phase.
-
-Run the existing G1 guard with `node --test tests/guards/hub-isolation.test.js`. Build with `npx vite build`. No UI test suite was added.
-
-## Evidence
-
-[P0.1 security baseline](docs/p0.1-evidence.md) | [P0.2 development baseline](docs/p0.2-evidence.md) | [P1.1 identity](docs/p1.1-evidence.md) | [P1.2 shell and isolation](docs/p1.2-evidence.md). Imported module notices remain in [THIRD_PARTY.md](THIRD_PARTY.md).
-
-## P2.1 module handoff
-
-Core now issues one-use 60-second grants and module-specific RS256 access credentials of at most 15 minutes. Current Hub membership is checked at both issuance and exchange. Service credentials remain server-only and hashed; grant consumption is atomic. Browser navigation uses a state-bound form POST and a clean module URL.
-
-Modules remain unavailable by default until an operator provisions keys and deploys each module's callback/session adapter. Core continues to run without module keys. See the [handoff contract](packages/contracts/module-handoff.md), [server configuration](server/README.md), and [P2.1 verification](docs/p2.1-evidence.md). Run both named guards with `npm run test:guards` in `server/`.
-
-## P2.2 reward receipt foundation
-
-Core now has a service-only event endpoint, immutable receipts, semantic deduplication, transactional daily caps/balances and shared activity-day storage. Scoring remains inactive in normal startup until P6; existing profile/leaderboard reads are unchanged. Fixture rules verify the foundation without awarding live users.
-
-The [recovery contract](packages/contracts/reconciliation.md) specifies saved/pending results, bounded delivery, lost-receipt replay and owned-read/manual reconciliation for later module adapters. There is no automatic-delivery scheduler. Run G1/G2/G3 via `npm run test:guards` in server; G3 transaction cases require a disposable local replica set as described in the [development guide](docs/development.md). See [P2.2 evidence](docs/p2.2-evidence.md).
-
-## P3.1 Learn session spike
-
-The standalone Next app now has a Clerk-free Core handoff, PostgreSQL-backed opaque sessions, protected session page/API and CSRF-protected logout. All unconverted Learn routes remain gated. Local browser and outage checks pass; production module navigation stays disabled pending P3.2 staging/routing checks. See [Learn setup](MargaAI-master/README.md) and [P3.1 evidence](docs/p3.1-evidence.md).
+Historical evidence: [P0.1](docs/p0.1-evidence.md), [P0.2](docs/p0.2-evidence.md), [P1.1](docs/p1.1-evidence.md), [P1.2](docs/p1.2-evidence.md), [P2.1](docs/p2.1-evidence.md), [P2.2](docs/p2.2-evidence.md), [P3.1](docs/p3.1-evidence.md). Historical paths refer to their pre-migration locations. [Third-party notices](THIRD_PARTY.md) remain applicable.

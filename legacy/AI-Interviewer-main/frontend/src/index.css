@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #0f0f1a;
+    color: #f1f1ff;
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height: 100vh;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #13131f;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #4338ca;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #6366f1;
+  }
+
+  ::selection {
+    background: rgba(99, 102, 241, 0.4);
+  }
+}
+
+@layer components {
+  /* ── Buttons ─────────────────────────────────────── */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl
+           bg-gradient-to-r from-brand-600 to-brand-500 text-white font-semibold text-sm
+           shadow-brand hover:shadow-glow hover:from-brand-500 hover:to-brand-400
+           active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl
+           bg-surface-card border border-surface-border text-slate-300 font-semibold text-sm
+           hover:bg-surface-hover hover:border-brand-500 hover:text-white
+           active:scale-95 transition-all duration-200;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg
+           text-slate-400 text-sm font-medium hover:text-white hover:bg-surface-hover
+           transition-all duration-150;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl
+           bg-red-600/20 border border-red-500/30 text-red-400 font-semibold text-sm
+           hover:bg-red-600/40 hover:text-red-300 transition-all duration-200;
+  }
+
+  /* ── Cards ───────────────────────────────────────── */
+  .card {
+    @apply bg-surface-card border border-surface-border rounded-2xl shadow-card;
+  }
+
+  .card-glass {
+    @apply bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl shadow-card;
+  }
+
+  .card-hover {
+    @apply card hover:border-brand-500/50 hover:shadow-brand transition-all duration-300 cursor-pointer;
+  }
+
+  /* ── Form Fields ─────────────────────────────────── */
+  .form-label {
+    @apply block text-sm font-medium text-slate-300 mb-1.5;
+  }
+
+  .form-input {
+    @apply w-full px-4 py-3 rounded-xl bg-surface border border-surface-border
+           text-white placeholder-slate-500 text-sm
+           focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent
+           transition-all duration-200;
+  }
+
+  .form-textarea {
+    @apply form-input resize-none min-h-[120px];
+  }
+
+  .form-error {
+    @apply text-red-400 text-xs mt-1;
+  }
+
+  .form-select {
+    @apply form-input appearance-none cursor-pointer;
+  }
+
+  /* ── Badges ──────────────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold;
+  }
+
+  .badge-brand {
+    @apply badge bg-brand-600/20 text-brand-300 border border-brand-500/30;
+  }
+
+  .badge-success {
+    @apply badge bg-emerald-600/20 text-emerald-300 border border-emerald-500/30;
+  }
+
+  .badge-warning {
+    @apply badge bg-amber-600/20 text-amber-300 border border-amber-500/30;
+  }
+
+  .badge-danger {
+    @apply badge bg-red-600/20 text-red-300 border border-red-500/30;
+  }
+
+  .badge-slate {
+    @apply badge bg-slate-600/20 text-slate-300 border border-slate-500/30;
+  }
+
+  /* ── Gradient Text ───────────────────────────────── */
+  .gradient-text {
+    @apply bg-gradient-to-r from-brand-400 via-violet-400 to-purple-400 bg-clip-text text-transparent;
+  }
+
+  /* ── Progress Bar ────────────────────────────────── */
+  .progress-bar {
+    @apply h-2 rounded-full bg-surface-border overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full bg-gradient-to-r from-brand-600 to-brand-400 transition-all duration-500;
+  }
+
+  /* ── Section Divider ─────────────────────────────── */
+  .divider {
+    @apply border-t border-surface-border my-6;
+  }
+}

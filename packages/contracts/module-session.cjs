@@ -17,6 +17,6 @@ function requireMutation({ origin, expectedOrigin, csrfToken, csrfHash }) {
 function cookie(module, name, value, maxAge) {
   if (!names.has(module) || !['state', 'session'].includes(name) || (value && !/^[a-zA-Z0-9_-]{43}$/.test(value)) ||
       !Number.isSafeInteger(maxAge) || maxAge < 0 || maxAge > (name === 'state' ? 60 : 900)) throw new Error('Invalid cookie');
-  return 'ch_' + module + '_' + name + '=' + value + '; Path=/' + module + '; HttpOnly; Secure; SameSite=Lax; Max-Age=' + maxAge;
+  return 'ch_' + module + '_' + name + '=' + value + '; Path=/api/' + module + '; HttpOnly; Secure; SameSite=Lax; Max-Age=' + maxAge;
 }
 module.exports = { hash, opaque, matchesHash, requireCallback, requireMutation, cookie };

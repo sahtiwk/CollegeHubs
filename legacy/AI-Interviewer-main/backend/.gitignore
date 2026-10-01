@@ -1,0 +1,9 @@
+node_modules
+.env
+uploads
+logs
+dist
+coverage
+.vscode
+.idea
+.agent

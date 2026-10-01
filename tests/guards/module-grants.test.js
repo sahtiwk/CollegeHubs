@@ -1,15 +1,130 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
+test('G2: SPA coordinator deduplicates bootstrap and discards account-switch/logout/expired results', async () => {
+  const { createSessionCoordinator } = await import('../../apps/web/src/auth/moduleSessionState.js');
+  let token = 'alice'; const state = createSessionCoordinator(() => token);
+  let finish, calls = 0;
+  const work = () => { calls++; return new Promise(resolve => { finish = resolve; }); };
+  const old = state.run('alice:hub-a:1', work); const duplicate = state.run('alice:hub-a:1', work);
+  assert.equal(calls, 1); assert.equal(old, duplicate);
+  const alice = { userId: 'alice', expiresAt: new Date(Date.now() + 60000).toISOString() };
+  const bob = { userId: 'bob', expiresAt: alice.expiresAt };
+  token = 'bob'; state.clear(); const current = state.run('bob:hub-b:1', async () => bob);
+  finish(alice); await assert.rejects(old, { name: 'AbortError' }); assert.equal(await current, bob);
+  assert.equal(await state.run('bob:hub-b:1', () => { throw new Error('cached'); }), bob);
+  assert.equal(state.clear(), bob);
+  const pending = state.run('bob:hub-b:1', work); state.clear(); finish(bob); await assert.rejects(pending, { name: 'AbortError' });
+  await assert.rejects(state.run('bob:hub-b:1', async () => ({ ...bob, expiresAt: new Date(0).toISOString() })), /expired/);
+  // Even without an event, changed Core credentials invalidate a late response.
+  const changed = state.run('bob:hub-b:1', work); token = 'charlie'; finish(bob); await assert.rejects(changed, { name: 'AbortError' });
+});
+
+test('G2: real Core → gateway → Learn SQL bootstrap, isolation, replay, expiry and logout', { skip: !process.env.GUARD_APP_ORIGIN || !process.env.GUARD_LEARN_DATABASE_URL }, async () => {
+  const { Pool } = require('pg');
+  const db = new URL(process.env.GUARD_LEARN_DATABASE_URL);
+  assert.ok(['127.0.0.1', 'localhost'].includes(db.hostname)); assert.match(db.pathname, /^\/collegehubs_demo_learn_/);
+  const base = process.env.GUARD_APP_ORIGIN;
+  assert.ok(['127.0.0.1', 'localhost'].includes(new URL(base).hostname));
+  const pool = new Pool({ connectionString: db.toString() }); const jar = new Map();
+  const request = async (path, { method = 'GET', body, token, origin = base, csrf, cookies = true } = {}) => {
+    const response = await fetch(base + path, { method, redirect: 'manual', headers: { ...(origin ? { Origin: origin } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}), ...(token ? { Authorization: 'Bearer ' + token } : {}), ...(csrf ? { 'X-CSRF-Token': csrf } : {}), ...(cookies ? { Cookie: [...jar].map(([k,v]) => k + '=' + v).join('; ') } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
+    if (cookies) for (const value of response.headers.getSetCookie()) { const [key, val] = value.split(';')[0].split('='); jar.set(key, val); }
+    return response;
+  };
+  try {
+    const name = 'guard-' + require('node:crypto').randomBytes(5).toString('hex');
+    const registered = await request('/api/auth/register', { method: 'POST', body: { username: name, email: name + '@cvr.ac.in', password: 'Disposable-fixture-32!' } });
+    assert.equal(registered.status, 201); const core = await registered.json(); assert.equal(core.user.membershipStatus, 'active');
+    const bootstrap = async () => {
+      const started = await request('/api/learn/auth/start', { method: 'POST' }); assert.equal(started.status, 201);
+      const { state } = await started.json();
+      const grant = await request('/api/auth/module-grants', { method: 'POST', token: core.token, body: { module: 'learn', state, returnPath: '/learn' } }); assert.equal(grant.status, 201);
+      const issued = await grant.json(); assert.equal(issued.callbackPath, '/api/learn/auth/callback');
+      return { module: 'learn', state, grant: issued.grant };
+    };
+    let body = await bootstrap();
+    assert.equal((await request('/api/learn/auth/callback', { method: 'POST', body, origin: 'https://foreign.example' })).status, 403);
+    assert.equal((await request('/api/learn/auth/callback', { method: 'POST', body, cookies: false })).status, 403);
+    const good = await request('/api/learn/auth/callback', { method: 'POST', body }); assert.equal(good.status, 200);
+    assert.equal(good.headers.get('location'), null); assert.match(good.headers.get('set-cookie'), /Path=\/api\/learn/);
+    const dto = await (await request('/api/learn/session')).json();
+    assert.equal(dto.userId, core.user._id); assert.equal(dto.hubId, core.user.hubId); assert.equal(dto.membershipVersion, core.user.membershipVersion);
+    assert.equal(dto.theme.hubId, core.user.hubId); assert.equal(dto.token, undefined);
+    // Resend consumed state even with its old cookie: database, not cookie clearing, prevents replay.
+    jar.set('ch_learn_state', body.state);
+    assert.equal((await request('/api/learn/auth/callback', { method: 'POST', body })).status, 409);
+    const graph = await (await request('/api/learn/spike/graph')).json(); assert.equal(graph.userId, core.user._id); assert.equal(graph.hubId, core.user.hubId); assert.equal(graph.synthetic, true);
+    assert.equal((await request('/api/learn/spike/graph?hubId=' + id(999))).status, 400);
+    assert.equal((await request('/api/learn/spike/graph?userId=' + id(999))).status, 400);
+    assert.equal((await request('/api/learn/generate-dag')).status, 404);
+    assert.equal((await request('/api/unknown-route')).status, 404);
+    assert.equal((await request('/api/learn/logout', { method: 'POST', csrf: 'forged' })).status, 403);
+    assert.equal((await request('/api/learn/logout', { method: 'POST', csrf: dto.csrfToken, origin: null })).status, 403);
+    assert.equal((await request('/api/learn/logout', { method: 'POST', csrf: dto.csrfToken })).status, 200);
+    assert.equal((await request('/api/learn/session')).status, 401);
+    body = await bootstrap(); await pool.query('UPDATE module_handoff SET expires_at=now()-interval \'1 second\' WHERE state_hash=$1', [digest(body.state)]);
+    assert.equal((await request('/api/learn/auth/callback', { method: 'POST', body })).status, 409);
+    body = await bootstrap(); assert.equal((await request('/api/learn/auth/callback', { method: 'POST', body })).status, 200);
+    await pool.query('UPDATE module_session SET expires_at=now()-interval \'1 second\' WHERE session_hash=$1', [digest(jar.get('ch_learn_session'))]);
+    assert.equal((await request('/api/learn/session')).status, 401);
+  } finally { await pool.end(); }
+});
+
+test('G2: gateway preserves boundary headers/body/cookies and rejects redirect/open proxy/HTML', async () => {
+  const { proxyApi } = await import('../../apps/web/functions/api/[[path]].ts');
+  let target;
+  const fake = async (url, options) => { target = String(url); assert.equal(options.headers.get('origin'), 'https://app.example'); assert.equal(options.headers.get('x-csrf-token'), 'csrf'); assert.equal(options.headers.get('cookie'), 'ch_learn_session=opaque'); assert.equal(options.headers.get('authorization'), null); assert.equal(Buffer.from(options.body).toString(), '{"module":"learn"}'); return new Response('{}', { headers: { 'Content-Type': 'application/json', 'Set-Cookie': 'ch_learn_session=test; Path=/api/learn; HttpOnly; Secure; SameSite=Lax' } }); };
+  const req = () => new Request('https://app.example/api/learn/auth/callback', { method: 'POST', headers: { Origin: 'https://app.example', 'Content-Type': 'application/json', 'X-CSRF-Token': 'csrf', Cookie: 'ch_learn_session=opaque', Authorization: 'Bearer core-private' }, body: '{"module":"learn"}' });
+  const result = await proxyApi(req(), { LEARN_API_ORIGIN: 'https://learn.example' }, fake);
+  assert.equal(target, 'https://learn.example/api/learn/auth/callback'); assert.equal(result.status, 200); assert.match(result.headers.get('set-cookie'), /HttpOnly; Secure/);
+  assert.equal((await proxyApi(req(), { LEARN_API_ORIGIN: 'https://learn.example/path' }, fake)).status, 503);
+  assert.equal((await proxyApi(req(), { LEARN_API_ORIGIN: 'https://learn.example' }, async () => new Response('', { status: 302, headers: { Location: 'https://foreign.example' } }))).status, 502);
+  assert.equal((await proxyApi(req(), { LEARN_API_ORIGIN: 'https://learn.example' }, async () => new Response('<html>fallback</html>'))).status, 502);
+  assert.equal((await proxyApi(new Request('https://app.example/learn'), { LEARN_API_ORIGIN: 'https://learn.example' }, fake)).status, 400);
+  assert.equal((await proxyApi(new Request('https://app.example/api'), {}, fake)).status, 404);
+  assert.equal((await proxyApi(new Request('https://app.example/api/arcade/session'), { LEARN_API_ORIGIN: 'https://learn.example' }, fake)).status, 503);
+});
+
+test('G2: Learn HTTP adapter is JSON-only, scoped and fail-closed', async () => {
+  const { createApp: createLearnApp } = await import('../../services/learn/src/app.ts');
+  const state = 's'.repeat(43);
+  const app = createLearnApp({ config: { origin: 'http://localhost:5173', secure: false },
+    pool: { query: async () => ({ rows: [{ ok: 1 }] }) },
+    store: { start: async () => state, get: async () => { throw Object.assign(new Error('denied'), { status: 401 }); } } });
+  const server = app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve));
+  const base = 'http://127.0.0.1:' + server.address().port;
+  try {
+    assert.equal((await fetch(base + '/api/learn/auth/start', { method: 'POST' })).status, 403);
+    const response = await fetch(base + '/api/learn/auth/start', { method: 'POST', headers: { Origin: 'http://localhost:5173' } });
+    assert.equal(response.status, 201); assert.equal((await response.json()).state, state);
+    assert.match(response.headers.get('set-cookie'), /Path=\/api\/learn;/);
+    assert.equal(response.headers.get('location'), null);
+    assert.equal((await fetch(base + '/api/learn/session')).status, 401);
+    assert.equal((await fetch(base + '/api/learn/session?hubId=foreign')).status, 400);
+    const unavailable = await fetch(base + '/api/learn/generate-dag');
+    assert.equal(unavailable.status, 404); assert.match(unavailable.headers.get('content-type'), /json/);
+    assert.equal((await fetch(base + '/health/ready')).status, 200);
+  } finally { await new Promise(resolve => server.close(resolve)); }
+});
+
+test('G2: Learn raw URLs preserve one module prefix and reject redirects/traversal', async () => {
+  const { moduleUrl } = await import('../../apps/web/src/auth/moduleUrls.ts');
+  assert.equal(moduleUrl('/api/session'), '/api/learn/session');
+  assert.equal(moduleUrl('/api/learn/session'), '/api/learn/session');
+  assert.equal(moduleUrl('/'), '/api/learn');
+  for (const path of ['https://evil.test', '//evil.test', '/learn/learn/api/session', '/../api', '/%2e%2e/api', '/api\\session', '/api?token=secret']) assert.throws(() => moduleUrl(path));
+});
+
 test('G2: Learn validates its actual exchange boundary and rejects an Arcade credential', () => {
-  const { validateExchange } = require('../../MargaAI-master/src/lib/sessionBoundary.cjs');
+  const { validateExchange } = require('../../services/learn/src/auth/sessionBoundary.cjs');
   const claims = { iss: 'collegehubs-core', aud: 'collegehubs-arcade', sub: id(1), hubId: id(10), college: 'Fixture College', username: 'alice', scope: ['module:arcade'], iat: Math.floor(Date.now() / 1000), nbf: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 900, jti: require('node:crypto').randomUUID(), membershipVersion: 1, themeVersion: 1 };
   const token = jwt.sign(claims, keyPair.privateKey, { algorithm: 'RS256', keyid: 'fixture-rsa' });
   assert.throws(() => validateExchange({ token }, { issuer: claims.iss, publicKeys: { 'fixture-rsa': keyPair.publicKey } }));
 });
 
 test('G2: Learn consumes callback state once; outage requires a fresh handoff and cannot save a session', async () => {
-  const { createSessionStore } = require('../../MargaAI-master/src/lib/sessionBoundary.cjs');
+  const { createSessionStore } = require('../../services/learn/src/auth/sessionBoundary.cjs');
   const state = opaque(); let available = true, saved = false, calls = 0;
   const pool = { query: async sql => {
     if (sql.startsWith('DELETE FROM module_handoff WHERE state_hash=')) { const rowCount = available ? 1 : 0; available = false; return { rowCount }; }
@@ -25,7 +140,7 @@ test('G2: Learn consumes callback state once; outage requires a fresh handoff an
 });
 
 test('G2: Learn validates Hub theme, stores opaque hashes and exposes no JWT in the session DTO', async () => {
-  const { validateExchange, createSessionStore, sessionDto } = require('../../MargaAI-master/src/lib/sessionBoundary.cjs');
+  const { validateExchange, createSessionStore, sessionDto } = require('../../services/learn/src/auth/sessionBoundary.cjs');
   const iat = Math.floor(Date.now() / 1000);
   const claims = { iss: 'collegehubs-core', aud: 'collegehubs-learn', sub: id(1), hubId: id(10), college: 'Fixture College', username: 'alice', scope: ['module:learn'], iat, nbf: iat, exp: iat + 900, jti: require('node:crypto').randomUUID(), membershipVersion: 1, themeVersion: 1 };
   const result = { token: jwt.sign(claims, keyPair.privateKey, { algorithm: 'RS256', keyid: 'fixture-rsa' }), returnPath: '/learn', theme: { hubId: id(10), name: 'Fixture College', themeVersion: 1, tokens: registry.defaultTheme } };
@@ -41,13 +156,13 @@ test('G2: Learn validates Hub theme, stores opaque hashes and exposes no JWT in 
   assert.equal(stored[0], digest(session.handle)); assert.notEqual(stored[0], session.handle);
   assert.equal(stored.some(value => value === result.token), false);
   const dto = sessionDto({ user_id: stored[1], hub_id: stored[2], principal: JSON.parse(stored[3]), theme: JSON.parse(stored[4]), expires_at: stored[5] }, session.handle);
-  assert.deepEqual(Object.keys(dto).sort(), ['college','csrfToken','expiresAt','hubId','theme','userId','username']);
+  assert.deepEqual(Object.keys(dto).sort(), ['college','csrfToken','expiresAt','hubId','membershipVersion','theme','userId','username']);
   assert.equal(digest(dto.csrfToken), stored[6]);
 });
 process.env.JWT_SECRET = 'g2-isolated-fixture-core-secret';
 process.env.ALLOWED_ORIGINS = 'http://localhost:5173';
 process.env.ENABLE_MODULES = '';
-const { createApp } = require('../../server/app');
+const { createApp } = require('../../services/core/app');
 
 test('G2: exchange cannot be reached without a module service credential', async () => {
   const server = createApp({ connection: { readyState: 1 } }).listen(0);
@@ -62,18 +177,18 @@ test('G2: exchange cannot be reached without a module service credential', async
 });
 
 const { generateKeyPairSync } = require('node:crypto');
-const jwt = require('../../server/node_modules/jsonwebtoken');
-const { moduleConfig } = require('../../server/config/modules');
-const User = require('../../server/models/User');
-const Hub = require('../../server/models/Hub');
-const College = require('../../server/models/College');
-const ModuleGrant = require('../../server/models/ModuleGrant');
-const ServiceCredential = require('../../server/models/ServiceCredential');
-const { generateToken } = require('../../server/config/auth');
-const { issueGrant, exchangeGrant, authenticateService, opaque, digest } = require('../../server/services/moduleTokenService');
+const jwt = require('jsonwebtoken');
+const { moduleConfig } = require('../../services/core/config/modules');
+const User = require('../../services/core/models/User');
+const Hub = require('../../services/core/models/Hub');
+const College = require('../../services/core/models/College');
+const ModuleGrant = require('../../services/core/models/ModuleGrant');
+const ServiceCredential = require('../../services/core/models/ServiceCredential');
+const { generateToken } = require('../../services/core/config/auth');
+const { issueGrant, exchangeGrant, authenticateService, opaque, digest } = require('../../services/core/services/moduleTokenService');
 const { verifyModuleToken } = require('../../packages/contracts/module-token.cjs');
 const sessions = require('../../packages/contracts/module-session.cjs');
-const { config: registry } = require('../../server/config/collegeRegistry');
+const { config: registry } = require('../../services/core/config/collegeRegistry');
 const keyPair = generateKeyPairSync('rsa', { modulusLength: 2048, publicKeyEncoding: { type: 'spki', format: 'pem' }, privateKeyEncoding: { type: 'pkcs8', format: 'pem' } });
 const id = value => value.toString(16).padStart(24, '0');
 let user, hub, grants, credentials, restores, config, serviceKey, otherKey, activeCollege;
@@ -201,7 +316,7 @@ test('G2: callback state, Origin, mutation CSRF and module path cookies fail clo
     assert.throws(() => sessions.requireMutation({ origin, expectedOrigin: origin, csrfToken: csrf, csrfHash: sessions.hash(csrf), ...change }));
   }
   const cookie = sessions.cookie('arcade', 'session', opaque(), 900);
-  assert.ok(cookie.includes('Path=/arcade; HttpOnly; Secure; SameSite=Lax; Max-Age=900'));
+  assert.ok(cookie.includes('Path=/api/arcade; HttpOnly; Secure; SameSite=Lax; Max-Age=900'));
   assert.ok(!cookie.includes('Domain=')); assert.throws(() => sessions.cookie('arcade', 'session', opaque(), 901));
 });
 test('G2: signing configuration is optional when gated, but enabled settings cannot weaken lifetimes or keys', () => {

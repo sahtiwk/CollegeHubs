@@ -10,3 +10,5 @@ build/
 coverage/
 *.tsbuildinfo
 *.log
+.local/
+vercel.staging.json

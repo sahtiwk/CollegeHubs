@@ -1,0 +1,6 @@
+{
+  "name": "@collegehubs/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "exports": { "./module-token.cjs": "./module-token.cjs", "./module-session.cjs": "./module-session.cjs" }
+}

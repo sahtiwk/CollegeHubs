@@ -1,25 +1,24 @@
 {
-  "name": "socialstream",
+  "name": "collegehubs",
   "version": "1.0.0",
   "private": true,
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build --debug",
-    "preview": "vite preview"
+  "engines": {
+    "node": ">=24.12.0"
   },
-  "dependencies": {
-    "@react-oauth/google": "^0.12.2",
-    "axios": "^1.13.5",
-    "lucide-react": "^0.460.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.30.3"
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "npm run build --workspaces --if-present",
+    "build:web": "npm run build -w @collegehubs/web",
+    "build:core": "npm run build -w @collegehubs/core",
+    "build:learn": "npm run build -w @collegehubs/learn",
+    "test:guards": "node --test tests/guards/hub-isolation.test.js tests/guards/module-grants.test.js tests/guards/aura-events.test.js"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.0.0",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.35",
-    "tailwindcss": "^3.4.0",
-    "vite": "^5.0.0"
+    "mongodb-memory-server": "^10.4.1"
   }
 }

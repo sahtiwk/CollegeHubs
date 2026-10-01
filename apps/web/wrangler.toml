@@ -1,0 +1,5 @@
+name = "collegehubs-web"
+pages_build_output_dir = "./dist"
+compatibility_date = "2026-09-01"
+# Set CORE_API_ORIGIN and LEARN_API_ORIGIN in the Pages project's environment.
+# Service URLs are public configuration. Never put service keys in this gateway.
