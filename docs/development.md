@@ -43,3 +43,9 @@ Only G1/G2/G3 run with `npm run test:guards`. No environment file is loaded by g
 5. Verify Core?Learn without document navigation, deep-link reload, Back/Forward, 360px Menu/focus/keyboard, accessible roadmap list, two accounts/themes, reconnect on expiry, and Core usability with Learn/API DB unavailable. Save actual screenshots/evidence in `docs/learn-spike.md`.
 
 No live provider is needed. Learn data is explicitly synthetic; unconverted routes remain 404. Scoring remains inactive outside G3 fixture rules. The earlier Next/form handoff is archived in `legacy/retired-gateway`; do not deploy it alongside the active SPA.
+
+## P4.1 channels
+
+Subject spaces now link to `/channels/:id` in the same shell. Set `VITE_CORE_SOCKET_ORIGIN` to the direct Core origin (HTTPS for deployed builds, without a path); Core must allow the exact app Origin. Development defaults to Core on port 5000. The fixture injects port 5183 and explicitly allows both localhost and 127.0.0.1 on 5182 for separate test accounts. Production without the socket setting retains REST history/sending.
+
+The fixture now accepts `stop-core` and `start-core`, preserving its Mongo data for restart checks. `guards` supplies the fixture-only `GUARD_CORE_SIGNING_SECRET` to exercise token expiry. G1's channel integration checks fail rather than skip when their fixture is missing. See [P4.1 evidence](p4.1-evidence.md) for contracts, limits and the two-tab walkthrough.

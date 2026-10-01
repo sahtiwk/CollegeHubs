@@ -2,7 +2,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 
 // Deliberate allowlist, extended only when later Core phases add their models.
-const resetCollections = ['auraevents', 'aurabalances', 'auradaycounters', 'dailyactivities', 'modulegrants', 'posts', 'users', 'channels', 'hubs', 'colleges'];
+const resetCollections = ['auraevents', 'aurabalances', 'auradaycounters', 'dailyactivities', 'modulegrants', 'messages', 'posts', 'users', 'channels', 'hubs', 'colleges'];
 // Operator-provisioned service credentials are configuration, not disposable user data.
 const preservedCollections = ['servicecredentials'];
 class ResetGuardError extends Error {}

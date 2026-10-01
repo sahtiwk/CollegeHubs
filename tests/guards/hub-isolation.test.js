@@ -1,6 +1,120 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
+test('G1: channel recovery deduplicates persisted pages and rejects gaps or foreign cache data', async () => {
+  const { mergeHistory } = await import('../../apps/web/src/realtime/history.js');
+  const row = seq => ({ _id: 'message-' + seq, seq, hubId: 'hub-a', channelId: 'channel-a' });
+  const page = items => ({ hubId: 'hub-a', channelId: 'channel-a', items });
+  const first = mergeHistory([], page([row(20), row(21)]), 'hub-a', 'channel-a', null);
+  const next = mergeHistory(first.items, page([row(21), row(22)]), 'hub-a', 'channel-a', first.cursor);
+  assert.deepEqual(next.items.map(item => item.seq), [20, 21, 22]);
+  assert.equal(next.cursor, 22);
+  assert.throws(() => mergeHistory(next.items, page([row(24)]), 'hub-a', 'channel-a', 22));
+  assert.throws(() => mergeHistory([], page([row(1)]), 'hub-b', 'channel-a', null));
+  assert.throws(() => mergeHistory(next.items, page([{ ...row(22), _id: 'forged' }]), 'hub-a', 'channel-a', 22));
+});
+
+test('G1: real sockets deny foreign rooms, invalid origins and expired/revoked membership', async () => {
+  const base = process.env.GUARD_APP_ORIGIN;
+  assert.ok(base, 'Requires disposable integration fixture');
+  const { io } = require('socket.io-client');
+  const origin = 'http://localhost:5183';
+  const sockets = [];
+  async function connect(token, browserOrigin = base, denied = false) {
+    const socket = io(origin + '/core', { auth: { token }, extraHeaders: { Origin: browserOrigin }, reconnection: false, timeout: 3000, forceNew: true });
+    sockets.push(socket);
+    await new Promise((resolve, reject) => {
+      socket.once('connect', () => denied ? reject(new Error('Connection should be rejected')) : resolve());
+      socket.once('connect_error', error => denied ? resolve() : reject(error));
+    });
+    return socket;
+  }
+  const ack = (socket, event, input) => new Promise((resolve, reject) => socket.timeout(4000).emit(event, input, (error, value) => error ? reject(error) : resolve(value)));
+  async function account(email) {
+    const response = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: base }, body: JSON.stringify({ email, password: 'Preview-only-32!' }) });
+    assert.equal(response.status, 200); return response.json();
+  }
+  async function channels(account) { return (await (await fetch(base + '/api/hubs/' + account.user.hubId + '/channels', { headers: { Authorization: 'Bearer ' + account.token } })).json()).items; }
+  try {
+    const a = await account('preview@cvr.ac.in'), b = await account('preview@sky.example.test');
+    const channelId = (await channels(a))[0]._id, foreign = (await channels(b))[0]._id;
+    await connect(a.token, 'https://foreign.invalid', true);
+    await connect('invalid', base, true);
+    const first = await connect(a.token), second = await connect(a.token), other = await connect(b.token);
+    assert.equal((await ack(other, 'channel:join', { channelId })).error.code, 'CHANNEL_NOT_FOUND');
+    assert.equal((await ack(other, 'channel:sync', { channelId })).error.code, 'CHANNEL_NOT_FOUND');
+    assert.equal((await ack(other, 'message:send', { channelId, clientMessageId: require('node:crypto').randomUUID(), type: 'text', text: 'Forbidden' })).error.code, 'CHANNEL_NOT_FOUND');
+    await ack(other, 'channel:join', { channelId: foreign });
+    await ack(first, 'channel:join', { channelId });
+    await ack(second, 'channel:join', { channelId });
+    let leaked = false; other.on('message:created', () => { leaked = true; });
+    const received = new Promise(resolve => second.once('message:created', resolve));
+    const body = { channelId, clientMessageId: require('node:crypto').randomUUID(), type: 'text', text: 'Socket commit fixture' };
+    const sent = await ack(first, 'message:send', body);
+    assert.ok(sent.message, JSON.stringify(sent));
+    assert.equal((await received)._id, sent.message._id);
+    assert.equal((await ack(first, 'message:send', body)).message._id, sent.message._id);
+    second.disconnect();
+    const follow = await ack(first, 'message:send', { ...body, clientMessageId: require('node:crypto').randomUUID(), text: 'While peer disconnected' });
+    const reconnected = await connect(a.token);
+    const recovered = await ack(reconnected, 'channel:sync', { channelId, afterSeq: sent.message.seq });
+    assert.equal(recovered.items[0]._id, follow.message._id);
+    assert.equal(leaked, false);
+    assert.equal((await ack(first, 'message:send', { ...body, text: 'Changed' })).error.code, 'MESSAGE_CONFLICT');
+    assert.equal((await ack(first, 'message:send', { ...body, clientMessageId: require('node:crypto').randomUUID(), text: 'x'.repeat(8193) })).error.code, 'MESSAGE_TOO_LARGE');
+    assert.equal((await ack(first, 'channel:join', { channelId, room: 'arbitrary' })).error.code, 'INVALID_INPUT');
+    const jwt = require('jsonwebtoken'), claims = jwt.decode(a.token);
+    assert.ok(process.env.GUARD_CORE_SIGNING_SECRET, 'Fixture signing key required for expiry assertion');
+    const expiryToken = jwt.sign({ ...claims, iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + 2 }, process.env.GUARD_CORE_SIGNING_SECRET, { algorithm: 'HS256' });
+    const expiring = await connect(expiryToken);
+    await new Promise((resolve, reject) => { const timer = setTimeout(() => reject(new Error('Expired socket remained connected')), 3500); expiring.once('disconnect', () => { clearTimeout(timer); resolve(); }); });
+    await connect(expiryToken, base, true);
+    const db = require('mongoose').createConnection();
+    assert.ok(process.env.GUARD_MONGO_URI);
+    assert.match(process.env.GUARD_MONGO_URI, /^mongodb:\/\/(127\.0\.0\.1|localhost):[0-9]+\//, 'Only the local disposable replica set may be mutated');
+    await db.openUri(process.env.GUARD_MONGO_URI, { dbName: 'collegehubs_demo_p32' });
+    const userId = new (require('mongoose').Types.ObjectId)(a.user._id);
+    try {
+      await db.collection('users').updateOne({ _id: userId }, { $inc: { membershipVersion: 1 } });
+      assert.equal((await ack(first, 'channel:sync', { channelId })).error.code, 'MEMBERSHIP_CHANGED');
+      await connect(a.token, base, true);
+    } finally { await db.collection('users').updateOne({ _id: userId }, { $set: { membershipVersion: claims.membershipVersion } }); await db.close(); }
+  } finally { for (const socket of sockets) socket.disconnect(); }
+});
+
+test('G1: durable channel history hides foreign Hubs and concurrent replay commits once', async () => {
+  assert.ok(process.env.GUARD_APP_ORIGIN, 'Run with the disposable integration fixture; no database skip');
+  const base = process.env.GUARD_APP_ORIGIN;
+  async function call(path, token, body) {
+    const response = await fetch(base + '/api' + path, { method: body ? 'POST' : 'GET', headers: { Origin: base, ...(token ? { Authorization: 'Bearer ' + token } : {}), 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) });
+    return { status: response.status, data: await response.json() };
+  }
+  const a = (await call('/auth/login', null, { email: 'preview@cvr.ac.in', password: 'Preview-only-32!' })).data;
+  const b = (await call('/auth/login', null, { email: 'preview@sky.example.test', password: 'Preview-only-32!' })).data;
+  const channel = (await call('/hubs/' + a.user.hubId + '/channels', a.token)).data.items[0]._id;
+  const path = '/channels/' + channel + '/messages';
+  assert.equal((await call(path, b.token)).status, 404);
+  const body = { clientMessageId: require('node:crypto').randomUUID(), type: 'text', text: 'Durable fixture message' };
+  const replies = await Promise.all(Array.from({ length: 5 }, () => call(path, a.token, body)));
+  for (const reply of replies) assert.ok([200, 201].includes(reply.status), JSON.stringify(reply));
+  assert.equal(new Set(replies.map(reply => reply.data.message._id)).size, 1);
+  assert.equal((await call(path, b.token, body)).status, 404);
+  assert.equal((await call(path, a.token, { ...body, text: 'Altered retry' })).status, 409);
+  assert.equal((await call(path + '?limit=51', a.token)).status, 400);
+  assert.equal((await call(path + '?limit[]=1', a.token)).status, 400);
+  assert.equal((await call(path + '?hubId=' + b.user.hubId, a.token)).status, 400);
+  const history = (await call(path + '?afterSeq=' + (replies[0].data.message.seq - 1), a.token)).data;
+  assert.equal(history.items.filter(row => row.clientMessageId === body.clientMessageId).length, 1);
+  assert.equal(history.items[0].hubId, a.user.hubId);
+  const parallel = await Promise.all(Array.from({ length: 6 }, (_, i) => call(path, a.token, { ...body, clientMessageId: require('node:crypto').randomUUID(), text: 'Ordered ' + i })));
+  const seqs = parallel.map(reply => { assert.equal(reply.status, 201); return reply.data.message.seq; }).sort((a, b) => a - b);
+  assert.deepEqual(seqs, Array.from({ length: 6 }, (_, i) => replies[0].data.message.seq + i + 1));
+  const page = (await call(path + '?afterSeq=' + replies[0].data.message.seq + '&limit=2', a.token)).data;
+  assert.equal(page.hasMore, true); assert.deepEqual(page.items.map(row => row.seq), seqs.slice(0, 2));
+  const next = (await call(path + '?afterSeq=' + page.items.at(-1).seq, a.token)).data;
+  assert.deepEqual(next.items.map(row => row.seq), seqs.slice(2));
+});
+
 test('G1: real Learn SQL keeps two users, Hubs and themes separate through the gateway', { skip: !process.env.GUARD_APP_ORIGIN || !process.env.GUARD_LEARN_DATABASE_URL }, async () => {
   const { Pool } = require('pg');
   const { createSessionStore } = require('../../services/learn/src/auth/sessionBoundary.cjs');

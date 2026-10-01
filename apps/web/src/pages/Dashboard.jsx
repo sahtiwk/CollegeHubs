@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { useHubTheme } from '../theme/HubThemeProvider';
 import api from '../api';
@@ -26,9 +27,9 @@ export default function Dashboard() {
     </section>
     <div className="feed-layout">
       <section aria-label="College feed"><div className="section-heading"><h2>On your campus</h2><span className="pill">College feed</span></div><Feed /></section>
-      <aside className="channel-card"><p className="eyebrow">Find your people</p><h2>Subject spaces</h2><p className="muted">Your college's channels. Conversations open in a later release.</p>
+      <aside className="channel-card"><p className="eyebrow">Find your people</p><h2>Subject spaces</h2><p className="muted">Your college's channels. Join a subject conversation.</p>
         {error ? <p role="alert">{error} <button onClick={() => setAttempt(value => value + 1)}>Retry</button></p> :
-          channels.length ? <ul>{channels.map(channel => <li key={channel._id}><span aria-hidden="true">#</span> {channel.title}</li>)}</ul> : <p className="muted">Loading subjects...</p>}
+          channels.length ? <ul>{channels.map(channel => <li key={channel._id}><span aria-hidden="true">#</span> <Link to={'/channels/' + channel._id}>{channel.title}</Link></li>)}</ul> : <p className="muted">Loading subjects...</p>}
         <div className="channel-footnote">A place for curious minds.</div>
       </aside>
     </div>

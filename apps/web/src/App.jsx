@@ -5,6 +5,7 @@ import { HubThemeProvider } from './theme/HubThemeProvider';
 import api, { logout, saveSession } from './api';
 import HubShell from './components/HubShell';
 import Dashboard from './pages/Dashboard';
+import ChannelConnection from './pages/ChannelConnection';
 import Leaderboard from './pages/Leaderboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -40,6 +41,7 @@ export default function App() {
     <Route path="/about" element={<AboutPage />} />
     <Route element={<MembershipGate />}>
       <Route element={<HubShell />}>
+      <Route path="/channels/:id" element={<ChannelConnection />} />
       <Route path="/learn/*" element={<LearnRoute />} /><Route path="/" element={<Dashboard />} /><Route path="/leaderboard" element={<Leaderboard />} /><Route path="/contests" element={<Contests />} />
     </Route></Route>
     <Route path="*" element={<Navigate to="/" replace />} />

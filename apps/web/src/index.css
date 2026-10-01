@@ -151,3 +151,10 @@ dialog::backdrop { background: rgba(20, 5, 20, .5); }
 .module-navigation { border-top: 1px solid var(--border); padding-top: 18px; }
 .module-unavailable { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 12px; font-size: .85rem; color: var(--text-muted); }
 .module-unavailable small { font-size: .65rem; }
+
+/* P4.1: shared Hub tokens, bounded readable text history. */
+.channel-conversation { max-width: 850px; margin: 0 auto; }
+.channel-messages { list-style: none; padding: 0; display: grid; gap: 1rem; }
+.channel-messages li { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1rem; overflow-wrap: anywhere; }
+.channel-messages p { white-space: pre-wrap; }
+.channel-conversation textarea { width: 100%; box-sizing: border-box; background: var(--surface-raised); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; font: inherit; resize: vertical; }

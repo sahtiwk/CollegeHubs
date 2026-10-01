@@ -38,9 +38,10 @@ Existing `docs/p0.1-evidence.md` through available `docs/p3.1-evidence.md` recor
 | P2.2 | Retain event validation, deduplication, caps, ledger and pending recovery; server-to-server delivery still applies. |
 | P3.1 | Historical Next/PostgreSQL session spike passed locally. Reuse security logic, port its HTTP boundary in P3.2; Next rendering is not the target. |
 | P3.2 | **Local PASS (2026-10-01):** monorepo/shared SPA/Learn API, 57 passing G1-G3 checks, browser/mobile/theme/outage evidence, and free-only deployment files. Hosted verification remains pending. See `docs/learn-spike.md`. |
-| P4–P11 | Future unless separate evidence proves otherwise; this document marks none complete. |
+| P4.1 | **Local PASS (2026-10-01):** durable sequenced text messages, authenticated sockets, history recovery, 60 passing G1–G3 checks and two-client/restart/foreign-Hub walkthrough. See `docs/p4.1-evidence.md`. |
+| P4.2–P11 | Future unless separate evidence proves otherwise; this document marks none complete. |
 
-**P3.2 is complete locally. Next planned phase: P4.1, only when requested.** Checkpoints A-D have passing local API/build/browser/theme/mobile/outage evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
+**P4.1 is complete locally. Next planned phase: P4.2, only when requested.** P3.2 checkpoints A-D retain passing local evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
 
 ## Tier map
 
@@ -471,6 +472,8 @@ Goal: establish the new architecture before feature conversion. Read all Part A/
 Goal: durable subject collaboration in the shared shell. Entry: P1/P2 and P3.2 foundation. Read A4–A8. Human: review demo text/attribution, no provider account. Safe stop: scoped feed/chat remains available. Trace: FR2/FR3/FR7/NFR5.
 
 ### P4.1. Message persistence and sockets
+
+**Status: Local PASS, 2026-10-01.** Evidence and concrete API/event contracts: `docs/p4.1-evidence.md`. Minimal text UI verifies transport; P4.2's rich conversation features remain pending.
 
 **Scope:** REST/socket/history and sequence recovery, no presence platform. **Prerequisite:** P3.2. **Guard:** G1 first. **Effort:** 1–2 days.
 

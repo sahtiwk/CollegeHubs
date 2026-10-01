@@ -17,3 +17,5 @@ CVR's exact `cvr.ac.in` domain is active based on user confirmation. Provision e
 P0?P2 behavior is preserved. Learn currently demonstrates secure sessions and an integrated synthetic roadmap, not complete courses, progress, quizzes or rewards. Arcade/Interview ports, chat, rooms and live scoring remain later phases. Local browser acceptance and hosted acceptance are recorded separately; deployment configuration is not proof of deployment.
 
 Historical evidence: [P0.1](docs/p0.1-evidence.md), [P0.2](docs/p0.2-evidence.md), [P1.1](docs/p1.1-evidence.md), [P1.2](docs/p1.2-evidence.md), [P2.1](docs/p2.1-evidence.md), [P2.2](docs/p2.2-evidence.md), [P3.1](docs/p3.1-evidence.md). Historical paths refer to their pre-migration locations. [Third-party notices](THIRD_PARTY.md) remain applicable.
+
+P4.1 durable text channels and socket recovery are complete locally. See [verification and API contracts](docs/p4.1-evidence.md). Rich code/resource/answer features remain P4.2.
