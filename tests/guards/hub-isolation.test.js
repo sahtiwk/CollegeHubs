@@ -1,6 +1,68 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
+test('G1: typed message contract enforces UTF-8 limits and safe resource schemes', () => {
+  const { normalizeMessage, resourceUrl } = require('../../packages/contracts/channel.cjs');
+  const base = { clientMessageId: require('node:crypto').randomUUID(), type: 'code', language: 'javascript', text: '  <script>literal</script>\n' };
+  assert.equal(normalizeMessage(base).text, base.text);
+  assert.equal(normalizeMessage({ ...base, text: 'x'.repeat(32768) }).text.length, 32768);
+  assert.throws(() => normalizeMessage({ ...base, text: 'x'.repeat(32769) }), { status: 413 });
+  assert.throws(() => normalizeMessage({ ...base, text: '\u00e9'.repeat(16385) }), { status: 413 });
+  assert.throws(() => normalizeMessage({ ...base, hubId: 'caller-selected' }), { status: 400 });
+  for (const url of ['http://example.test', 'javascript:alert(1)', 'data:text/html,test', 'https://user:pass@example.test', 'https://example.test/\npath']) assert.throws(() => resourceUrl(url), { status: 400 });
+  assert.equal(resourceUrl('https://example.test/docs?q=one#section'), 'https://example.test/docs?q=one#section');
+});
+
+test('G1: P4.2 typed content stays literal; threads enforce owner, Hub and immutable acceptance', async () => {
+  assert.ok(process.env.GUARD_APP_ORIGIN, 'Requires disposable integration fixture');
+  const base = process.env.GUARD_APP_ORIGIN;
+  async function call(path, token, body) {
+    const response = await fetch(base + '/api' + path, { method: body ? 'POST' : 'GET', headers: { Origin: base, 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
+    return { status: response.status, data: await response.json() };
+  }
+  const login = async email => { const reply = await call('/auth/login', null, { email, password: 'Preview-only-32!' }); assert.equal(reply.status, 200, 'Fixture login must succeed'); return reply.data; };
+  const a = await login('preview@cvr.ac.in'), b = await login('preview@sky.example.test');
+  const channel = (await call('/hubs/' + a.user.hubId + '/channels', a.token)).data.items.find(row => row.slug === 'dsa')._id;
+  const path = '/channels/' + channel + '/messages';
+  const send = (user, body) => call(path, user.token, { clientMessageId: require('node:crypto').randomUUID(), ...body });
+  const literal = '<script>alert("literal-[a-z]+")</script>\n  const value = "<&>";';
+  const code = await send(a, { type: 'code', text: literal, language: 'javascript' });
+  assert.equal(code.status, 201, JSON.stringify(code)); assert.equal(code.data.message.text, literal);
+  const peer = await login('peer@cvr.ac.in'); assert.ok(peer.token);
+  assert.equal((await send(a, { type: 'code', text: literal, language: 'executable' })).status, 400);
+  assert.equal((await send(a, { type: 'resource', text: 'Read this', title: 'Unsafe', url: 'javascript:alert(1)' })).status, 400);
+  assert.equal((await send(a, { type: 'resource', text: '', title: 'Unsafe', url: 'https://name:secret@example.test/' })).status, 400);
+  const resource = await send(a, { type: 'resource', text: '', title: 'Documentation', url: 'https://example.test/docs' }); assert.equal(resource.status, 201);
+  const found = await call(path + '?q=' + encodeURIComponent('literal-[a-z]+'), a.token);
+  assert.equal(found.status, 200); assert.ok(found.data.items.some(row => row._id === code.data.message._id));
+  assert.equal((await call(path + '?q=' + 'x'.repeat(121), a.token)).status, 400);
+  const foreignSearch = await call(path + '?q=literal', b.token);
+  assert.equal(foreignSearch.status, 404, JSON.stringify(foreignSearch.data));
+  const question = (await send(a, { type: 'question', text: 'How does binary search terminate?' })).data.message;
+  const otherQuestion = (await send(a, { type: 'question', text: 'Another question' })).data.message;
+  const self = (await send(a, { type: 'answer', text: 'Self reply', questionId: question._id })).data.message;
+  const answer = (await send(peer, { type: 'answer', text: 'The search interval shrinks each iteration.', questionId: question._id })).data.message;
+  const wrong = (await send(peer, { type: 'answer', text: 'Other thread', questionId: otherQuestion._id })).data.message;
+  const acceptPath = '/messages/' + question._id + '/accepted-answer';
+  assert.equal((await call(acceptPath, a.token, { answerId: self._id })).status, 403);
+  assert.equal((await call(acceptPath, peer.token, { answerId: answer._id })).status, 403);
+  assert.equal((await call(acceptPath, b.token, { answerId: answer._id })).status, 404);
+  assert.equal((await call(acceptPath, a.token, { answerId: wrong._id })).status, 404);
+  const accepts = await Promise.all([call(acceptPath, a.token, { answerId: answer._id }), call(acceptPath, a.token, { answerId: answer._id })]);
+  assert.ok(accepts.every(reply => reply.status === 200));
+  const another = (await send(peer, { type: 'answer', text: 'Another valid reply', questionId: question._id })).data.message;
+  assert.equal((await call(acceptPath, a.token, { answerId: another._id })).status, 409);
+  const thread = await call('/messages/' + question._id + '/thread', a.token);
+  assert.equal(thread.data.question.acceptedAnswerId, answer._id);
+  assert.ok(thread.data.items.some(row => row._id === answer._id));
+  assert.equal((await call('/messages/' + question._id + '/thread', b.token)).status, 404);
+  const raceQuestion = (await send(a, { type: 'question', text: 'Race question' })).data.message;
+  const raceA = (await send(peer, { type: 'answer', text: 'First option', questionId: raceQuestion._id })).data.message;
+  const raceB = (await send(peer, { type: 'answer', text: 'Second option', questionId: raceQuestion._id })).data.message;
+  const competing = await Promise.all([raceA, raceB].map(answer => call('/messages/' + raceQuestion._id + '/accepted-answer', a.token, { answerId: answer._id })));
+  assert.deepEqual(competing.map(reply => reply.status).sort(), [200, 409]);
+});
+
 test('G1: channel recovery deduplicates persisted pages and rejects gaps or foreign cache data', async () => {
   const { mergeHistory } = await import('../../apps/web/src/realtime/history.js');
   const row = seq => ({ _id: 'message-' + seq, seq, hubId: 'hub-a', channelId: 'channel-a' });

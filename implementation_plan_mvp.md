@@ -39,9 +39,10 @@ Existing `docs/p0.1-evidence.md` through available `docs/p3.1-evidence.md` recor
 | P3.1 | Historical Next/PostgreSQL session spike passed locally. Reuse security logic, port its HTTP boundary in P3.2; Next rendering is not the target. |
 | P3.2 | **Local PASS (2026-10-01):** monorepo/shared SPA/Learn API, 57 passing G1-G3 checks, browser/mobile/theme/outage evidence, and free-only deployment files. Hosted verification remains pending. See `docs/learn-spike.md`. |
 | P4.1 | **Local PASS (2026-10-01):** durable sequenced text messages, authenticated sockets, history recovery, 60 passing G1–G3 checks and two-client/restart/foreign-Hub walkthrough. See `docs/p4.1-evidence.md`. |
-| P4.2–P11 | Future unless separate evidence proves otherwise; this document marks none complete. |
+| P4.2 | **Local PASS (2026-10-01):** typed code/resources/questions/answers, literal search, immutable acceptance, transactional native facts, 63 passing G1–G3 checks and Demo2/mobile evidence. Scoring remains P6-gated. See `docs/p4.2-evidence.md`. |
+| P5–P11 | Future unless separate evidence proves otherwise; this document marks none complete. |
 
-**P4.1 is complete locally. Next planned phase: P4.2, only when requested.** P3.2 checkpoints A-D retain passing local evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
+**P4.2 is complete locally. Next planned phase: P5.1, only when requested.** P3.2/P4.1 retain passing local evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
 
 ## Tier map
 
@@ -473,7 +474,7 @@ Goal: durable subject collaboration in the shared shell. Entry: P1/P2 and P3.2 f
 
 ### P4.1. Message persistence and sockets
 
-**Status: Local PASS, 2026-10-01.** Evidence and concrete API/event contracts: `docs/p4.1-evidence.md`. Minimal text UI verifies transport; P4.2's rich conversation features remain pending.
+**Status: Local PASS, 2026-10-01.** Evidence and concrete API/event contracts: `docs/p4.1-evidence.md`. The minimal text UI verified transport; completed P4.2 extends it with rich contributions below.
 
 **Scope:** REST/socket/history and sequence recovery, no presence platform. **Prerequisite:** P3.2. **Guard:** G1 first. **Effort:** 1–2 days.
 
@@ -484,6 +485,8 @@ Goal: durable subject collaboration in the shared shell. Entry: P1/P2 and P3.2 f
 **Contract/outcome:** A6 channel API/events, ack after commit. **Acceptance:** A cannot read/join/write B; repeated send ID stores one row; reconnect/reload recovers missed messages, even after Core restart. **Risk:** broadcasts can be lost; history is authoritative. **Done:** common definition plus two-browser/foreign-Hub walkthrough.
 
 ### P4.2. Code, resources and answer threads
+
+**Status: Local PASS, 2026-10-01.** Contracts, native-fact/P6 boundary, 63 passing guards, Demo2 and 360px keyboard evidence: `docs/p4.2-evidence.md`.
 
 **Scope:** readable composer/search/highlighting/immutable answer acceptance. **Prerequisite:** P4.1/P2.2. **Guards:** G1/G3. **Effort:** 1–2 days.
 

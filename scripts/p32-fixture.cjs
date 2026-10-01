@@ -24,7 +24,7 @@ async function main() {
     CORE_MODULE_PRIVATE_KEY: keys.privateKey, CORE_MODULE_KEY_ID: 'p32-key', CORE_MODULE_PUBLIC_KEYS: JSON.stringify({ 'p32-key': keys.publicKey }), MONGO_URI: repl.getUri('collegehubs_demo_p32') });
   mongoose.set('autoCreate', false).set('autoIndex', false);
   await mongoose.connect(process.env.MONGO_URI);
-  const names = ['College', 'Hub', 'Channel', 'Message', 'User', 'Post', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'];
+  const names = ['College', 'Hub', 'Channel', 'Message', 'NativeFact', 'User', 'Post', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'];
   const models = Object.fromEntries(names.map(name => [name, require('../services/core/models/' + name)]));
   await Promise.all(Object.values(models).map(async model => { await model.createCollection(); await model.createIndexes(); }));
   const provision = require('../services/core/services/hubProvisioning');
@@ -33,7 +33,7 @@ async function main() {
   if (await models.Hub.countDocuments({ collegeId: college.id }) !== 1 || await models.Channel.countDocuments({ hubId: hub.id }) !== 4) throw new Error('Provisioning not idempotent');
   const second = await models.College.create({ name: 'Sky College · fixture', slug: 'p32-sky', status: 'active', timezone: 'Asia/Kolkata', themeTokens: { ...college.themeTokens, background: '#DFF7FF', surface: '#DFF7FF', surfaceRaised: '#F4ECD6', secondary: '#F4ECD6' }, domains: [{ normalizedDomain: 'sky.example.test', verifiedAt: new Date(), evidenceRef: 'synthetic fixture' }] });
   const secondHub = await provision.ensureHubForCollege(second.id);
-  for (const [username, email, hubId] of [['cvr-preview', 'preview@cvr.ac.in', hub.id], ['sky-preview', 'preview@sky.example.test', secondHub.id]]) await models.User.create({ username, email, password: 'Preview-only-32!', hubId, membershipStatus: 'active', membershipVersion: 1, onboardingComplete: true });
+  for (const [username, email, hubId] of [['cvr-preview', 'preview@cvr.ac.in', hub.id], ['cvr-peer', 'peer@cvr.ac.in', hub.id], ['sky-preview', 'preview@sky.example.test', secondHub.id]]) await models.User.create({ username, email, password: 'Preview-only-32!', hubId, membershipStatus: 'active', membershipVersion: 1, onboardingComplete: true });
   const { opaque, digest } = require('../services/core/services/moduleTokenService');
   const serviceKey = 'p32learn.' + opaque(); await models.ServiceCredential.create({ service: 'learn', keyId: 'p32learn', keyHash: digest(serviceKey) });
   const children = [];

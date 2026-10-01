@@ -7,7 +7,7 @@ function channelHandlers(socket, publish) {
     if (busy) return ack({ error: { code: 'BUSY', message: 'Wait for the pending operation', retryable: true } });
     busy++;
     try {
-      messages.fields(input, event === 'message:send' ? ['channelId', 'clientMessageId', 'type', 'text'] : ['channelId', 'afterSeq', 'beforeSeq', 'limit']);
+      messages.fields(input, event === 'message:send' ? ['channelId', 'clientMessageId', 'type', 'text', 'language', 'title', 'url', 'questionId'] : ['channelId', 'afterSeq', 'beforeSeq', 'limit']);
       const { channelId, ...body } = input;
       const context = await messages.authorize(socket.data.claims);
       await messages.channelFor(context, channelId);

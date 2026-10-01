@@ -4,12 +4,12 @@ import { createChannelSocket } from '../realtime/client';
 import { mergeHistory } from '../realtime/history';
 
 export function useChannel(channelId, hubId) {
-  const [state, setState] = useState({ items: [], title: '', loading: true, error: '', live: false });
+  const [state, setState] = useState({ items: [], title: '', loading: true, error: '', live: false, revision: 0 });
   const control = useRef(null);
   useEffect(() => {
     let dead = false, running = false, again = false, cursor = null, rows = [], socket;
     const abort = new AbortController();
-    setState({ items: [], title: '', loading: true, error: '', live: false });
+    setState({ items: [], title: '', loading: true, error: '', live: false, revision: 0 });
     const path = '/channels/' + channelId + '/messages';
     const update = patch => { if (!dead) setState(old => ({ ...old, ...patch })); };
     async function sync() {
@@ -28,6 +28,13 @@ export function useChannel(channelId, hubId) {
           // Initial history is the latest 50; subsequent pages catch up forwards.
           if (!initial && data.hasMore) again = true;
         } while (again && !dead);
+        // Acceptance changes an existing question, not its creation sequence.
+        // Refresh the visible tail to recover a lost update notification too.
+        const { data: tail } = await api.get(path, { signal: abort.signal });
+        if (!dead) {
+          rows = mergeHistory(rows, tail, hubId, channelId, null).items;
+          setState(old => ({ ...old, items: rows, revision: old.revision + 1 }));
+        }
       } catch (error) { update({ loading: false, error: error.response?.data?.error?.message || 'History unavailable. Your draft is unchanged; retry when connected.' }); }
       finally { running = false; }
     }
@@ -43,6 +50,7 @@ export function useChannel(channelId, hubId) {
         });
       });
       socket?.on('message:created', row => { if (row.hubId === hubId && row.channelId === channelId) void sync(); });
+      socket?.on('message:updated', row => { if (row.hubId === hubId && row.channelId === channelId) void sync(); });
       socket?.on('disconnect', () => update({ live: false }));
       socket?.on('connect_error', () => update({ live: false }));
       socket?.connect();

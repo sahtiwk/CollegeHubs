@@ -9,18 +9,18 @@ function attachRealtime(server, app) {
     try { socket.data.claims = await messages.authenticateSocket(socket.handshake.auth?.token); next(); }
     catch (error) { const denial = new Error('Sign-in or membership unavailable'); denial.data = messages.errorDto(error); next(denial); }
   });
-  async function publish(message) {
+  async function publish(message, event = 'message:created') {
     // Revalidate recipients as well as senders, so a revoked idle member receives no new data.
     const recipients = await core.in(room(message.hubId, message.channelId)).fetchSockets();
     await Promise.allSettled(recipients.map(async socket => {
       try {
         const context = await messages.authorize(socket.data.claims);
         await messages.channelFor(context, message.channelId);
-        socket.emit('message:created', message);
+        socket.emit(event, message);
       } catch { socket.disconnect(true); }
     }));
   }
-  const publishSafely = message => publish(message).catch(() => {}); // Persisted history repairs lost broadcasts.
+  const publishSafely = (message, event) => publish(message, event).catch(() => {}); // Persisted history repairs lost broadcasts.
   app.locals.publishMessage = publishSafely;
   core.on('connection', socket => {
     const expiry = setTimeout(() => socket.disconnect(true), Math.max(0, socket.data.claims.exp * 1000 - Date.now()));

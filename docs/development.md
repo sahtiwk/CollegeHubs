@@ -49,3 +49,9 @@ No live provider is needed. Learn data is explicitly synthetic; unconverted rout
 Subject spaces now link to `/channels/:id` in the same shell. Set `VITE_CORE_SOCKET_ORIGIN` to the direct Core origin (HTTPS for deployed builds, without a path); Core must allow the exact app Origin. Development defaults to Core on port 5000. The fixture injects port 5183 and explicitly allows both localhost and 127.0.0.1 on 5182 for separate test accounts. Production without the socket setting retains REST history/sending.
 
 The fixture now accepts `stop-core` and `start-core`, preserving its Mongo data for restart checks. `guards` supplies the fixture-only `GUARD_CORE_SIGNING_SECRET` to exercise token expiry. G1's channel integration checks fail rather than skip when their fixture is missing. See [P4.1 evidence](p4.1-evidence.md) for contracts, limits and the two-tab walkthrough.
+
+## P4.2 typed channels
+
+Channels support text, code, titled HTTPS resources, questions and replies. Search is literal, scoped and paginated. Only a question's author can permanently accept a different author's answer. See [P4.2 contracts and evidence](p4.2-evidence.md). Native facts are persisted transactionally; live Aura remains inactive until P6. No new environment names or provider accounts are needed.
+
+The local fixture additionally creates `peer@cvr.ac.in` with password `Preview-only-32!` for same-Hub answer testing. These accounts exist only in disposable local Mongo. `NativeFact` collections/indexes are prepared on startup; the reset allowlist includes `nativefacts` without relaxing its synthetic-data guard. The shared CommonJS channel contract is explicitly included in Vite dependency optimization. If editing that linked contract during development, restart Vite with `--force` to refresh the prebundle.

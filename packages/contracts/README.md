@@ -12,3 +12,5 @@ P2 contracts have no Core database/model dependency.
 Use these server-side only. Do not import them into a frontend bundle. Real module adapters arrive in their own phases. G2 lives in ../../tests/guards/module-grants.test.js; no separate contract test suite is needed.
 
 G3 lives in ../../tests/guards/aura-events.test.js. Its transaction checks require an explicitly configured disposable local MongoDB replica set; see the development guide. P2.2 does not ship real module pending/reconcile routes.
+
+`channel.cjs` is the P4.2 shared typed-message/HTTPS-link validator and language allowlist. It contains no persistence or execution logic; Core independently enforces it on every send. Vite prebundles this linked CommonJS entry for development.

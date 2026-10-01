@@ -158,3 +158,29 @@ dialog::backdrop { background: rgba(20, 5, 20, .5); }
 .channel-messages li { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1rem; overflow-wrap: anywhere; }
 .channel-messages p { white-space: pre-wrap; }
 .channel-conversation textarea { width: 100%; box-sizing: border-box; background: var(--surface-raised); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; font: inherit; resize: vertical; }
+
+/* P4.2: readable typed contributions within the shared Hub palette. */
+.channel-conversation { width: 100%; min-width: 0; }
+.message-composer { background: var(--surface-raised); }
+.message-composer select { display: block; width: 100%; margin-top: 8px; padding: 12px; min-height: 44px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font: inherit; }
+.message-composer textarea { background: var(--surface); }
+.message-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+.channel-messages li { min-width: 0; }
+.channel-messages button { margin-top: 12px; }
+.message-prose { white-space: pre-wrap; overflow-wrap: anywhere; }
+.code-block { max-width: 100%; min-width: 0; margin-top: 12px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface-raised); }
+.code-caption { padding: 8px 14px; font-size: .75rem; border-bottom: 1px solid var(--border); }
+.code-block pre { margin: 0; padding: 16px; overflow-x: auto; white-space: pre; tab-size: 2; font: .85rem/1.7 Consolas, monospace; }
+.code-block pre:focus-visible { outline-offset: -4px; }
+.syntax-keyword { color: var(--accent); font-weight: 700; }
+.syntax-string { color: var(--success); }
+.syntax-number { color: var(--warning); }
+.syntax-comment { color: var(--text-muted); font-style: italic; }
+.resource-card { display: grid; gap: 8px; padding: 16px; border-radius: 10px; background: var(--secondary); }
+.resource-card a { font-weight: 700; overflow-wrap: anywhere; }
+.channel-search { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+.channel-search label { flex: 1 1 220px; min-width: 0; }
+.answer-thread { border: 2px solid var(--accent); min-width: 0; }
+.answer-thread .section-heading { flex-wrap: wrap; gap: 12px; }
+.accepted-answer { margin-top: 12px; color: var(--success); font-weight: 700; }
+@media (max-width: 480px) { .channel-conversation .card { padding: 14px; } .message-meta { align-items: flex-start; } .channel-search button { flex-grow: 1; } }

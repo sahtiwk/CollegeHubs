@@ -38,7 +38,7 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
       'learn.quiz_completed': { weight: 5, countCap: 5, sourceCap: 100 },
       'learn.node_mastered': { weight: 15, countCap: 100, sourceCap: 100 },
     } };
-  const names = ['College', 'Hub', 'User', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'];
+  const names = ['College', 'Hub', 'User', 'Channel', 'Message', 'NativeFact', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'];
   const models = Object.fromEntries(names.map(name => [name, require('../../services/core/models/' + name)]));
   const dbName = 'collegehubs_demo_g3_' + randomUUID().replaceAll('-', '');
   const uri = new URL(process.env.GUARD_MONGO_URI);
@@ -69,6 +69,49 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
           : { nodeId: 'node1', mode: 'checkpoint', attemptId: sourceId, passed: true, correctCount: 4, itemCount: 5, curriculumVersion: 'v1' }), ...facts } };
     };
     const service = createAuraEventService({ rules });
+    await t.test('P4.2 native facts, domain writes and future scorer are atomic and replay-safe', async () => {
+      const messages = require('../../services/core/services/messageService');
+      const answers = require('../../services/core/services/answerService');
+      const claims = require('../../services/core/config/auth').verifyToken(require('../../services/core/config/auth').generateToken(user));
+      const channel = await models.Channel.create({ hubId: hub.id, slug: 'native-fixture', title: 'Native fixture', defaultSetVersion: 1 });
+      const recipient = await models.User.create({ username: 'g3-peer', email: 'peer@g3.example.test', password: opaque(), hubId: hub.id, membershipStatus: 'active', membershipVersion: 1 });
+      const peerClaims = require('../../services/core/config/auth').verifyToken(require('../../services/core/config/auth').generateToken(recipient));
+      // Transaction seam fixture only: P6 owns real weights/caps/ledger rules.
+      const applyNativeFact = async (fact, session) => {
+        assert.ok(session.inTransaction());
+        await models.AuraBalance.updateOne({ hubId: fact.hubId, userId: fact.userId }, { $inc: { engagement: 5, total: 5 }, $set: { asOf: new Date() } }, { upsert: true, session });
+        return { eventId: fact.eventId, awardedAura: 5, weightVersion: 'fixture-native-seam' };
+      };
+      const code = { clientMessageId: randomUUID(), type: 'code', language: 'javascript', text: '  const result = 42;\n' };
+      const results = await Promise.all(Array.from({ length: 4 }, () => messages.send(peerClaims, channel.id, code, { applyNativeFact })));
+      assert.equal(new Set(results.map(row => row.message._id)).size, 1);
+      await messages.send(peerClaims, channel.id, { ...code, clientMessageId: randomUUID(), text: 'const   result = 42;' }, { applyNativeFact });
+      assert.equal(await models.NativeFact.countDocuments({ userId: recipient.id, type: 'code.shared' }), 1);
+      assert.equal((await models.AuraBalance.findOne({ userId: recipient.id })).total, 5);
+      const resource = { clientMessageId: randomUUID(), type: 'resource', text: '', title: 'Docs', url: 'https://example.test/docs#first' };
+      await messages.send(peerClaims, channel.id, resource, { applyNativeFact });
+      await messages.send(peerClaims, channel.id, { ...resource, clientMessageId: randomUUID(), url: 'https://example.test/docs#second' }, { applyNativeFact });
+      assert.equal(await models.NativeFact.countDocuments({ userId: recipient.id, type: 'resource.shared' }), 1);
+      assert.equal((await models.AuraBalance.findOne({ userId: recipient.id })).total, 10);
+      const question = (await messages.send(claims, channel.id, { clientMessageId: randomUUID(), type: 'question', text: 'Question?' })).message;
+      const answer = (await messages.send(peerClaims, channel.id, { clientMessageId: randomUUID(), type: 'answer', text: 'Answer.', questionId: question._id })).message;
+      const brokenScorer = async (fact, session) => { await applyNativeFact(fact, session); throw new Error('fixture rollback'); };
+      await assert.rejects(answers.accept(claims, question._id, { answerId: answer._id }, { applyNativeFact: brokenScorer }), /fixture rollback/);
+      assert.equal((await models.Message.findById(question._id)).acceptedAnswerId, null);
+      assert.equal(await models.NativeFact.countDocuments({ type: 'answer.accepted', userId: recipient.id }), 0);
+      assert.equal((await models.AuraBalance.findOne({ userId: recipient.id })).total, 10);
+      await Promise.all(Array.from({ length: 3 }, () => answers.accept(claims, question._id, { answerId: answer._id }, { applyNativeFact })));
+      assert.equal(await models.NativeFact.countDocuments({ type: 'answer.accepted', userId: recipient.id }), 1);
+      assert.equal((await models.AuraBalance.findOne({ userId: recipient.id })).total, 15);
+      const seq = (await models.Channel.findById(channel.id)).nextMessageSeq;
+      await assert.rejects(messages.send(peerClaims, channel.id, { ...code, clientMessageId: randomUUID(), text: 'rollback code' }, { applyNativeFact: brokenScorer }), /fixture rollback/);
+      assert.equal((await models.Channel.findById(channel.id)).nextMessageSeq, seq);
+      assert.equal(await models.Message.countDocuments({ text: 'rollback code' }), 0);
+      assert.equal((await models.AuraBalance.findOne({ userId: recipient.id })).total, 15);
+      const inactive = await messages.send(peerClaims, channel.id, { ...code, clientMessageId: randomUUID(), text: 'rules remain inactive' });
+      assert.equal((await models.NativeFact.findOne({ sourceId: inactive.message._id })).status, 'rules_inactive');
+      assert.equal((await models.AuraBalance.findOne({ userId: recipient.id })).total, 15);
+    });
     server = createApp({ auraRules: rules }).listen(0);
     await new Promise(resolve => server.once('listening', resolve));
     const post = async (body, source = body.source, headers = {}) => {
