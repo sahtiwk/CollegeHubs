@@ -15,7 +15,7 @@ test('G4: durable rooms, deadline fences, privacy and recovery', async t => {
   const uri = process.env.GUARD_MONGO_URI || repl.getUri();
   assert.ok(['localhost', '127.0.0.1'].includes(new URL(uri).hostname));
   await mongoose.connect(uri, { dbName: 'collegehubs_demo_g4_' + randomUUID().replaceAll('-', '') });
-  const names = ['College', 'Hub', 'Channel', 'User', 'Problem', 'StudyRoom', 'StudySolution', 'PeerReview', 'NativeFact'];
+  const names = ['College', 'Hub', 'Channel', 'User', 'Problem', 'StudyRoom', 'StudySolution', 'PeerReview', 'NativeFact', 'AuraRuleSet'];
   const m = Object.fromEntries(names.map(name => [name, require('../../services/core/models/' + name)]));
   try {
     for (const model of Object.values(m)) { await model.createCollection(); await model.createIndexes(); }

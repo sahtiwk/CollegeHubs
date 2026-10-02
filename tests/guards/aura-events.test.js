@@ -38,7 +38,7 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
       'learn.quiz_completed': { weight: 5, countCap: 5, sourceCap: 100 },
       'learn.node_mastered': { weight: 15, countCap: 100, sourceCap: 100 },
     } };
-  const names = ['College', 'Hub', 'User', 'Channel', 'Message', 'NativeFact', 'Problem', 'StudyRoom', 'StudySolution', 'PeerReview', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'];
+  const names = ['College', 'Hub', 'User', 'Channel', 'Message', 'NativeFact', 'Problem', 'StudyRoom', 'StudySolution', 'PeerReview', 'ModuleGrant', 'ServiceCredential', 'AuraRuleSet', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'];
   const models = Object.fromEntries(names.map(name => [name, require('../../services/core/models/' + name)]));
   const dbName = 'collegehubs_demo_g3_' + randomUUID().replaceAll('-', '');
   const uri = new URL(process.env.GUARD_MONGO_URI);
@@ -139,6 +139,59 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
       assert.equal((await models.AuraBalance.findOne({ userId: participant.id })).total, 25);
       assert.equal(await models.NativeFact.countDocuments({ sourceId: { $in: [nonempty.id, empty.id] } }), 1);
     });
+    await t.test('P6.1 native fixture totals 50, prospective activation, caps and shared day', async () => {
+      const scorer = require('../../services/core/services/nativeAuraService');
+      const native = require('../../services/core/services/nativeFactService');
+      const owner = await models.User.create({ username: 'native-rules-user', email: 'rules@g3.example.test', password: opaque(), hubId: hub.id, membershipStatus: 'active', membershipVersion: 1 });
+      const fact = async (type, text = randomUUID(), at = new Date()) => native.transaction(session => native.record({ message: { _id: new mongoose.Types.ObjectId(), hubId: hub.id, authorId: owner.id, createdAt: at, text, url: 'https://example.test/' + text }, type }, session));
+      const old = await fact('code.shared'); assert.equal(old.status, 'rules_inactive');
+      await scorer.activate(); const active = await models.AuraRuleSet.findOne({ version: 'native-v1' });
+      await scorer.activate(); assert.equal((await models.AuraRuleSet.findOne({ version: 'native-v1' })).activatedAt.toISOString(), active.activatedAt.toISOString());
+      for (const type of ['study.completed', 'answer.accepted', 'code.shared', 'resource.shared']) assert.equal((await fact(type)).status, 'settled');
+      assert.equal((await models.AuraBalance.findOne({ userId: owner.id })).total, 50);
+      const saved = await models.NativeFact.findOne({ userId: owner.id, status: 'settled' });
+      const replay = await native.transaction(session => scorer.score(saved.toObject(), session));
+      assert.equal(replay.awardedAura, saved.receipt.awardedAura);
+      await assert.rejects(native.transaction(session => scorer.score({ ...saved.toObject(), sourceId: new mongoose.Types.ObjectId() }, session)), { status: 409 });
+      assert.equal((await models.AuraBalance.findOne({ userId: owner.id })).total, 50);
+      const eventCount = await models.AuraEvent.countDocuments({ userId: owner.id });
+      const originalUpdate = models.AuraBalance.updateOne;
+      models.AuraBalance.updateOne = async () => { throw new Error('native rollback fixture'); };
+      try { await assert.rejects(fact('code.shared', 'rollback-code'), /native rollback fixture/); }
+      finally { models.AuraBalance.updateOne = originalUpdate; }
+      assert.equal(await models.AuraEvent.countDocuments({ userId: owner.id }), eventCount);
+      assert.equal(await models.NativeFact.countDocuments({ userId: owner.id, status: 'settled' }), 4);
+
+      await fact('resource.shared', 'duplicate'); await fact('resource.shared', 'duplicate');
+      assert.equal((await models.AuraBalance.findOne({ userId: owner.id })).total, 55);
+      await Promise.all(Array.from({ length: 8 }, () => fact('code.shared')));
+      assert.equal((await models.AuraBalance.findOne({ userId: owner.id })).total, 75);
+      await fact('study.completed'); await fact('study.completed');
+      assert.equal((await models.AuraBalance.findOne({ userId: owner.id })).total, 100);
+      assert.equal((await fact('answer.accepted')).receipt.awardedAura, 0);
+      assert.equal((await models.AuraBalance.findOne({ userId: owner.id })).engagement, 100);
+      assert.equal(await models.DailyActivity.countDocuments({ userId: owner.id }), 1);
+      assert.equal((await fact('resource.shared', 'old-pending', new Date(+active.activatedAt - 1000))).status, 'rules_inactive');
+      assert.equal((await models.NativeFact.findById(old.id)).status, 'rules_inactive');
+      const reads = require('../../services/core/services/auraReadService');
+      await models.User.updateOne({ _id: owner.id }, { $set: { auraPoints: 999999 } });
+      assert.equal((await require('../../services/core/utils/userDto').userDto(await models.User.findById(owner.id))).auraPoints, 100);
+      const first = await reads.leaderboard({ hubId: hub.id, userId: owner.id }, { limit: '1' });
+      assert.equal(first.ownRank.auraPoints, 100);
+      const generated = [];
+      for (let i = 0; i < 55; i++) generated.push({ _id: new mongoose.Types.ObjectId(), username: 'rank-peer-' + i, email: 'rank-' + i + '@g3.example.test', hubId: hub._id, membershipStatus: 'active', membershipVersion: 1 });
+      await models.User.collection.insertMany(generated);
+      await models.AuraBalance.insertMany(generated.map(row => ({ hubId: hub.id, userId: row._id, engagement: 200, externalBonus: 0, total: 200, asOf: new Date() })));
+      const ranked = await reads.leaderboard({ hubId: hub.id, userId: owner.id }, { limit: '50' });
+      assert.equal(ranked.items.length, 50); assert.equal(ranked.ownRank.rank, 56);
+      const next = await reads.leaderboard({ hubId: hub.id, userId: owner.id }, { limit: '50', cursor: ranked.nextCursor });
+      assert.ok(next.items.some(row => String(row._id) === owner.id && row.rank === 56));
+      await assert.rejects(reads.leaderboard({ hubId: new mongoose.Types.ObjectId().toString(), userId: owner.id }, { cursor: ranked.nextCursor }), { status: 400 });
+      const streak = require('../../services/core/services/streakService');
+      assert.equal(streak.countDays(['2026-10-02', '2026-10-01', '2026-09-30'], '2026-10-02'), 3);
+      assert.equal(streak.countDays(['2026-10-01', '2026-09-30'], '2026-10-02'), 2);
+      assert.equal(streak.countDays(['2026-09-30'], '2026-10-02'), 0);
+    });
     server = createApp({ auraRules: rules }).listen(0);
     await new Promise(resolve => server.once('listening', resolve));
     const post = async (body, source = body.source, headers = {}) => {
@@ -237,6 +290,15 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
       finally { models.AuraBalance.updateOne = original; }
       assert.equal(await models.AuraEvent.countDocuments(), before);
       assert.equal((await post(fact)).status, 201);
+    });
+    await t.test('native and module activity share a single day; India midnight advances the day', async () => {
+      const native = require('../../services/core/services/nativeFactService');
+      await native.transaction(session => native.record({ message: { _id: new mongoose.Types.ObjectId(), hubId: hub.id, authorId: user.id, createdAt: new Date(), text: 'shared-day-proof' }, type: 'code.shared' }, session));
+      assert.equal(await models.DailyActivity.countDocuments({ userId: user.id }), 1);
+      assert.deepEqual((await models.DailyActivity.findOne({ userId: user.id })).qualifyingSources.sort(), ['arcade', 'core', 'interview', 'learn']);
+      const streak = require('../../services/core/services/streakService');
+      assert.equal(streak.dayKey(new Date('2026-10-02T18:29:59Z')), '2026-10-02');
+      assert.equal(streak.dayKey(new Date('2026-10-02T18:30:00Z')), '2026-10-03');
     });
     await t.test('malformed JSON and oversized bodies use bounded contract errors; throttling supplies Retry-After', async () => {
       const url = 'http://127.0.0.1:' + server.address().port + '/api/aura/events';

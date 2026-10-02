@@ -1,0 +1,24 @@
+{
+  "version": "native-v1",
+  "timezone": "Asia/Kolkata",
+  "timezonePolicyVersion": 1,
+  "sourceCap": 100,
+  "types": {
+    "study.completed": {
+      "weight": 25,
+      "countCap": 2
+    },
+    "answer.accepted": {
+      "weight": 15,
+      "countCap": 3
+    },
+    "code.shared": {
+      "weight": 5,
+      "countCap": 5
+    },
+    "resource.shared": {
+      "weight": 5,
+      "countCap": 5
+    }
+  }
+}

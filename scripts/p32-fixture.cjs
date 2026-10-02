@@ -24,7 +24,7 @@ async function main() {
     CORE_MODULE_PRIVATE_KEY: keys.privateKey, CORE_MODULE_KEY_ID: 'p32-key', CORE_MODULE_PUBLIC_KEYS: JSON.stringify({ 'p32-key': keys.publicKey }), MONGO_URI: repl.getUri('collegehubs_demo_p32') });
   mongoose.set('autoCreate', false).set('autoIndex', false);
   await mongoose.connect(process.env.MONGO_URI);
-  const names = ['College', 'Hub', 'Channel', 'Message', 'NativeFact', 'Problem', 'StudyRoom', 'StudySolution', 'PeerReview', 'User', 'Post', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'];
+  const names = ['College', 'Hub', 'Channel', 'Message', 'NativeFact', 'AuraRuleSet', 'Problem', 'StudyRoom', 'StudySolution', 'PeerReview', 'User', 'Post', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'];
   const models = Object.fromEntries(names.map(name => [name, require('../services/core/models/' + name)]));
   await Promise.all(Object.values(models).map(async model => { await model.createCollection(); await model.createIndexes(); }));
   const provision = require('../services/core/services/hubProvisioning');

@@ -52,7 +52,7 @@ The fixture now accepts `stop-core` and `start-core`, preserving its Mongo data 
 
 ## P4.2 typed channels
 
-Channels support text, code, titled HTTPS resources, questions and replies. Search is literal, scoped and paginated. Only a question's author can permanently accept a different author's answer. See [P4.2 contracts and evidence](p4.2-evidence.md). Native facts are persisted transactionally; live Aura remains inactive until P6. No new environment names or provider accounts are needed.
+Channels support text, code, titled HTTPS resources, questions and replies. Search is literal, scoped and paginated. Only a question's author can permanently accept a different author's answer. See [P4.2 contracts and evidence](p4.2-evidence.md). Native facts are persisted transactionally; native Aura is active prospectively under P6.1 rules; see [Aura contracts](aura.md). No new environment names or provider accounts are needed.
 
 The local fixture additionally creates `peer@cvr.ac.in` with password `Preview-only-32!` for same-Hub answer testing. These accounts exist only in disposable local Mongo. `NativeFact` collections/indexes are prepared on startup; the reset allowlist includes `nativefacts` without relaxing its synthetic-data guard. The shared CommonJS channel contract is explicitly included in Vite dependency optimization. If editing that linked contract during development, restart Vite with `--force` to refresh the prebundle.
 
@@ -60,4 +60,4 @@ The local fixture additionally creates `peer@cvr.ac.in` with password `Preview-o
 
 Core now owns Problem, StudyRoom and StudySolution, including startup indexes and deadline recovery. Room creation is available through `/api/study-rooms`; the shared-shell UI is available through each channel's Open study rooms link. See [HTTP/socket contracts and safe stop](study-rooms.md). `STUDY_ROOMS_ENABLED=false` stops new rooms while preserving active work. No dependency installation or provider configuration is required. Standalone G4 uses its own local replica set when no guard URI is supplied; the full fixture `guards` command includes G4 with zero database skips.
 
-P5.2 adds PeerReview, stable completion IDs/status and a bounded reconciler for pending study facts. No new dependency or runtime variable is needed. Reconnect/sync restores acknowledged work; save explicitly before leaving a room. Aura scoring stays inactive pending P6. See [P5.2 evidence](p5.2-evidence.md).
+P5.2 adds PeerReview, stable completion IDs/status and a bounded reconciler for pending study facts. No new dependency or runtime variable is needed. Reconnect/sync restores acknowledged work; save explicitly before leaving a room. P6.1 scores new eligible completions; older inactive facts are not replayed. See [P5.2 evidence](p5.2-evidence.md).

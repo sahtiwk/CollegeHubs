@@ -31,7 +31,7 @@ export default function AnswerThread({ questionId, channelId, hubId, userId, sen
     {error && <p role="alert">{error} <button onClick={() => setTick(value => value + 1)}>Retry thread</button></p>}
     {!thread && !error && <p role="status">Loading thread...</p>}
     {thread && <><p className="message-prose"><strong>{thread.question.authorName} asks:</strong><br />{thread.question.text}</p>
-      <p className="muted">{thread.question.acceptedAnswerId ? 'An answer has been accepted. This choice is permanent.' : 'The question author may permanently accept one answer from another person. Aura scoring is not active yet.'}</p>
+      <p className="muted">{thread.question.acceptedAnswerId ? 'An answer has been accepted. This choice is permanent.' : 'The question author may permanently accept one answer from another person. Eligible answers receive Aura under the current daily limits.'}</p>
       {thread.hasMore && <button disabled={busy} onClick={() => setBeforeSeq(thread.items[0]?.seq)}>Older replies</button>}
       {beforeSeq && <button onClick={() => setBeforeSeq(null)}>Latest replies</button>}
       <ol className="channel-messages" aria-label="Answers">{answers.map(answer => <li key={answer._id}><strong>{answer.authorName}</strong><p className="message-prose">{answer.text}</p>

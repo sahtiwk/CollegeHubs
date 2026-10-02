@@ -42,7 +42,7 @@ Existing `docs/p0.1-evidence.md` through available `docs/p3.1-evidence.md` recor
 | P4.2 | **Local PASS (2026-10-01):** typed code/resources/questions/answers, literal search, immutable acceptance, transactional native facts, 63 passing G1–G3 checks and Demo2/mobile evidence. Scoring remains P6-gated. See `docs/p4.2-evidence.md`. |
 | P5–P11 | Future unless separate evidence proves otherwise; this document marks none complete. |
 
-**P5.2 is complete locally. Next planned phase: P6.1, only when requested.** P3.2/P4.1 retain passing local evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
+**P6.1 is complete locally. Next planned phase: P6.2, only when requested.** P3.2/P4.1 retain passing local evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
 
 ## Tier map
 
@@ -530,9 +530,11 @@ Goal: canonical rewards and truthful useful schedules. Entry: P4/P5/P2.2. Read A
 
 ### P6.1. Canonical scoring, shared day and college rank
 
+**Local status (2026-10-02): PASS.** Prospective native rules, transactional receipts/caps/balances, shared activity days, canonical profile totals, own-rank pagination and themed Aura UI are implemented. G1–G4: 76 passing tests, zero skips; web/Core/Learn builds pass. A real five-minute Study completion plus accepted answer/code/resource produced exactly 50 engagement. See [Aura contracts](docs/aura.md) and [P6.1 evidence](docs/p6.1-evidence.md). Module scoring/external bonuses remain disabled; P6.2 is not started.
+
 **Scope:** A7 weights/caps/streak/recent receipts/rank, no badges or historical migration. **Prerequisite:** P5.2/P2.2. **Guards:** G1/G3. **Effort:** 1–2 days.
 
-1. Add Core `models/AuraRuleSet.js`, `config/auraRules.v1.json`; activate only implemented fact types in `services/auraEventService.js`. Retain transactional count/point caps and semantic keys.
+1. Add Core `models/AuraRuleSet.js`, `config/auraRules.v1.json`; activate implemented native fact types through `services/nativeAuraService.js`; keep future-module rules gated in `services/auraEventService.js`. Retain transactional count/point caps and semantic keys.
 2. Add `services/streakService.js`, `routes/auraRoutes.js`; one global day across sources, split totals/recent receipts and Hub-filtered keyset ranking with own rank outside the first page.
 3. Remove remaining legacy direct reward/overwrite paths; compatible user fields read canonical balances.
 4. Update shared web Leaderboard/AuraCard/AuraTicker; real totals and empty/pending states only. Document rules and fixture math in `docs/aura.md`.

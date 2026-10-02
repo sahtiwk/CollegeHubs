@@ -207,3 +207,16 @@ dialog::backdrop { background: rgba(20, 5, 20, .5); }
 .study-page .badge { padding: 5px 10px; border: 1px solid var(--border); border-radius: 20px; font-size: .8rem; }
 @media (max-width: 900px) { .study-comparison { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 480px) { .study-page .card { padding: 16px; } .study-heading h1 { font-size: 2.3rem; } .study-timer { max-width: none; width: 100%; } .study-actions button { flex: 1 1 auto; } }
+
+/* Canonical Aura uses the active college theme, including mobile layouts. */
+.aura-card { margin-bottom: 28px; }
+.aura-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 0; }
+.aura-stats div { padding: 16px; border-radius: 12px; background: var(--surface-raised); }
+.aura-stats dt { color: var(--text-muted); font-size: .85rem; }
+.aura-stats dd { margin: 8px 0 0; font-size: 2rem; font-weight: 700; }
+.aura-stats dd small { font-size: .85rem; }
+.aura-receipts { list-style: none; padding: 0; margin: 12px 0 0; }
+.aura-receipts li { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.aura-receipts small { display: block; }
+.aura-card summary { cursor: pointer; min-height: 44px; padding: 10px 0; }
+@media (max-width: 640px) { .aura-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .aura-card .section-heading { flex-wrap: wrap; gap: 12px; } }

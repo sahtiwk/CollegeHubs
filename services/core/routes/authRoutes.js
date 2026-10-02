@@ -20,7 +20,7 @@ router.post('/register', async (req, res) => {
     // The model save hook retains bcrypt cost 12.
     const user = await User.create({ username, email, password, auraPoints: 0 });
     const result = await tryAssignMembership(user);
-    res.status(201).json({ token: generateToken(result.user), user: userDto(result.user, true), assignment: result.assignment });
+    res.status(201).json({ token: generateToken(result.user), user: await userDto(result.user, true), assignment: result.assignment });
   } catch (err) {
     respondError(res, err, 'Server error during registration');
   }
@@ -35,7 +35,7 @@ router.post('/login', async (req, res) => {
     if (!user || !user.password || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-    res.json({ token: generateToken(user), user: userDto(user, true) });
+    res.json({ token: generateToken(user), user: await userDto(user, true) });
   } catch (err) {
     respondError(res, err, 'Server error during login');
   }

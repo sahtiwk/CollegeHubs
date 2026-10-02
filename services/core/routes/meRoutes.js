@@ -16,20 +16,20 @@ router.get('/hub', require('../services/hubAccess').requireTenant, async (req, r
   } catch { res.status(503).json({ error: 'Hub unavailable' }); }
 });
 router.get('/', async (req, res) => {
-  try { res.set('Cache-Control', 'no-store').json({ ...userDto(req.user, true), hubs: await getUserHubs(req.user) }); }
+  try { res.set('Cache-Control', 'no-store').json({ ...await userDto(req.user, true), hubs: await getUserHubs(req.user) }); }
   catch { res.status(503).json({ error: 'Membership check unavailable' }); }
 });
 router.patch('/', async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(req.user._id, { $set: profileFields(req.body) }, { new: true, runValidators: true });
-    res.json(userDto(user, true));
+    res.json(await userDto(user, true));
   } catch (err) { respondError(res, err, 'Failed to save profile'); }
 });
 router.post('/assignment/retry', async (req, res) => {
   try {
     if (Object.keys(bodyObject(req.body)).length) return res.status(400).json({ error: 'Assignment retry accepts an empty object only' });
     const result = await tryAssignMembership(req.user);
-    res.json({ ...result, user: userDto(result.user, true), token: generateToken(result.user) });
+    res.json({ ...result, user: await userDto(result.user, true), token: generateToken(result.user) });
   } catch (err) { respondError(res, err, 'Assignment retry unavailable'); }
 });
 module.exports = router;

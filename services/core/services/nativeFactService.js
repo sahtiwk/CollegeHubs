@@ -21,13 +21,13 @@ async function record({ message, type, userId = message.authorId, occurredAt = m
   const existing = await NativeFact.findOne({ businessKey }).session(session);
   if (existing) return existing;
   const [fact] = await NativeFact.create([{ eventId: `core:${type}:${message._id}:v1`, businessKey, hubId: message.hubId, userId, sourceId: message._id, type, occurredAt: at, dayKey, normalizedSourceHash }], { session });
-  // Internal server composition only. P6 supplies canonical scoring here; no browser/env switch.
-  // The scorer must use this session, never an independent transaction or external side effect.
-  if (applyNativeFact) {
-    const receipt = await applyNativeFact(fact.toObject(), session);
-    if (!receipt || receipt.eventId !== fact.eventId) throw new Error('Native scorer must return the matching durable receipt');
+  // Explicit fixture injection stays isolated; ordinary composition uses the persisted live rules.
+  const scorer = applyNativeFact || require('./nativeAuraService').score;
+  const receipt = await scorer(fact.toObject(), session);
+  if (receipt) {
+    if (receipt.eventId !== fact.eventId) throw new Error('Native scorer must return the matching durable receipt');
     fact.status = 'settled'; fact.receipt = receipt; await fact.save({ session });
-  }
+  } else if (applyNativeFact) throw new Error('Fixture scorer did not return a receipt');
   return fact;
 }
 module.exports = { record, transaction };

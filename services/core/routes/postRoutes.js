@@ -5,7 +5,7 @@ const { authenticate } = require('../middleware/auth');
 const { text, bodyObject, respondError, badInput } = require('../utils/validation');
 const { pageInput, cursorFor } = require('../utils/pagination');
 router.use(authenticate, requireTenant);
-const author = hub => ({ path: 'author', select: 'username fullName profilePicture rankTitle', match: scopedFilter(hub, { membershipStatus: 'active' }) });
+const author = hub => ({ path: 'author', select: 'username fullName profilePicture', match: scopedFilter(hub, { membershipStatus: 'active' }) });
 router.post('/', async (req, res) => {
   try {
     const content = text(bodyObject(req.body).content, 'Post content', 8192, true);

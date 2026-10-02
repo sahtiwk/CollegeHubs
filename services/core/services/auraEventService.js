@@ -76,7 +76,8 @@ async function transaction(work) {
   }
 }
 function createAuraEventService({ rules = null } = {}) {
-  // P2 supplies rules ONLY via server-side fixture injection. No env/browser switch.
+  // External module adapters are not released: their rules remain fixture-only.
+  // Implemented native facts use nativeAuraService and the persisted native-v1 ruleset.
   if (rules) {
     rules = JSON.parse(JSON.stringify(rules));
     if (!text(rules.version) || !rules.version.startsWith('fixture-') || !integer(rules.timezonePolicyVersion, 1, 1000) || !rules.types || !Object.keys(rules.types).length) throw new Error('P2 requires explicitly injected fixture rules');

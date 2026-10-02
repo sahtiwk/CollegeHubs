@@ -20,7 +20,7 @@ export default function SubmissionComparison({ room, userId, refreshId }) {
     {state.loading && <p role="status">Loading sealed solutions...</p>}{state.error && <p role="alert">{state.error} <button onClick={() => setVersion(value => value + 1)}>Retry comparison</button></p>}
     <div className="study-comparison">{state.items.map(solution => <article className="card stack" key={solution._id}><h3>{names[solution.userId] || 'Participant'}{solution.userId === userId ? ' (you)' : ''}</h3><p className="muted">Revision {solution.revision} &middot; {solution.outcome === 'empty' ? 'No nonempty saved solution' : 'Sealed solution'}</p>
       {solution.source ? <CodeBlock text={solution.source} language={solution.language} /> : <p>No source was saved.</p>}
-      <p className="study-award">{solution.awardStatus === 'settled' ? 'Completion recorded.' : solution.awardStatus === 'pending' ? 'Solution saved; completion record pending.' : solution.awardStatus === 'rules_inactive' ? 'Completion recorded. Aura scoring is not active yet.' : 'No completion award: a nonempty saved solution is required.'}</p>
+      <p className="study-award">{solution.awardStatus === 'settled' ? 'Completion recorded.' : solution.awardStatus === 'pending' ? 'Solution saved; completion record pending.' : solution.awardStatus === 'rules_inactive' ? 'Completion recorded before scoring activation; no retroactive Aura.' : 'No completion award: a nonempty saved solution is required.'}</p>
       <PeerReviewPanel solution={solution} reviews={state.reviews.filter(row => row.solutionId === solution._id)} userId={userId} names={names} send={send} />
     </article>)}</div></section>;
 }

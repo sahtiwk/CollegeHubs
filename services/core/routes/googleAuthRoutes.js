@@ -49,7 +49,7 @@ router.post('/auth', async (req, res) => {
       await user.save();
     }
     const result = await tryAssignMembership(user);
-    res.json({ token: generateToken(result.user), user: userDto(result.user, true), assignment: result.assignment });
+    res.json({ token: generateToken(result.user), user: await userDto(result.user, true), assignment: result.assignment });
   } catch (err) { respondError(res, err, 'Server error during Google authentication'); }
 });
 module.exports = router;

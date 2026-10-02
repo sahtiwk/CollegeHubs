@@ -10,6 +10,13 @@ test('G1: study rooms hide foreign rooms, problems and participant work over HTT
   }
   const login = async email => { const r = await call('/auth/login', null, { email, password: 'Preview-only-32!' }); assert.equal(r.status, 200); return r.data; };
   const a = await login('preview@cvr.ac.in'), b = await login('preview@sky.example.test'), peer = await login('peer@cvr.ac.in');
+  assert.equal((await call('/me/aura')).status, 401);
+  assert.equal((await call('/me/aura?userId=' + b.user._id, a.token)).status, 400);
+  assert.equal((await call('/me/progress?hubId=' + b.user.hubId, a.token)).status, 400);
+  assert.equal((await call('/hubs/' + b.user.hubId + '/leaderboard', a.token)).status, 403);
+  const aura = await call('/me/aura', a.token); assert.equal(aura.status, 200);
+  assert.equal(aura.data.userId, a.user._id); assert.equal(aura.data.hubId, a.user.hubId);
+  assert.ok(aura.data.recent.every(row => !('metadata' in row) && !('userId' in row)));
   const channelId = (await call('/hubs/' + a.user.hubId + '/channels', a.token)).data.items[0]._id;
   const problems = await call('/study-rooms/problems', a.token);
   assert.equal(problems.status, 200);
@@ -301,7 +308,7 @@ function matches(row, filter) {
   return Object.entries(filter).every(([key, value]) => {
     if (key === '$or') return value.some(part => matches(row, part));
     const actual = row[key] instanceof Date ? row[key].getTime() : row[key];
-    if (value && typeof value === 'object' && !(value instanceof Date)) {
+    if (value && typeof value === 'object' && !(value instanceof Date) && !value._bsontype) {
       return Object.entries(value).every(([op, expected]) => {
         expected = expected instanceof Date ? expected.getTime() : expected;
         return op === '$lt' ? actual < expected : op === '$gt' ? actual > expected : false;
@@ -311,7 +318,7 @@ function matches(row, filter) {
   });
 }
 function query(value) {
-  return { select() { return this; }, sort(order) {
+  return { lean() { return this; }, maxTimeMS() { return this; }, option() { return this; }, select() { return this; }, sort(order) {
     if (Array.isArray(value)) value.sort((a, b) => {
       for (const [key, direction] of Object.entries(order)) {
         if (a[key] < b[key]) return -direction;
@@ -346,6 +353,16 @@ test.beforeEach(() => {
   posts = [{ _id: id(30), hubId: id(10), likes: [] }, { _id: id(40), hubId: id(20), likes: [] }, { _id: id(50), likes: [] }];
   for (const post of posts) { post.save = async () => post; post.populate = async () => post; }
   posts.forEach(post => { post.createdAt = new Date('2026-09-29T00:00:00Z'); });
+  // Mock joined canonical rows for the existing route isolation tests. Real Mongo
+  // balance joins, legacy exclusion and rank beyond page one are covered separately.
+  patch(require('../../services/core/models/AuraBalance'), 'findOne', () => query(null));
+  patch(require('../../services/core/models/DailyActivity'), 'find', () => query([]));
+  patch(User, 'aggregate', pipeline => {
+    const scope = pipeline[0].$match;
+    const ordered = users.filter(user => matches(user, scope)).sort((a, b) => b.auraPoints - a.auraPoints || a._id.localeCompare(b._id)).map((user, i) => ({ _id: user._id, username: user.username, auraPoints: user.auraPoints, rank: i + 1 }));
+    const facet = pipeline.at(-1).$facet;
+    return query([{ items: ordered.filter(row => matches(row, facet.items[0].$match)).slice(0, facet.items[2].$limit), own: ordered.filter(row => matches(row, facet.own[0].$match)).map(({ rank, auraPoints }) => ({ rank, auraPoints })) }]);
+  });
   patch(User, 'findById', value => query(users.find(user => user._id === String(value)) || null));
   patch(User, 'findOne', filter => query(users.find(user => matches(user, filter)) || null));
   patch(User, 'find', filter => query(users.filter(user => matches(user, filter))));
