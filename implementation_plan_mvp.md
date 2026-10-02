@@ -42,7 +42,7 @@ Existing `docs/p0.1-evidence.md` through available `docs/p3.1-evidence.md` recor
 | P4.2 | **Local PASS (2026-10-01):** typed code/resources/questions/answers, literal search, immutable acceptance, transactional native facts, 63 passing G1–G3 checks and Demo2/mobile evidence. Scoring remains P6-gated. See `docs/p4.2-evidence.md`. |
 | P5–P11 | Future unless separate evidence proves otherwise; this document marks none complete. |
 
-**P4.2 is complete locally. Next planned phase: P5.1, only when requested.** P3.2/P4.1 retain passing local evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
+**P5.1 is complete locally. Next planned phase: P5.2, only when requested.** P3.2/P4.1 retain passing local evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
 
 ## Tier map
 
@@ -501,6 +501,8 @@ Goal: durable subject collaboration in the shared shell. Entry: P1/P2 and P3.2 f
 Goal: synchronized individual solving, durable drafts and post-close comparison. Entry: P4/P2. Read A5–A8/H4. Human: review bounded problem seed and run two-browser demo. Safe stop: disable new rooms while preserving active deadlines/drafts/comparisons. Trace: FR4/FR6/NFR2/NFR5.
 
 ### P5.1. Authoritative lifecycle and atomic close
+
+**Local status (2026-10-02): PASS.** Core models/seed, scoped HTTP/socket lifecycle, DB-time draft fences, atomic sealing, startup/due recovery and safe-stop flag are implemented. G1-G4: 72 passing tests, zero skips; web/Core/Learn builds pass. Real process-kill recovery and pre-close privacy are verified. See [P5.1 evidence](docs/p5.1-evidence.md) and [Study Room contracts](docs/study-rooms.md). P5.2 UI, peer reviews and study award facts are not yet implemented; live Aura remains P6-gated.
 
 **Scope:** waiting/join/start/save/submit/review; no co-editing/judge. **Prerequisite:** P4. **Guards:** G1/G4 first. **Effort:** 2–3 days.
 

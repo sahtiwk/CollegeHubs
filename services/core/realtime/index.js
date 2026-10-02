@@ -1,3 +1,5 @@
+const study = require('../services/studyService');
+const { studyHandlers, roomName } = require('./studyHandlers');
 const { Server } = require('socket.io');
 const messages = require('../services/messageService');
 const { channelHandlers, room } = require('./channelHandlers');
@@ -22,10 +24,23 @@ function attachRealtime(server, app) {
   }
   const publishSafely = (message, event) => publish(message, event).catch(() => {}); // Persisted history repairs lost broadcasts.
   app.locals.publishMessage = publishSafely;
+  async function publishStudy({ hubId, roomId }) {
+    const recipients = await core.in(roomName(hubId, roomId)).fetchSockets();
+    await Promise.allSettled(recipients.map(async socket => {
+      try {
+        const result = await study.snapshot(socket.data.claims, roomId);
+        // Tailored per recipient: never broadcast somebody else's draft.
+        socket.emit(result.room.status === 'review' ? 'study:closed' : 'study:state', result);
+      } catch { await socket.leave(roomName(hubId, roomId)); }
+    }));
+  }
+  const publishStudySafely = event => publishStudy(event).catch(() => {});
+  app.locals.publishStudy = publishStudySafely;
   core.on('connection', socket => {
     const expiry = setTimeout(() => socket.disconnect(true), Math.max(0, socket.data.claims.exp * 1000 - Date.now()));
     socket.once('disconnect', () => clearTimeout(expiry));
     channelHandlers(socket, publishSafely);
+    studyHandlers(socket, publishStudySafely);
   });
   return io;
 }

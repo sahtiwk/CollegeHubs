@@ -62,6 +62,7 @@ function createApp({ connection = mongoose.connection, auraRules = null } = {}) 
   app.use('/api/hubs', require('./routes/hubRoutes'));
   app.use('/api/channels', require('./routes/channelRoutes'));
   app.use('/api/messages', require('./routes/messageRoutes'));
+  app.use('/api/study-rooms', require('./routes/studyRoutes'));
 
   // User routes
   const userRoutes = require('./routes/userRoutes');

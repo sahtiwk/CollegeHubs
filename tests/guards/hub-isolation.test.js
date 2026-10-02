@@ -1,6 +1,37 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
+test('G1: study rooms hide foreign rooms, problems and participant work over HTTP', async () => {
+  assert.ok(process.env.GUARD_APP_ORIGIN, 'Requires disposable integration fixture');
+  const base = process.env.GUARD_APP_ORIGIN;
+  async function call(path, token, body) {
+    const response = await fetch(base + '/api' + path, { method: body ? 'POST' : 'GET', headers: { Origin: base, 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
+    return { status: response.status, data: await response.json() };
+  }
+  const login = async email => { const r = await call('/auth/login', null, { email, password: 'Preview-only-32!' }); assert.equal(r.status, 200); return r.data; };
+  const a = await login('preview@cvr.ac.in'), b = await login('preview@sky.example.test'), peer = await login('peer@cvr.ac.in');
+  const channelId = (await call('/hubs/' + a.user.hubId + '/channels', a.token)).data.items[0]._id;
+  const problems = await call('/study-rooms/problems', a.token);
+  assert.equal(problems.status, 200);
+  const input = { channelId, problemId: problems.data.items[0]._id, durationMinutes: 5, clientRoomId: require('node:crypto').randomUUID() };
+  assert.equal((await call('/study-rooms', b.token, input)).status, 404);
+  const foreignChannel = (await call('/hubs/' + b.user.hubId + '/channels', b.token)).data.items[0]._id;
+  assert.equal((await call('/study-rooms', b.token, { ...input, channelId: foreignChannel })).status, 404);
+  assert.equal((await call('/study-rooms', a.token, { ...input, hubId: b.user.hubId })).status, 400);
+  const created = await call('/study-rooms', a.token, input); assert.equal(created.status, 201);
+  const path = '/study-rooms/' + created.data.room._id;
+  for (const suffix of ['', '/submissions']) assert.equal((await call(path + suffix, b.token)).status, 404);
+  for (const suffix of ['/join', '/start', '/draft', '/submit']) assert.equal((await call(path + suffix, b.token, suffix === '/draft' ? { expectedRevision: 0, revision: 1, source: 'foreign', language: 'python' } : suffix === '/submit' ? { draftRevision: 0 } : {})).status, 404);
+  assert.equal((await call(path, peer.token)).status, 404);
+  assert.equal((await call(path + '/join', peer.token, {})).status, 200);
+  assert.equal((await call(path + '/start', peer.token, {})).status, 403);
+  assert.equal((await call(path + '/start', a.token, {})).status, 200);
+  const source = 'private-peer-source-' + require('node:crypto').randomUUID();
+  assert.equal((await call(path + '/draft', peer.token, { expectedRevision: 0, revision: 1, source, language: 'python' })).status, 200);
+  assert.ok(!JSON.stringify((await call(path, a.token)).data).includes(source));
+  assert.equal((await call(path + '/submissions', a.token)).status, 409);
+});
+
 test('G1: typed message contract enforces UTF-8 limits and safe resource schemes', () => {
   const { normalizeMessage, resourceUrl } = require('../../packages/contracts/channel.cjs');
   const base = { clientMessageId: require('node:crypto').randomUUID(), type: 'code', language: 'javascript', text: '  <script>literal</script>\n' };

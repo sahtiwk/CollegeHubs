@@ -24,7 +24,7 @@ async function main() {
     CORE_MODULE_PRIVATE_KEY: keys.privateKey, CORE_MODULE_KEY_ID: 'p32-key', CORE_MODULE_PUBLIC_KEYS: JSON.stringify({ 'p32-key': keys.publicKey }), MONGO_URI: repl.getUri('collegehubs_demo_p32') });
   mongoose.set('autoCreate', false).set('autoIndex', false);
   await mongoose.connect(process.env.MONGO_URI);
-  const names = ['College', 'Hub', 'Channel', 'Message', 'NativeFact', 'User', 'Post', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'];
+  const names = ['College', 'Hub', 'Channel', 'Message', 'NativeFact', 'Problem', 'StudyRoom', 'StudySolution', 'User', 'Post', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'];
   const models = Object.fromEntries(names.map(name => [name, require('../services/core/models/' + name)]));
   await Promise.all(Object.values(models).map(async model => { await model.createCollection(); await model.createIndexes(); }));
   const provision = require('../services/core/services/hubProvisioning');
@@ -45,7 +45,7 @@ async function main() {
   async function guards() {
     mkdirSync(resolve(root, '.local'), { recursive: true });
     const log = createWriteStream(resolve(root, '.local/p32-guards.tap'));
-    const proc = spawn(process.execPath, ['--test', '--test-reporter=tap', 'tests/guards/hub-isolation.test.js', 'tests/guards/module-grants.test.js', 'tests/guards/aura-events.test.js'], { cwd: root, env: { ...process.env, GUARD_MONGO_URI: repl.getUri(), GUARD_CORE_SIGNING_SECRET: process.env.JWT_SECRET, GUARD_APP_ORIGIN: origin, GUARD_LEARN_DATABASE_URL: url.toString() }, stdio: ['ignore', 'pipe', 'pipe'] });
+    const proc = spawn(process.execPath, ['--test', '--test-reporter=tap', 'tests/guards/hub-isolation.test.js', 'tests/guards/module-grants.test.js', 'tests/guards/aura-events.test.js', 'tests/guards/study-room.test.js'], { cwd: root, env: { ...process.env, GUARD_MONGO_URI: repl.getUri(), GUARD_CORE_SIGNING_SECRET: process.env.JWT_SECRET, GUARD_APP_ORIGIN: origin, GUARD_LEARN_DATABASE_URL: url.toString() }, stdio: ['ignore', 'pipe', 'pipe'] });
     children.push(proc); proc.stdout.pipe(log, { end: false }); proc.stderr.pipe(log, { end: false });
     await new Promise(resolve => proc.once('close', code => { log.end(); console.log('Guard exit:', code, '(report .local/p32-guards.tap)'); resolve(); }));
   }

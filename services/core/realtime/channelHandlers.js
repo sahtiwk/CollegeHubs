@@ -13,7 +13,7 @@ function channelHandlers(socket, publish) {
       await messages.channelFor(context, channelId);
       if (event === 'channel:join') {
         // One active channel per client; caller-provided room names are never accepted.
-        for (const old of socket.rooms) if (old.startsWith('hub:')) await socket.leave(old);
+        for (const old of socket.rooms) if (old.startsWith('hub:') && old.includes(':channel:')) await socket.leave(old);
         await socket.join(room(context.hubId, channelId));
       }
       if (event === 'message:send') {

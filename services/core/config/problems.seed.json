@@ -1,0 +1,28 @@
+[
+  {
+    "slug": "first-occurrence",
+    "version": 1,
+    "title": "Find the first occurrence",
+    "statement": "Given a sorted array of integers and a target, return the index of the first occurrence, or -1 if absent. Aim for O(log n) time and O(1) extra space. Explain why each iteration shrinks the search interval. Examples: [1,2,2,2,4], target 2 -> 1; [], target 3 -> -1. Constraints: 0 to 100000 elements; values and target between -1000000000 and 1000000000. Write an individual solution and a short complexity explanation. There is no automated judge.",
+    "allowedLanguages": [
+      "javascript",
+      "typescript",
+      "python",
+      "java",
+      "cpp"
+    ]
+  },
+  {
+    "slug": "balanced-brackets",
+    "version": 1,
+    "title": "Check balanced brackets",
+    "statement": "Given a string containing only (), [] and {}, determine whether every opening bracket is closed in the correct order. The empty string is balanced. Examples: ([{}]) -> true; ([)] -> false. Constraints: 0 to 100000 characters. Aim for O(n) time. Explain the stack invariant and space complexity. Write an individual solution; there is no automated judge.",
+    "allowedLanguages": [
+      "javascript",
+      "typescript",
+      "python",
+      "java",
+      "cpp"
+    ]
+  }
+]
