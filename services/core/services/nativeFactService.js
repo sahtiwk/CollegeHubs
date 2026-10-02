@@ -17,7 +17,7 @@ async function record({ message, type, userId = message.authorId, occurredAt = m
   if (type === 'code.shared') source = message.text.normalize('NFKC').replace(/\s+/g, ' ').trim();
   if (type === 'resource.shared') { const url = new URL(message.url); url.hash = ''; url.searchParams.sort(); source = url.href; }
   const normalizedSourceHash = hash(source);
-  const businessKey = hash(JSON.stringify([String(message.hubId), String(userId), type, ...(type === 'answer.accepted' ? [] : [dayKey]), normalizedSourceHash]));
+  const businessKey = hash(JSON.stringify([String(message.hubId), String(userId), type, ...(['answer.accepted', 'study.completed'].includes(type) ? [] : [dayKey]), normalizedSourceHash]));
   const existing = await NativeFact.findOne({ businessKey }).session(session);
   if (existing) return existing;
   const [fact] = await NativeFact.create([{ eventId: `core:${type}:${message._id}:v1`, businessKey, hubId: message.hubId, userId, sourceId: message._id, type, occurredAt: at, dayKey, normalizedSourceHash }], { session });

@@ -12,6 +12,7 @@ async function scan(publish = async () => {}) {
       if (result) { closed++; await publish(result); }
     } catch { console.error('Study room closure unavailable; a later scan will retry'); }
   }
+  await require('./studyFactService').reconcile();
   return { examined: rows.length, closed };
 }
 async function start(publish) {

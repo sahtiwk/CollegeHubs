@@ -5,7 +5,7 @@ const schema = new mongoose.Schema({
   hubId: { type: mongoose.Schema.Types.ObjectId, required: true, immutable: true },
   userId: { type: mongoose.Schema.Types.ObjectId, required: true, immutable: true },
   sourceId: { type: mongoose.Schema.Types.ObjectId, required: true, immutable: true },
-  type: { type: String, enum: ['code.shared', 'resource.shared', 'answer.accepted'], required: true, immutable: true },
+  type: { type: String, enum: ['code.shared', 'resource.shared', 'answer.accepted', 'study.completed'], required: true, immutable: true },
   occurredAt: { type: Date, required: true, immutable: true },
   dayKey: { type: String, required: true, immutable: true },
   normalizedSourceHash: { type: String, required: true, immutable: true },

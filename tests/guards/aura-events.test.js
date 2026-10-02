@@ -38,7 +38,7 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
       'learn.quiz_completed': { weight: 5, countCap: 5, sourceCap: 100 },
       'learn.node_mastered': { weight: 15, countCap: 100, sourceCap: 100 },
     } };
-  const names = ['College', 'Hub', 'User', 'Channel', 'Message', 'NativeFact', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'];
+  const names = ['College', 'Hub', 'User', 'Channel', 'Message', 'NativeFact', 'Problem', 'StudyRoom', 'StudySolution', 'PeerReview', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'];
   const models = Object.fromEntries(names.map(name => [name, require('../../services/core/models/' + name)]));
   const dbName = 'collegehubs_demo_g3_' + randomUUID().replaceAll('-', '');
   const uri = new URL(process.env.GUARD_MONGO_URI);
@@ -111,6 +111,33 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
       const inactive = await messages.send(peerClaims, channel.id, { ...code, clientMessageId: randomUUID(), text: 'rules remain inactive' });
       assert.equal((await models.NativeFact.findOne({ sourceId: inactive.message._id })).status, 'rules_inactive');
       assert.equal((await models.AuraBalance.findOne({ userId: recipient.id })).total, 15);
+    });
+    await t.test('P5.2 study completion pending recovery commits one fact and fixture award', async () => {
+      const study = require('../../services/core/services/studyService');
+      const facts = require('../../services/core/services/studyFactService');
+      const participant = await models.User.create({ username: 'g3-study-peer', email: 'study-peer@g3.example.test', password: opaque(), hubId: hub.id, membershipStatus: 'active', membershipVersion: 1 });
+      const room = await models.StudyRoom.create({ hubId: hub.id, channelId: new mongoose.Types.ObjectId(), hostId: user.id, clientRoomId: randomUUID(), problemId: new mongoose.Types.ObjectId(), problem: { title: 'Fixture' }, durationMinutes: 5, participantIds: [user.id, participant.id], status: 'active', startAt: new Date(Date.now() - 300000), endAt: new Date(Date.now() - 1000) });
+      const [nonempty, empty] = await models.StudySolution.create([{ hubId: hub.id, roomId: room.id, userId: participant.id, source: 'acknowledged fixture source', language: 'python', revision: 1, savedAt: new Date(Date.now() - 3000) }, { hubId: hub.id, roomId: room.id, userId: user.id, source: '   ', revision: 1, savedAt: new Date(Date.now() - 3000) }]);
+      await study.closeDue(room.id);
+      assert.equal((await models.StudySolution.findById(nonempty.id)).awardStatus, 'pending');
+      assert.equal((await models.StudySolution.findById(empty.id)).awardStatus, 'ineligible');
+      const applyNativeFact = async (fact, session) => {
+        assert.ok(session.inTransaction());
+        await models.AuraBalance.updateOne({ hubId: fact.hubId, userId: fact.userId }, { $inc: { engagement: 25, total: 25 } }, { upsert: true, session });
+        return { eventId: fact.eventId, awardedAura: 25, weightVersion: 'fixture-study-seam' };
+      };
+      await facts.reconcile({ roomId: room.id }, { applyNativeFact: async (fact, session) => { await applyNativeFact(fact, session); throw new Error('injected scorer failure'); } });
+      assert.equal((await models.StudySolution.findById(nonempty.id)).awardStatus, 'pending');
+      assert.equal(await models.NativeFact.countDocuments({ sourceId: nonempty.id }), 0);
+      assert.equal(await models.AuraBalance.countDocuments({ userId: participant.id }), 0);
+      await Promise.all(Array.from({ length: 3 }, () => facts.reconcile({ roomId: room.id }, { applyNativeFact })));
+      const fact = await models.NativeFact.findOne({ sourceId: nonempty.id });
+      assert.equal(fact.eventId, 'core:study.completed:' + nonempty.id + ':v1');
+      assert.equal(fact.occurredAt.toISOString(), room.endAt.toISOString());
+      assert.equal(fact.status, 'settled');
+      assert.equal((await models.StudySolution.findById(nonempty.id)).awardStatus, 'settled');
+      assert.equal((await models.AuraBalance.findOne({ userId: participant.id })).total, 25);
+      assert.equal(await models.NativeFact.countDocuments({ sourceId: { $in: [nonempty.id, empty.id] } }), 1);
     });
     server = createApp({ auraRules: rules }).listen(0);
     await new Promise(resolve => server.once('listening', resolve));

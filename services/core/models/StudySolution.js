@@ -8,7 +8,10 @@ const schema = new mongoose.Schema({
   revision: { type: Number, default: 0, min: 0 },
   savedAt: { type: Date, default: null }, submittedAt: { type: Date, default: null },
   sealedAt: { type: Date, default: null }, sourceHash: { type: String, default: null },
+  awardEventId: { type: String, default: null },
+  awardStatus: { type: String, enum: ['ineligible', 'pending', 'rules_inactive', 'settled'], default: 'ineligible' },
   outcome: { type: String, enum: ['pending', 'submitted', 'empty'], default: 'pending' },
 });
 schema.index({ hubId: 1, roomId: 1, userId: 1 }, { unique: true });
+schema.index({ awardStatus: 1, sealedAt: 1 });
 module.exports = mongoose.model('StudySolution', schema);

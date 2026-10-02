@@ -15,7 +15,7 @@ test('G4: durable rooms, deadline fences, privacy and recovery', async t => {
   const uri = process.env.GUARD_MONGO_URI || repl.getUri();
   assert.ok(['localhost', '127.0.0.1'].includes(new URL(uri).hostname));
   await mongoose.connect(uri, { dbName: 'collegehubs_demo_g4_' + randomUUID().replaceAll('-', '') });
-  const names = ['College', 'Hub', 'Channel', 'User', 'Problem', 'StudyRoom', 'StudySolution'];
+  const names = ['College', 'Hub', 'Channel', 'User', 'Problem', 'StudyRoom', 'StudySolution', 'PeerReview', 'NativeFact'];
   const m = Object.fromEntries(names.map(name => [name, require('../../services/core/models/' + name)]));
   try {
     for (const model of Object.values(m)) { await model.createCollection(); await model.createIndexes(); }
@@ -59,6 +59,7 @@ test('G4: durable rooms, deadline fences, privacy and recovery', async t => {
       const host = await study.snapshot(claims[0], id);
       assert.ok(!JSON.stringify(host).includes('literal'));
       await assert.rejects(study.submissions(claims[0], id), { status: 409 });
+      await assert.rejects(study.review(claims[0], id, { solutionId: saved.ownSolution._id, body: 'premature review' }), { status: 409 });
       await study.submit(claims[1], id, { draftRevision: 1 });
       await study.submit(claims[1], id, { draftRevision: 1 });
       await assert.rejects(study.save(claims[1], id, { ...input, expectedRevision: 1, revision: 2 }), { status: 409 });
@@ -74,6 +75,19 @@ test('G4: durable rooms, deadline fences, privacy and recovery', async t => {
       assert.equal(solutions.items.find(row => row.userId === users[0].id).outcome, 'empty');
       await assert.rejects(study.save(claims[0], id, input), { status: 409 });
       assert.equal(await m.StudySolution.countDocuments({ roomId: id }), 2);
+      const solutionId = solutions.items.find(row => row.userId === users[1].id)._id;
+      const body = { solutionId, body: '<script>literal review</script> Explain the invariant.' };
+      const reviews = await Promise.all([study.review(claims[0], id, body), study.review(claims[0], id, body)]);
+      assert.equal(reviews[0].review._id, reviews[1].review._id);
+      await assert.rejects(study.review(claims[0], id, { ...body, body: 'changed retry' }), { status: 409 });
+      await assert.rejects(study.review(claims[1], id, body), { status: 403 });
+      await assert.rejects(study.reviews(claims[2], id), { status: 404 });
+      assert.equal((await study.reviews(claims[1], id)).items[0].body, body.body);
+      assert.equal(await m.PeerReview.countDocuments({ roomId: id }), 1);
+      const fact = await m.NativeFact.findOne({ sourceId: solutionId });
+      assert.equal(fact.type, 'study.completed'); assert.equal(fact.status, 'rules_inactive');
+      assert.equal(await m.NativeFact.countDocuments({ type: 'study.completed', sourceId: { $in: solutions.items.map(row => row._id) } }), 1);
+
     });
     await t.test('concurrent joins enforce eight slots; foreign/missing-Hub and nonparticipant reads fail', async () => {
       const { room } = await create();
@@ -91,22 +105,21 @@ test('G4: durable rooms, deadline fences, privacy and recovery', async t => {
       await m.StudyRoom.collection.updateOne({ _id: new mongoose.Types.ObjectId(own.room._id) }, { $unset: { hubId: '' } });
       await assert.rejects(study.snapshot(claims[0], own.room._id), { status: 404 });
     });
-    await t.test('two tabs cannot overwrite an acknowledged revision; validation and skewed Core clock', async () => {
+    await t.test('two tabs cannot overwrite an acknowledged revision; validation and DB timestamp bounds', async () => {
       const { room } = await active(), id = room._id;
       const invalid = { expectedRevision: 0, revision: 1, source: 'x', language: 'python' };
       await assert.rejects(study.save(claims[0], id, { ...invalid, source: 'x'.repeat(32769) }), { status: 413 });
       await assert.rejects(study.save(claims[0], id, { ...invalid, language: 'bash' }), { status: 400 });
       await assert.rejects(study.save(claims[0], id, { ...invalid, revision: 3 }), { status: 400 });
-      const now = Date.now;
-      let saved;
-      try {
-        Date.now = () => now() + 120000;
-        const results = await Promise.allSettled(['tab-a', 'tab-b'].map(source => study.save(claims[0], id, { ...invalid, source })));
-        assert.equal(results.filter(r => r.status === 'fulfilled').length, 1);
-        assert.equal(results.find(r => r.status === 'rejected').reason.status, 409);
-        saved = results.find(r => r.status === 'fulfilled').value.ownSolution;
-        assert.ok(Math.abs(new Date(saved.savedAt).getTime() - now()) < 5000, 'Saved time is DB time, not Core clock');
-      } finally { Date.now = now; }
+      // Do not replace global Date.now: Mongo driver's topology timers use it too.
+      // Bound the saved timestamp with DB readings; browser skew is covered below.
+      const before = (await mongoose.connection.db.command({ hello: 1 })).localTime;
+      const results = await Promise.allSettled(['tab-a', 'tab-b'].map(source => study.save(claims[0], id, { ...invalid, source })));
+      assert.equal(results.filter(r => r.status === 'fulfilled').length, 1, JSON.stringify(results.map(r => ({ status: r.status, code: r.reason?.code, message: r.reason?.message }))));
+      assert.equal(results.find(r => r.status === 'rejected').reason.status, 409);
+      const saved = results.find(r => r.status === 'fulfilled').value.ownSolution;
+      const after = (await mongoose.connection.db.command({ hello: 1 })).localTime;
+      assert.ok(new Date(saved.savedAt) >= before && new Date(saved.savedAt) <= after, 'Saved time is bounded by DB time');
       assert.equal((await study.snapshot(claims[0], id)).ownSolution.source, saved.source);
       await assert.rejects(study.submit(claims[0], id, { draftRevision: 0 }), { status: 409 });
     });
@@ -209,4 +222,20 @@ test('G4: durable rooms, deadline fences, privacy and recovery', async t => {
       } finally { hostSocket?.close(); peerSocket?.close(); outsider?.close(); foreignSocket?.close(); await kill(); }
     });
   } finally { await mongoose.connection.dropDatabase(); await mongoose.disconnect(); await repl?.stop(); }
+});
+
+
+test('G4: monotonic room countdown ignores wall-clock skew and rejects foreign snapshots', async () => {
+  const { clockSample, remainingMs, validateSnapshot } = await import('../../apps/web/src/realtime/study.js');
+  const server = '2026-10-02T10:00:00.000Z', end = '2026-10-02T10:05:00.000Z';
+  const original = Date.now;
+  try {
+    for (const skew of [-120000, 120000]) {
+      Date.now = () => Date.parse(server) + skew;
+      const sample = clockSample(server, 1000, 1100);
+      assert.equal(remainingMs(end, sample, 2100), 298950);
+      assert.equal(remainingMs(end, sample, 400000), 0);
+    }
+  } finally { Date.now = original; }
+  assert.throws(() => validateSnapshot({ room: { _id: 'room-a', hubId: 'hub-b' }, ownSolution: {} }, 'room-a', 'hub-a'));
 });

@@ -20,7 +20,7 @@ test('G1: study rooms hide foreign rooms, problems and participant work over HTT
   assert.equal((await call('/study-rooms', a.token, { ...input, hubId: b.user.hubId })).status, 400);
   const created = await call('/study-rooms', a.token, input); assert.equal(created.status, 201);
   const path = '/study-rooms/' + created.data.room._id;
-  for (const suffix of ['', '/submissions']) assert.equal((await call(path + suffix, b.token)).status, 404);
+  for (const suffix of ['', '/submissions', '/reviews']) assert.equal((await call(path + suffix, b.token)).status, 404);
   for (const suffix of ['/join', '/start', '/draft', '/submit']) assert.equal((await call(path + suffix, b.token, suffix === '/draft' ? { expectedRevision: 0, revision: 1, source: 'foreign', language: 'python' } : suffix === '/submit' ? { draftRevision: 0 } : {})).status, 404);
   assert.equal((await call(path, peer.token)).status, 404);
   assert.equal((await call(path + '/join', peer.token, {})).status, 200);
@@ -30,6 +30,8 @@ test('G1: study rooms hide foreign rooms, problems and participant work over HTT
   assert.equal((await call(path + '/draft', peer.token, { expectedRevision: 0, revision: 1, source, language: 'python' })).status, 200);
   assert.ok(!JSON.stringify((await call(path, a.token)).data).includes(source));
   assert.equal((await call(path + '/submissions', a.token)).status, 409);
+  assert.equal((await call(path + '/reviews', b.token, { solutionId: created.data.ownSolution._id, body: 'foreign review' })).status, 404);
+  assert.equal((await call(path + '/reviews', peer.token, { solutionId: created.data.ownSolution._id, body: 'premature review' })).status, 409);
 });
 
 test('G1: typed message contract enforces UTF-8 limits and safe resource schemes', () => {

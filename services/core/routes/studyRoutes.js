@@ -17,6 +17,8 @@ router.get('/time', route(req => { study.fields(req.query, []); return study.tim
 router.get('/', route(req => study.list(req.auth, req.query)));
 router.post('/', route(req => study.create(req.auth, req.body), 201));
 router.get('/:id', route(req => { study.fields(req.query, []); return study.snapshot(req.auth, req.params.id); }));
+router.get('/:id/reviews', route(req => { study.fields(req.query, []); return study.reviews(req.auth, req.params.id); }));
+router.post('/:id/reviews', route(req => study.review(req.auth, req.params.id, req.body), 200, true));
 router.get('/:id/submissions', route(req => { study.fields(req.query, []); return study.submissions(req.auth, req.params.id); }));
 for (const [path, method] of [['join', 'join'], ['start', 'start'], ['draft', 'save'], ['submit', 'submit']]) {
   router.post('/:id/' + path, route(req => study[method](req.auth, req.params.id, req.body), 200, true));

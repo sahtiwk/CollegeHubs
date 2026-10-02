@@ -42,7 +42,7 @@ Existing `docs/p0.1-evidence.md` through available `docs/p3.1-evidence.md` recor
 | P4.2 | **Local PASS (2026-10-01):** typed code/resources/questions/answers, literal search, immutable acceptance, transactional native facts, 63 passing G1–G3 checks and Demo2/mobile evidence. Scoring remains P6-gated. See `docs/p4.2-evidence.md`. |
 | P5–P11 | Future unless separate evidence proves otherwise; this document marks none complete. |
 
-**P5.1 is complete locally. Next planned phase: P5.2, only when requested.** P3.2/P4.1 retain passing local evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
+**P5.2 is complete locally. Next planned phase: P6.1, only when requested.** P3.2/P4.1 retain passing local evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
 
 ## Tier map
 
@@ -502,7 +502,7 @@ Goal: synchronized individual solving, durable drafts and post-close comparison.
 
 ### P5.1. Authoritative lifecycle and atomic close
 
-**Local status (2026-10-02): PASS.** Core models/seed, scoped HTTP/socket lifecycle, DB-time draft fences, atomic sealing, startup/due recovery and safe-stop flag are implemented. G1-G4: 72 passing tests, zero skips; web/Core/Learn builds pass. Real process-kill recovery and pre-close privacy are verified. See [P5.1 evidence](docs/p5.1-evidence.md) and [Study Room contracts](docs/study-rooms.md). P5.2 UI, peer reviews and study award facts are not yet implemented; live Aura remains P6-gated.
+**Local status (2026-10-02): PASS.** Core models/seed, scoped HTTP/socket lifecycle, DB-time draft fences, atomic sealing, startup/due recovery and safe-stop flag are implemented. G1-G4: 72 passing tests, zero skips; web/Core/Learn builds pass. Real process-kill recovery and pre-close privacy are verified. See [P5.1 evidence](docs/p5.1-evidence.md) and [Study Room contracts](docs/study-rooms.md). P5.2 delivery is recorded below; live Aura remains P6-gated.
 
 **Scope:** waiting/join/start/save/submit/review; no co-editing/judge. **Prerequisite:** P4. **Guards:** G1/G4 first. **Effort:** 2–3 days.
 
@@ -513,6 +513,8 @@ Goal: synchronized individual solving, durable drafts and post-close comparison.
 **Contract/outcome:** A6 room lifecycle; no ack before durable commit. **Acceptance:** deadline race/duplicate close/restart/privacy pass G4; late join/nonhost start/foreign room fail. **Risk:** free-host sleep may delay close processing but cannot extend the deadline. **Done:** common definition and durable restart proof.
 
 ### P5.2. Solve, reconnect, compare and review
+
+**Local status (2026-10-02): PASS.** Shared-shell lobby/editor/server-time countdown, explicit durable saves and conflicts, mobile comparison, immutable peer reviews and recoverable completion facts are implemented. G1-G4: 74 passing tests, zero skips; web/Core/Learn builds pass. A real five-minute two-user browser session closed once, recovered through Core restart, and retained reviews through reload. See [P5.2 evidence](docs/p5.2-evidence.md). Live Aura remains P6-gated.
 
 **Scope:** shared-shell editor/timer/save state/comparison/reviews and native award facts. **Prerequisite:** P5.1. **Guards:** G1/G3/G4. **Effort:** 1–2 days.
 

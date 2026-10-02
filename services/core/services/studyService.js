@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 const { createHash } = require('node:crypto');
 const Room = require('../models/StudyRoom');
 const Solution = require('../models/StudySolution');
+const PeerReview = require('../models/PeerReview');
+const User = require('../models/User');
+const facts = require('./studyFactService');
 const Problem = require('../models/Problem');
 const messages = require('./messageService');
 const { accessError } = require('./hubAccess');
@@ -32,7 +35,7 @@ function roomDto(row) {
 }
 function solutionDto(row) {
   return { _id: String(row._id), userId: String(row.userId), revision: row.revision, source: row.source, language: row.language,
-    savedAt: date(row.savedAt), submittedAt: date(row.submittedAt), sealedAt: date(row.sealedAt), outcome: row.outcome, sourceHash: row.sourceHash };
+    savedAt: date(row.savedAt), submittedAt: date(row.submittedAt), sealedAt: date(row.sealedAt), outcome: row.outcome, sourceHash: row.sourceHash, awardEventId: row.awardEventId, awardStatus: row.awardStatus };
 }
 async function authorized(claims, id, participant = true) {
   const context = await messages.authorize(claims);
@@ -172,6 +175,9 @@ async function closeDue(id) {
       solution.sealedAt = room.closedAt;
       solution.sourceHash = createHash('sha256').update(solution.source).digest('hex');
       solution.outcome = solution.source.trim() ? 'submitted' : 'empty';
+      if (solution.outcome === 'submitted' && solution.savedAt && solution.revision > 0) {
+        solution.awardEventId = `core:study.completed:${solution._id}:v1`; solution.awardStatus = 'pending';
+      }
       await solution.save({ session });
     }
     return { roomId: room.id, hubId: String(room.hubId), status: room.status, version: room.version, closedAt: date(room.closedAt) };
@@ -180,17 +186,49 @@ async function closeDue(id) {
 async function snapshot(claims, id) {
   const { context } = await authorized(claims, id);
   await closeDue(id); // Owned reads recover overdue work even between scans.
+  await facts.reconcile({ hubId: context.hubId, roomId: id, userId: context.userId });
   return transaction(async session => {
     const [room] = await Room.aggregate([{ $match: { _id: new mongoose.Types.ObjectId(id), hubId: new mongoose.Types.ObjectId(context.hubId) } }, { $addFields: { serverNow: '$$NOW' } }]).session(session);
     const own = await Solution.findOne({ hubId: context.hubId, roomId: id, userId: context.userId }).session(session).lean();
-    return { room: roomDto(room), ownSolution: solutionDto(own), serverNow: date(room.serverNow) };
+    const people = await User.find({ _id: { $in: room.participantIds }, hubId: context.hubId }).select('_id username').session(session).lean();
+    return { room: { ...roomDto(room), participants: people.map(person => ({ userId: String(person._id), name: person.username })) }, ownSolution: solutionDto(own), serverNow: date(room.serverNow) };
   });
 }
 async function submissions(claims, id) {
   const result = await snapshot(claims, id);
   if (result.room.status !== 'review') fail(409, 'STUDY_PRIVATE', 'Peer solutions are private until the room closes');
+  await facts.reconcile({ hubId: result.room.hubId, roomId: id });
   const rows = await Solution.find({ hubId: result.room.hubId, roomId: id, userId: { $in: result.room.participantIds }, sealedAt: { $ne: null } }).sort({ userId: 1 }).limit(8).lean();
   return { room: result.room, items: rows.map(solutionDto), serverNow: result.serverNow };
+}
+function reviewDto(row) {
+  return { _id: String(row._id), solutionId: String(row.solutionId), reviewerId: String(row.reviewerId), body: row.body, createdAt: date(row.createdAt) };
+}
+async function reviews(claims, id) {
+  const { context, room } = await authorized(claims, id);
+  if (room.status !== 'review') fail(409, 'STUDY_PRIVATE', 'Reviews open after the room closes');
+  const rows = await PeerReview.find({ hubId: context.hubId, roomId: id }).sort({ _id: 1 }).limit(56).lean();
+  return { roomId: id, hubId: context.hubId, items: rows.map(reviewDto) };
+}
+async function review(claims, id, input) {
+  fields(input, ['solutionId', 'body']);
+  const { context, room } = await authorized(claims, id);
+  if (room.status !== 'review') fail(409, 'STUDY_PRIVATE', 'Reviews open after the room closes');
+  if (!objectId(input.solutionId) || typeof input.body !== 'string' || !input.body.trim()) fail(400, 'INVALID_REVIEW', 'Choose a solution and write a review');
+  if (Buffer.byteLength(input.body, 'utf8') > 8192) fail(413, 'REVIEW_TOO_LARGE', 'Review exceeds 8 KiB');
+  const solution = await Solution.findOne({ _id: input.solutionId, roomId: id, hubId: context.hubId, sealedAt: { $ne: null }, userId: { $in: room.participantIds } }).lean();
+  if (!solution) fail(404, 'SOLUTION_NOT_FOUND', 'Solution unavailable');
+  if (String(solution.userId) === context.userId) fail(403, 'SELF_REVIEW_FORBIDDEN', "Review another participant's work");
+  const key = { hubId: context.hubId, solutionId: input.solutionId, reviewerId: context.userId };
+  return transaction(async session => {
+    const prior = await PeerReview.findOne(key).session(session);
+    if (prior) {
+      if (prior.body !== input.body.trim()) fail(409, 'REVIEW_CONFLICT', 'Your review is already saved and cannot be replaced');
+      return { room: roomDto(room), review: reviewDto(prior) };
+    }
+    const [row] = await PeerReview.create([{ ...key, roomId: id, body: input.body.trim() }], { session });
+    return { room: roomDto(room), review: reviewDto(row) };
+  });
 }
 async function time(claims) {
   await messages.authorize(claims);
@@ -200,4 +238,4 @@ async function time(claims) {
 function errorDto(error) {
   return { error: { code: error.status ? error.code : 'STUDY_UNAVAILABLE', message: error.status ? error.message : 'Study rooms unavailable; retry or synchronize saved state', retryable: !error.status || [429, 503].includes(error.status) } };
 }
-module.exports = { problems, create, list, join, start, save, submit, snapshot, submissions, closeDue, time, fields, errorDto };
+module.exports = { problems, create, list, join, start, save, submit, snapshot, submissions, closeDue, reviews, review, time, fields, errorDto };

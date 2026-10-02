@@ -21,6 +21,7 @@ function Conversation({ channelId, user }) {
   return <section className="stack channel-conversation"><Link to="/">Back to campus</Link><div><p className="eyebrow">Learn together</p><h1>{channel.title || 'Subject conversation'}</h1></div>
     <p className="muted" role="status">{channel.live ? 'Live updates connected' : 'Live updates disconnected; saved history checks every 15 seconds.'}</p>
     {channel.error && <p role="alert">{channel.error} <button onClick={channel.retry}>Retry history</button></p>}
+    <Link className="study-entry" to={"/channels/" + channelId + "/study"}>Open study rooms <span>Work through a challenge with your peers</span></Link>
     <MessageComposer send={channel.send} disabled={channel.loading || !!channel.error} />
     <form className="channel-search" onSubmit={search}><label>Search saved messages<input value={query} maxLength={120} onChange={event => setQuery(event.target.value)} placeholder="Literal text, code, title or URL" /></label><button disabled={loading}>Search</button>{filter && <button type="button" onClick={() => { setFilter(null); setQuery(''); }}>Back to live messages</button>}</form>
     {loading || channel.loading ? <p role="status">Loading messages...</p> : null}

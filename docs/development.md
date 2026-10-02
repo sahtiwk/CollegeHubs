@@ -58,4 +58,6 @@ The local fixture additionally creates `peer@cvr.ac.in` with password `Preview-o
 
 ## Study Room backend (P5.1)
 
-Core now owns Problem, StudyRoom and StudySolution, including startup indexes and deadline recovery. Room creation is available through `/api/study-rooms`; the shared-shell UI follows in P5.2. See [HTTP/socket contracts and safe stop](study-rooms.md). `STUDY_ROOMS_ENABLED=false` stops new rooms while preserving active work. No dependency installation or provider configuration is required. Standalone G4 uses its own local replica set when no guard URI is supplied; the full fixture `guards` command includes G4 with zero database skips.
+Core now owns Problem, StudyRoom and StudySolution, including startup indexes and deadline recovery. Room creation is available through `/api/study-rooms`; the shared-shell UI is available through each channel's Open study rooms link. See [HTTP/socket contracts and safe stop](study-rooms.md). `STUDY_ROOMS_ENABLED=false` stops new rooms while preserving active work. No dependency installation or provider configuration is required. Standalone G4 uses its own local replica set when no guard URI is supplied; the full fixture `guards` command includes G4 with zero database skips.
+
+P5.2 adds PeerReview, stable completion IDs/status and a bounded reconciler for pending study facts. No new dependency or runtime variable is needed. Reconnect/sync restores acknowledged work; save explicitly before leaving a room. Aura scoring stays inactive pending P6. See [P5.2 evidence](p5.2-evidence.md).
