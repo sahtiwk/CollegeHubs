@@ -1,0 +1,4 @@
+[
+  { "key": "sample-dsa-practice-2026", "hubSlug": "cvr", "channelSlugs": ["dsa"], "title": "Sample: DSA practice session", "startsAt": "2026-10-12T10:00:00Z", "endsAt": "2026-10-12T11:00:00Z", "provenance": "seeded_fixture" },
+  { "key": "sample-web-review-2026", "hubSlug": "cvr", "channelSlugs": ["web-development"], "title": "Sample: web project review", "startsAt": "2026-10-14T09:00:00Z", "endsAt": "2026-10-14T10:00:00Z", "provenance": "seeded_fixture" }
+]

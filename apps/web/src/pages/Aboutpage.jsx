@@ -7,7 +7,7 @@ const FEATURES = [
     title: 'Aura Engine',
     color: '#f59e0b',
     description:
-      'Every LeetCode problem you solve, every Codeforces contest you enter, every GitHub commit you push — all of it translates into Aura Points. Your progress, finally visible.',
+      'Eligible study completions, accepted answers, code and resource shares earn Aura under daily limits. External platform bonuses are unavailable.',
   },
   {
     icon: '🏆',
@@ -283,7 +283,7 @@ function AboutPage() {
             <div style={{display:'flex',flexDirection:'column',gap:0,maxWidth:640,margin:'0 auto'}}>
               {[
                 {step:'01',title:'Connect your handles',desc:'Add your LeetCode, Codeforces, and GitHub usernames during onboarding.'},
-                {step:'02',title:'We track your activity',desc:'Our engine scrapes your public stats — problems solved, contest ratings, commit streaks.'},
+                {step:'02',title:'We track your activity',desc:'Core records eligible contributions inside your college community. External statistics are unavailable.'},
                 {step:'03',title:'Aura is calculated',desc:'Each activity maps to Aura Points. More consistent activity = higher Aura = higher level.'},
                 {step:'04',title:'Climb the leaderboard',desc:'Compete globally or within your college. Every point you earn is reflected in real time.'},
               ].map((s, i) => (

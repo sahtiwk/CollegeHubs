@@ -220,3 +220,13 @@ dialog::backdrop { background: rgba(20, 5, 20, .5); }
 .aura-receipts small { display: block; }
 .aura-card summary { cursor: pointer; min-height: 44px; padding: 10px 0; }
 @media (max-width: 640px) { .aura-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .aura-card .section-heading { flex-wrap: wrap; gap: 12px; } }
+
+.schedule-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; margin: 28px 0; align-items: start; }
+.schedule-list { list-style: none; padding: 0; margin: 0; }
+.schedule-list li { padding: 16px 0; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.schedule-list a { font-weight: 600; }
+.schedule-notice { padding: 12px; border-radius: 10px; background: var(--surface-raised); }
+.schedule-layout .section-heading { flex-wrap: wrap; gap: 12px; }
+select { display: block; width: 100%; min-height: 44px; padding: 10px; margin-top: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; }
+.channel-calendar summary { min-height: 44px; padding: 12px 0; cursor: pointer; }
+@media (max-width: 800px) { .schedule-layout { grid-template-columns: minmax(0, 1fr); } }

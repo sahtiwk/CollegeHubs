@@ -42,7 +42,7 @@ Existing `docs/p0.1-evidence.md` through available `docs/p3.1-evidence.md` recor
 | P4.2 | **Local PASS (2026-10-01):** typed code/resources/questions/answers, literal search, immutable acceptance, transactional native facts, 63 passing G1–G3 checks and Demo2/mobile evidence. Scoring remains P6-gated. See `docs/p4.2-evidence.md`. |
 | P5–P11 | Future unless separate evidence proves otherwise; this document marks none complete. |
 
-**P6.1 is complete locally. Next planned phase: P6.2, only when requested.** P3.2/P4.1 retain passing local evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
+**P6.2 is complete locally. Next planned phase: P7.1, only when requested.** P3.2/P4.1 retain passing local evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
 
 ## Tier map
 
@@ -542,6 +542,8 @@ Goal: canonical rewards and truthful useful schedules. Entry: P4/P5/P2.2. Read A
 **Contract/outcome:** Core owns every point and streak. **Acceptance:** native fixture 50 points; duplicate/conflict/cap/day/foreign-Hub checks pass; external fixture delta changes only externalBonus. **Risk:** prospective rules only, no old-score credit. **Done:** common definition and Demo4.
 
 ### P6.2. Free schedules, channel calendar and honest dashboard
+
+**Local status (2026-10-03): PASS.** Codeforces cache/lease/cooldown, scoped sample calendar seeds and shared schedule UI are implemented. G1–G4 plus schedule guards: 83 passed, zero skips; all workspace builds pass. Demo6 preserved five real cached contests and fetchedAt through a provider timeout while chat/draft/Aura succeeded. See [provider contracts](docs/providers.md) and [P6.2 evidence](docs/p6.2-evidence.md). Clist and Google export remain disabled; academic dates are explicitly sample data.
 
 **Scope:** cached schedules and seeded academic events; no external-stat bonus or Google export. **Prerequisite:** P6.1. **Guards:** G1/G3. **Effort:** 1–2 days.
 

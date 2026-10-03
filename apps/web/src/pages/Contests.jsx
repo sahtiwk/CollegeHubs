@@ -1,5 +1,8 @@
 import React from 'react';
+import ContestSchedule from '../components/ContestSchedule';
+import AcademicCalendar from '../components/AcademicCalendar';
 export default function Contests() {
-  return <section className="stack"><p className="eyebrow">Beyond the classroom</p><h1>Coding contests.</h1>
-    <div className="empty-state"><h2>Schedules are unavailable</h2><p>Upcoming contests will appear here when schedule updates are available. Calendar export is also unavailable.</p></div></section>;
+  return <section className="stack"><p className="eyebrow">Beyond the classroom</p><h1>Make time<br />to learn.</h1><p className="muted">Public contest schedules and your subject calendar. Calendar export is unavailable.</p>
+    <ContestSchedule /><AcademicCalendar />
+  </section>;
 }

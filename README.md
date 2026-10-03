@@ -22,4 +22,4 @@ P4.1 durable text channels and socket recovery are complete locally. See [verifi
 
 P5.1 Study Room lifecycle, private durable drafts, immutable deadlines and atomic closure are complete locally. See [backend contracts](docs/study-rooms.md) and [P5.1 evidence](docs/p5.1-evidence.md). P5.2 is also complete locally: shared-shell solving, comparison, permanent peer reviews and recoverable completion facts. See [P5.2 evidence](docs/p5.2-evidence.md).
 
-P6.1 canonical native Aura, one shared activity day, and college ranking are complete locally. See [scoring contracts](docs/aura.md) and [P6.1 evidence](docs/p6.1-evidence.md). Schedules/calendar work remains P6.2.
+P6.1 canonical native Aura, one shared activity day, and college ranking are complete locally. See [scoring contracts](docs/aura.md) and [P6.1 evidence](docs/p6.1-evidence.md). P6.2 cached Codeforces schedules and scoped sample academic calendars are also complete locally; see [provider setup](docs/providers.md) and [verification](docs/p6.2-evidence.md).

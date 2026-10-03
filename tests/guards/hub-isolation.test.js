@@ -17,6 +17,16 @@ test('G1: study rooms hide foreign rooms, problems and participant work over HTT
   const aura = await call('/me/aura', a.token); assert.equal(aura.status, 200);
   assert.equal(aura.data.userId, a.user._id); assert.equal(aura.data.hubId, a.user.hubId);
   assert.ok(aura.data.recent.every(row => !('metadata' in row) && !('userId' in row)));
+  const homeChannels = (await call('/hubs/' + a.user.hubId + '/channels', a.token)).data.items;
+  const dsa = homeChannels.find(c => c.slug === 'dsa')._id;
+  const ownCalendar = '/hubs/' + a.user.hubId + '/calendar?channelId=' + dsa;
+  assert.equal((await call(ownCalendar)).status, 401);
+  const calendar = await call(ownCalendar, a.token); assert.equal(calendar.status, 200); assert.ok(calendar.data.items.some(row => row.provenance === 'seeded_fixture'));
+  assert.equal((await call(ownCalendar, b.token)).status, 403);
+  assert.equal((await call('/hubs/' + b.user.hubId + '/calendar?channelId=' + dsa, b.token)).status, 404);
+  assert.equal((await call(ownCalendar + '&userId=' + b.user._id, a.token)).status, 400);
+  assert.equal((await call('/contests')).status, 401);
+  assert.equal((await call('/contests?url=https://example.test', a.token)).status, 400);
   const channelId = (await call('/hubs/' + a.user.hubId + '/channels', a.token)).data.items[0]._id;
   const problems = await call('/study-rooms/problems', a.token);
   assert.equal(problems.status, 200);

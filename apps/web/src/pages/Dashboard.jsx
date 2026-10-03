@@ -5,6 +5,8 @@ import { useHubTheme } from '../theme/HubThemeProvider';
 import api from '../api';
 import Feed from '../components/Feed';
 import AuraCard from '../components/AuraCard';
+import AcademicCalendar from '../components/AcademicCalendar';
+import RightSidebar from '../components/RightSidebar';
 import OnboardingModal from '../components/OnboardingModal';
 export default function Dashboard() {
   const { user } = useAuth();
@@ -35,6 +37,7 @@ export default function Dashboard() {
         <div className="channel-footnote">A place for curious minds.</div>
       </aside>
     </div>
+    <div className="schedule-layout"><AcademicCalendar /><RightSidebar /></div>
     <OnboardingModal isOpen={!user.onboardingComplete && !dismissed} onClose={() => setDismissed(true)} />
   </>;
 }

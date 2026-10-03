@@ -11,7 +11,7 @@ async function start() {
   await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 5000 });
   await mongoose.connection.db.command({ ping: 1 });
   // Unique provisioning/receipt keys must exist before accepting any write.
-  await Promise.all(['College', 'Hub', 'Channel', 'Message', 'NativeFact', 'AuraRuleSet', 'Problem', 'StudyRoom', 'StudySolution', 'PeerReview', 'User', 'Post', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'].map(async name => {
+  await Promise.all(['College', 'Hub', 'Channel', 'Message', 'NativeFact', 'AuraRuleSet', 'Contest', 'CalendarEvent', 'Problem', 'StudyRoom', 'StudySolution', 'PeerReview', 'User', 'Post', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'].map(async name => {
     const model = require('./models/' + name);
     await model.createCollection();
     await model.createIndexes();
