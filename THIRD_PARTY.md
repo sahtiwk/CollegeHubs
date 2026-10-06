@@ -32,7 +32,7 @@ SOFTWARE.
 
 ## CollegeHubs Arcade / digital-arcade-main
 
-Source location: `legacy/digital-arcade-main/code and stuff/`. Preserve the rights notice in `legacy/digital-arcade-main/README.md`; do not relicense it as MIT. P7.1 ports the NumberGuess attempt/history/hint flow into `apps/web/src/features/arcade/games/NumberGuess.tsx`, with server authority in the independent Arcade API. Original source and rights notice remain intact. No original App, router, Navbar, global stylesheet, AI client, media or WebGL assets are imported.
+Source location: `legacy/digital-arcade-main/code and stuff/`. Preserve the rights notice in `legacy/digital-arcade-main/README.md`; do not relicense it as MIT. P7.1 ports the NumberGuess attempt/history/hint flow into `apps/web/src/features/arcade/games/NumberGuess.tsx`, with server authority in the independent Arcade API. P7.2 also ports the original MathAmplitude question/feedback/score/timed-round flow, replacing local question generation/grading with the independent service. Sorting Complexity is new CollegeHubs code. Original source and rights notice remain intact. No original App, router, Navbar, global stylesheet, AI client, media or WebGL assets are imported.
 
 ## CollegeHubs Learn / MargaAI-master
 

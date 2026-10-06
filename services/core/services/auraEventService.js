@@ -92,8 +92,8 @@ function createAuraEventService({ rules = null } = {}) {
     if (credential.service !== event.source || !credential.eventTypes?.includes(event.type)) throw failure(403, 'EVENT_SCOPE_FORBIDDEN', 'Service cannot submit this event type');
     let activeRules = rules;
     if (!activeRules && event.source === 'arcade') {
-      const stored = await require('../models/AuraRuleSet').findOne({ version: 'arcade-numberguess-v1' }).lean();
-      if (stored && new Date(event.occurredAt) >= stored.activatedAt && stored.rules.games?.[event.metadata.gameId] === event.metadata.rulesVersion && event.metadata.domainVersion === 'v1') activeRules = stored.rules;
+      const stored = await require('../models/AuraRuleSet').findOne({ version: { $in: ['arcade-numberguess-v1', 'arcade-three-games-v1'] }, activatedAt: { $lte: new Date(event.occurredAt) } }).sort({ activatedAt: -1, version: -1 }).lean();
+      if (stored && stored.rules.games?.[event.metadata.gameId] === event.metadata.rulesVersion && event.metadata.domainVersion === 'v1') activeRules = stored.rules;
     }
     if (!activeRules || !activeRules.types[event.type]) throw failure(503, 'AURA_RULES_INACTIVE', 'Aura scoring is not activated yet; retain the pending result');
     const rule = activeRules.types[event.type], hash = digest(canonicalJson(event)), key = businessKey(event);

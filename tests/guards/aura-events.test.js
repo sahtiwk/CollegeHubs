@@ -338,3 +338,40 @@ test('G3: NumberGuess accepts only ordered integer guesses and preserves immutab
   const used = { ...state, actions: Array.from({length:9}, (_,i) => ({seq:i+1,guess:1,status:'active',hint:'higher'})) };
   assert.equal(transition(used, { seq:10, guess:1 }, new Date()).status, 'lost');
 });
+
+test('G3: MathAmplitude binds answers and replays, enforces server time and qualification', () => {
+  const { transition, finish } = require('../../services/arcade/src/validators/math');
+  const start = new Date('2026-10-06T12:00:00Z');
+  const game = {status:'active',createdAt:start,expiresAt:new Date(+start+60000),actions:[],challenge:{questions:[{id:'a',num1:6,num2:7,operation:'*',answer:42},{id:'b',num1:12,num2:3,operation:'/',answer:4}]},mathState:{questionIndex:0,correctCount:0}};
+  const at = new Date(+start+1000);
+  for (const input of [{seq:1,questionId:'a',answer:'42'},{seq:1,questionId:'a',answer:42.1},{seq:1,questionId:'a',answer:42,score:99}]) assert.throws(()=>transition(game,input,at),{status:400});
+  assert.throws(()=>transition(game,{seq:1,questionId:'b',answer:4},at),{status:409});
+  assert.throws(()=>transition(game,{seq:2,questionId:'a',answer:42},at),{status:409});
+  const wrong=transition(game,{seq:1,questionId:'a',answer:41},at);assert.equal(wrong.step.correct,false);assert.deepEqual(wrong.mathState,{questionIndex:0,correctCount:0});
+  const next={...game,actions:[wrong.step],mathState:wrong.mathState};
+  assert.deepEqual(transition(next,{seq:1,questionId:'a',answer:41},new Date(+start+70000)).step,wrong.step);
+  assert.throws(()=>transition(next,{seq:1,questionId:'a',answer:42},at),{status:409});
+  const right=transition(next,{seq:2,questionId:'a',answer:42},at);assert.deepEqual(right.mathState,{questionIndex:1,correctCount:1});
+  assert.throws(()=>transition(next,{seq:2,questionId:'a',answer:42},game.expiresAt),{status:409});
+  assert.throws(()=>finish({...game,mathState:{correctCount:5}},new Date(+start+29999)),{status:409});
+  assert.equal(finish({...game,mathState:{correctCount:5}},new Date(+start+30000)),'won');
+  assert.equal(finish({...game,mathState:{correctCount:4}},new Date(+start+60000)),'lost');
+});
+
+test('G3: Sorting requires a complete bounded comparison/swap trace and complexity', () => {
+  const { transition }=require('../../services/arcade/src/validators/sorting');
+  let game={status:'active',expiresAt:new Date(Date.now()+60000),actions:[],challenge:{initialArray:[3,1,2]},sortingState:{array:[3,1,2],pass:0,index:0,needsSwap:false,comparisons:0,swaps:0,traceComplete:false}};
+  const at=new Date(),action=input=>{const reply=transition(game,{seq:game.actions.length+1,...input},at);game={...game,actions:[...game.actions,reply.step],sortingState:reply.sortingState||game.sortingState,status:reply.step.status};return reply.step;};
+  assert.throws(()=>transition(game,{seq:1,type:'swap',left:0,right:1},at),{status:409});
+  assert.throws(()=>transition(game,{seq:1,type:'compare',left:1,right:2},at),{status:409});
+  assert.throws(()=>transition(game,{seq:1,type:'complexity',choice:'quadratic'},at),{status:409});
+  assert.throws(()=>transition(game,{seq:1,type:'compare',left:0,right:1,array:[1,2,3]},at),{status:400});
+  const first=action({type:'compare',left:0,right:1});assert.equal(game.sortingState.needsSwap,true);
+  assert.deepEqual(transition(game,{seq:1,type:'compare',left:0,right:1},at).step,first);
+  assert.throws(()=>transition(game,{seq:1,type:'compare',left:1,right:2},at),{status:409});
+  while(!game.sortingState.traceComplete){const s=game.sortingState;action({type:s.needsSwap?'swap':'compare',left:s.index,right:s.index+1});}
+  assert.deepEqual(game.sortingState.array,[1,2,3]);assert.equal(game.sortingState.comparisons,3);assert.equal(game.sortingState.swaps,2);
+  assert.throws(()=>transition(game,{seq:game.actions.length+1,type:'complexity',choice:'linear'},at),{status:400});
+  const win=action({type:'complexity',choice:'quadratic'});assert.equal(win.status,'won');assert.ok(game.actions.length<=7);
+  assert.deepEqual(transition(game,{seq:win.seq,type:'complexity',choice:'quadratic'},at).step,win);
+});

@@ -4,7 +4,9 @@ import { sanitizeTheme } from '../learn/hubTheme';
 type Options = { method?: string; body?: unknown; signal?: AbortSignal; timeout?: number; csrf?: string };
 export type ArcadeSession = { userId: string; hubId: string; membershipVersion: number; expiresAt: string; csrfToken: string; theme: any };
 export type CoreUser = { _id: string; hubId: string; membershipVersion: number };
-export type Game = { id: string; gameId: string; rulesVersion: string; status: string; createdAt: string; expiresAt: string; serverNow: string; actions: {seq: number; guess: number; hint: string; status: string}[]; deliveryStatus: string; receipt: null | {awardedAura: number; reason: string; dayKey: string} };
+export type GameAction = {seq: number; guess?: number; hint: string; status: string; type?: string; questionId?: string; answer?: number; correct?: boolean; left?: number; right?: number; choice?: string};
+export type Game = { id: string; gameId: string; rulesVersion: string; status: string; createdAt: string; expiresAt: string; serverNow: string; actions: GameAction[]; deliveryStatus: string; receipt: null | {awardedAura: number; reason: string; dayKey: string}; math?: {correctCount: number; questionIndex: number; currentQuestion: null|{id:string;num1:number;num2:number;operation:string};canFinish:boolean;deadlinePassed:boolean};sorting?: {array:number[];pass:number;index:number;needsSwap:boolean;comparisons:number;swaps:number;traceComplete:boolean} };
+export type GameProps = {session:ArcadeSession;onExpired:()=>void};
 export class ArcadeError extends Error { status: number; code: string; constructor(message: string, status = 503, code = 'ARCADE_UNAVAILABLE') { super(message); this.status = status; this.code = code; } }
 const coordinator = createSessionCoordinator(() => localStorage.getItem('socialstream_token'));
 export async function arcadeRequest(path: string, {method='GET',body,signal,timeout=15000,csrf}: Options = {}) {

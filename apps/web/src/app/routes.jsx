@@ -6,4 +6,4 @@ export function LearnRoute() {
 }
 
 const Arcade = lazy(() => import('../features/arcade/Arcade.tsx'));
-export function ArcadeRoute() { return <FeatureBoundary><Suspense fallback={<p role="status">Opening Arcade…</p>}><Arcade /></Suspense></FeatureBoundary>; }
+export function ArcadeRoute() { return <FeatureBoundary name="Arcade"><Suspense fallback={<p role="status">Opening Arcade…</p>}><Arcade /></Suspense></FeatureBoundary>; }

@@ -42,9 +42,10 @@ Existing `docs/p0.1-evidence.md` through available `docs/p3.1-evidence.md` recor
 | P4.2 | **Local PASS (2026-10-01):** typed code/resources/questions/answers, literal search, immutable acceptance, transactional native facts, 63 passing G1–G3 checks and Demo2/mobile evidence. Scoring remains P6-gated. See `docs/p4.2-evidence.md`. |
 | P5.1-P6.2 | Complete locally; phase sections link to verification evidence. Hosted acceptance remains pending. |
 | P7.1 | **Local PASS (2026-10-06):** independent Arcade API, integrated NumberGuess, canonical daily receipt and pending recovery. See `docs/p7.1-evidence.md`. |
-| P7.2-P11 | Future; execute only the requested sub-phase. |
+| P7.2 | **Local PASS (2026-10-07):** three validated ranked games, shared catalogue, prospective rules and receipt/recovery evidence. See `docs/p7.2-evidence.md`. |
+| P8-P11 | Future; execute only the requested sub-phase. |
 
-**P7.1 is complete locally. Next planned phase: P7.2, only when requested.** P3.2/P4.1 retain passing local evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
+**P7.2 is complete locally. Next planned phase: P8.1, only when requested.** P3.2/P4.1 retain passing local evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
 
 ## Tier map
 
@@ -575,6 +576,8 @@ Goal: two reused validated games plus one sorting game inside the same UI. Entry
 **Contract/outcome:** `/api/arcade` independent API, one real in-shell game. **Acceptance:** target stays private; forged score/altered action/foreign session fails; retry returns same result/receipt; Core failure preserves pending event. **Risk:** validated traces do not prove human play. **Done:** common definition plus stop Arcade while Core works.
 
 ### P7.2. MathAmplitude, sorting and catalogue
+
+**Local status (2026-10-07): PASS.** MathAmplitude is ported with private questions, ordered answer ledger, server 60-second deadline and minimum qualification. Sorting validates the complete bounded bubble-sort trace and complexity choice. A shared pure manifest drives catalogue/API availability and lazy game selection; exactly three games are ranked, other legacy games remain unavailable. Core retains the P7.1 policy and adds prospective `arcade-three-games-v1`; shared counters/receipts are preserved. Guards: 87 passed, zero skips; all workspace builds and isolated Arcade deployment build pass. Demo5 Arcade branch, first-win/repeat receipts, outage recovery, mobile/keyboard, deep links and two-Hub isolation are verified. See [P7.2 evidence](docs/p7.2-evidence.md) and [Arcade contracts](docs/arcade.md). Hosted verification remains P11-gated.
 
 **Scope:** exactly three rewarded games; other games only if explicitly safe/casual. **Prerequisite:** P7.1. **Guards:** G1/G3. **Effort:** 2–3 days.
 

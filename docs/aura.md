@@ -13,7 +13,7 @@ Startup creates the immutable `native-v1` AuraRuleSet with MongoDB activation ti
 | Code share | 5 | 5 |
 | HTTPS resource share | 5 | 5 |
 
-Native contributions combined earn at most 100 per India calendar day. A remaining budget below the normal weight receives a partial award. Zero-point cap receipts are final but qualifying participation still records the activity day. Posts, likes, login, reviews and casual play earn zero. P7.1 enables NumberGuess completion scoring; other Arcade validators, Interview/Learn completion scoring and live external bonuses remain disabled. G3 injects separate fixture rules; these are not enabled in normal startup.
+Native contributions combined earn at most 100 per India calendar day. A remaining budget below the normal weight receives a partial award. Zero-point cap receipts are final but qualifying participation still records the activity day. Posts, likes, login, reviews and casual play earn zero. P7.2 enables NumberGuess, MathAmplitude and Sorting completion scoring. Interview/Learn completion scoring and live external bonuses remain disabled. G3 injects separate fixture rules; these are not enabled in normal startup.
 
 ## Transactions and activation boundary
 
@@ -42,4 +42,8 @@ See [P6.1 verification](p6.1-evidence.md). P6.2 schedules and calendar are outsi
 
 ## P7.1 module activation
 
-Core also persists `arcade-numberguess-v1` when Arcade is enabled. Only validated `numberguess-v1` wins after activation qualify: first win per India day earns 5, later wins return zero. This uses the same balance, ledger and activity day. Other module validators remain gated. See [Arcade contracts](arcade.md).
+Core also persists `arcade-numberguess-v1` when Arcade is enabled. Only validated `numberguess-v1` wins after activation qualify: first win per India day earns 5, later wins return zero. This uses the same balance, ledger and activity day. This was the P7.1 release boundary; P7.2 adds MathAmplitude and Sorting below. Interview/Learn remain gated. See [Arcade contracts](arcade.md).
+
+## P7.2 three-game activation
+
+Core retains the P7.1 rule version and adds `arcade-three-games-v1` prospectively. Event occurrence selects the latest active immutable rule version, so old pending facts keep their policy. Three matching implemented game validators are eligible, first qualifying completion/game/day = 5 and repeated same-game completion = 0. Global user/day counters and shared activity days survive this policy addition; no backfill or cap reset runs.
