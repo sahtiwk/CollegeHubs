@@ -40,9 +40,11 @@ Existing `docs/p0.1-evidence.md` through available `docs/p3.1-evidence.md` recor
 | P3.2 | **Local PASS (2026-10-01):** monorepo/shared SPA/Learn API, 57 passing G1-G3 checks, browser/mobile/theme/outage evidence, and free-only deployment files. Hosted verification remains pending. See `docs/learn-spike.md`. |
 | P4.1 | **Local PASS (2026-10-01):** durable sequenced text messages, authenticated sockets, history recovery, 60 passing G1–G3 checks and two-client/restart/foreign-Hub walkthrough. See `docs/p4.1-evidence.md`. |
 | P4.2 | **Local PASS (2026-10-01):** typed code/resources/questions/answers, literal search, immutable acceptance, transactional native facts, 63 passing G1–G3 checks and Demo2/mobile evidence. Scoring remains P6-gated. See `docs/p4.2-evidence.md`. |
-| P5–P11 | Future unless separate evidence proves otherwise; this document marks none complete. |
+| P5.1-P6.2 | Complete locally; phase sections link to verification evidence. Hosted acceptance remains pending. |
+| P7.1 | **Local PASS (2026-10-06):** independent Arcade API, integrated NumberGuess, canonical daily receipt and pending recovery. See `docs/p7.1-evidence.md`. |
+| P7.2-P11 | Future; execute only the requested sub-phase. |
 
-**P6.2 is complete locally. Next planned phase: P7.1, only when requested.** P3.2/P4.1 retain passing local evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
+**P7.1 is complete locally. Next planned phase: P7.2, only when requested.** P3.2/P4.1 retain passing local evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
 
 ## Tier map
 
@@ -559,6 +561,8 @@ Goal: canonical rewards and truthful useful schedules. Entry: P4/P5/P2.2. Read A
 Goal: two reused validated games plus one sorting game inside the same UI. Entry: P3.2 foundation/P6.1. Read A1–A8/H. Human: play/review three games and set restricted Arcade DB/service secrets for hosting. Safe stop: hide unverified rewarded entries, retain saved results. Trace: Arcade/FR6/NFR3/NFR4.
 
 ### P7.1. Independent Arcade API and NumberGuess port
+
+**Local status (2026-10-06): PASS.** Independent Arcade process/own Mongo connection, A3 bootstrap, private server target, ordered transactional guesses, immutable pending completion and bounded recovery are implemented. NumberGuess uses the existing frontend shell, auth and Hub palette. Core activates only NumberGuess's first qualifying daily win (5 Aura); repeated wins receive zero. G1-G4 plus schedule guards: 85 passed, zero skips; all workspace builds and isolated Arcade deployment build pass. Core-outage recovery, Arcade-stop/Core usability, mobile/keyboard, deep-link reload and two-Hub isolation are verified. See [Arcade contracts](docs/arcade.md) and [P7.1 evidence](docs/p7.1-evidence.md). Hosted account/DB permissions and deployment remain P11-gated; P7.2 is not started.
 
 **Scope:** real server validation/session/event and one integrated game. **Prerequisite:** P3.2/P6.1. **Guards:** G1/G2/G3 first. **Effort:** 2–3 days.
 

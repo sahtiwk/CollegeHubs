@@ -76,7 +76,7 @@ async function transaction(work) {
   }
 }
 function createAuraEventService({ rules = null } = {}) {
-  // External module adapters are not released: their rules remain fixture-only.
+  // Explicit fixtures remain isolated; normal ingestion activates only persisted released games.
   // Implemented native facts use nativeAuraService and the persisted native-v1 ruleset.
   if (rules) {
     rules = JSON.parse(JSON.stringify(rules));
@@ -90,9 +90,14 @@ function createAuraEventService({ rules = null } = {}) {
     validateEvent(input);
     const event = JSON.parse(JSON.stringify(input));
     if (credential.service !== event.source || !credential.eventTypes?.includes(event.type)) throw failure(403, 'EVENT_SCOPE_FORBIDDEN', 'Service cannot submit this event type');
-    if (!rules || !rules.types[event.type]) throw failure(503, 'AURA_RULES_INACTIVE', 'Aura scoring is not activated yet; retain the pending result');
-    const rule = rules.types[event.type], hash = digest(canonicalJson(event)), key = businessKey(event);
-    const dayKey = new Intl.DateTimeFormat('en-CA', { timeZone: rules.timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(event.occurredAt));
+    let activeRules = rules;
+    if (!activeRules && event.source === 'arcade') {
+      const stored = await require('../models/AuraRuleSet').findOne({ version: 'arcade-numberguess-v1' }).lean();
+      if (stored && new Date(event.occurredAt) >= stored.activatedAt && stored.rules.games?.[event.metadata.gameId] === event.metadata.rulesVersion && event.metadata.domainVersion === 'v1') activeRules = stored.rules;
+    }
+    if (!activeRules || !activeRules.types[event.type]) throw failure(503, 'AURA_RULES_INACTIVE', 'Aura scoring is not activated yet; retain the pending result');
+    const rule = activeRules.types[event.type], hash = digest(canonicalJson(event)), key = businessKey(event);
+    const dayKey = new Intl.DateTimeFormat('en-CA', { timeZone: activeRules.timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(event.occurredAt));
     return transaction(async session => {
       await validatePrincipal(credential, event, session);
       const previous = await AuraEvent.findOne({ eventId: event.eventId }).session(session);
@@ -103,13 +108,13 @@ function createAuraEventService({ rules = null } = {}) {
       }
       const original = await AuraEvent.findOne({ businessKey: key, canonical: true }).session(session);
       const base = { ...event, sourceId: event.metadata.sourceId, businessKey: key, payloadHash: hash, occurredAt: new Date(event.occurredAt),
-        receivedAt: new Date(), ruleVersion: rules.version, dayKey, timezonePolicyVersion: rules.timezonePolicyVersion };
+        receivedAt: new Date(), ruleVersion: activeRules.version, dayKey, timezonePolicyVersion: activeRules.timezonePolicyVersion };
       delete base.schemaVersion;
       if (original) {
         await AuraEvent.create([{ ...base, canonical: false, originalEventId: original.eventId, awardedAura: 0, policyReason: 'semantic_duplicate' }], { session });
         return { status: 200, body: { status: 'duplicate', receipt: receipt(original) } };
       }
-      const day = { userId: event.userId, dayKey, timezonePolicyVersion: rules.timezonePolicyVersion };
+      const day = { userId: event.userId, dayKey, timezonePolicyVersion: activeRules.timezonePolicyVersion };
       let counter = await AuraDayCounter.findOne(day).session(session);
       if (!counter) counter = new AuraDayCounter({ ...day, hubId: event.hubId });
       const m = event.metadata, typeKey = event.type.replaceAll('.', '_');

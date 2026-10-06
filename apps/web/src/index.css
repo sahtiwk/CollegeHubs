@@ -230,3 +230,9 @@ dialog::backdrop { background: rgba(20, 5, 20, .5); }
 select { display: block; width: 100%; min-height: 44px; padding: 10px; margin-top: 8px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); font: inherit; }
 .channel-calendar summary { min-height: 44px; padding: 12px 0; cursor: pointer; }
 @media (max-width: 800px) { .schedule-layout { grid-template-columns: minmax(0, 1fr); } }
+
+.arcade-guess { display: flex; align-items: end; gap: 16px; }
+.arcade-guess label { flex: 1; min-width: 0; }
+.arcade-history { padding-left: 24px; overflow-wrap: anywhere; }
+.arcade-history li { padding: 8px 0; }
+@media (max-width: 480px) { .arcade-guess { flex-direction: column; align-items: stretch; } .arcade-game .section-heading { flex-wrap: wrap; gap: 12px; } }

@@ -8,6 +8,7 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const coreEnv = resolve(root, 'services/core/.env');
 const enabled = (process.env.ENABLE_MODULES ?? (existsSync(coreEnv) ? parseEnv(readFileSync(coreEnv, 'utf8')).ENABLE_MODULES : '') ?? '').split(',');
 const definitions = [ ['apps/web', ['../../node_modules/vite/bin/vite.js']], ['services/core', ['index.js']] ];
+if (enabled.includes('arcade')) definitions.push(['services/arcade', ['src/server.js']]);
 if (enabled.includes('learn')) definitions.push(['services/learn', ['src/server.ts']]);
 const children = definitions.map(([dir, args]) => {
   const child = spawn(process.execPath, args, { cwd: resolve(root, dir), stdio: 'inherit', env: process.env });

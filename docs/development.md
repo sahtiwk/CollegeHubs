@@ -6,7 +6,8 @@ Node 24.12+, npm workspaces, one root lock. Run `npm ci` at repository root. Leg
 | --- | --- | --- |
 | `apps/web` | 5173 | One React 18/Vite frontend |
 | `services/core` | 5000 | Express, own MongoDB database |
-| `services/learn` | 5001 | Express/TypeScript, own PostgreSQL database |
+| `services/arcade` | 5001 | Express, own MongoDB database |
+| `services/learn` | 5003 | Express/TypeScript, own PostgreSQL database |
 
 Copy each workspace's `.env.example` to its private `.env`. Root's old environment files were preserved, but runtime loading is workspace-scoped. Only the public Google client ID was carried into `apps/web/.env.local`; API requests default to `/api`. No secret may have a `VITE_` prefix. Use one exact localhost origin consistently (default `http://localhost:5173`) for Core `APP_ORIGIN`/`ALLOWED_ORIGINS` and Learn `APP_ORIGIN`. Learn's `CORE_API_BASE_URL` is Core's direct origin. Secure cookies are mandatory on HTTPS/production; explicit nonproduction localhost uses HttpOnly/SameSite cookies without Secure.
 
@@ -42,7 +43,7 @@ Only G1/G2/G3/G4 run with `npm run test:guards`. No environment file is loaded b
 4. Open `http://localhost:5182`. Synthetic fixture logins are `preview@cvr.ac.in` and `preview@sky.example.test`, password `Preview-only-32!`. They exist only in ephemeral local Mongo; never use them for hosted/retained data. CVR uses the requested palette, Sky the alternate fixture palette.
 5. Verify Core?Learn without document navigation, deep-link reload, Back/Forward, 360px Menu/focus/keyboard, accessible roadmap list, two accounts/themes, reconnect on expiry, and Core usability with Learn/API DB unavailable. Save actual screenshots/evidence in `docs/learn-spike.md`.
 
-No live provider is needed. Learn data is explicitly synthetic; unconverted routes remain 404. Scoring remains inactive outside G3 fixture rules. The earlier Next/form handoff is archived in `legacy/retired-gateway`; do not deploy it alongside the active SPA.
+No live provider is needed. Learn data is explicitly synthetic; unconverted routes remain 404. Native Aura and P7.1 NumberGuess scoring are active; other module scoring remains gated. The earlier Next/form handoff is archived in `legacy/retired-gateway`; do not deploy it alongside the active SPA.
 
 ## P4.1 channels
 
@@ -65,3 +66,7 @@ P5.2 adds PeerReview, stable completion IDs/status and a bounded reconciler for 
 ## P6.2 schedules and sample calendar
 
 Core uses the anonymous Codeforces API with a persistent last-good cache and request-triggered refresh. Set `SCHEDULE_REFRESH_ENABLED=false` to stop network refresh while preserving all Core features. No provider account or paid scheduler is required. After Hub provisioning, review `services/core/config/calendar.seed.json` and explicitly install examples with `npm run seed:calendar -w @collegehubs/core -- --confirm-sample-dates`. The normal startup never seeds academic dates. See [provider policy and API contracts](providers.md). The disposable fixture includes these samples and its `guards` command now includes schedule isolation/outage checks.
+
+## P7.1 Arcade
+
+Configure `services/arcade/.env.example`, a separate replica-set database and explicitly scoped Core service credential; see [Arcade setup](arcade.md). The disposable `scripts/p32-fixture.cjs` starts Arcade on 5185 behind the shared 5182 gateway and runs its G1/G2/G3 checks with `guards`. `stop-arcade` / `start-arcade` verify service isolation; `stop-core` / `start-core` verify pending completion. `arcade-retry-due` changes only disposable pending retry timestamps for recovery verification. No production retry-bypass endpoint exists.

@@ -10,7 +10,7 @@ export function createSessionCoordinator(readCoreToken) {
     if (flight?.key === key) return flight.promise;
     clear(); const version = generation, token = readCoreToken(); controller = new AbortController(); const signal = controller.signal;
     const check = () => { if (version !== generation || signal.aborted || token !== readCoreToken()) throw new DOMException('Session changed', 'AbortError'); };
-    const promise = (async () => { const dto = await work(signal, check); check(); if (!fresh(dto)) throw new Error('Learn session expired. Reconnect to continue.'); cached = { key, dto }; return dto; })()
+    const promise = (async () => { const dto = await work(signal, check); check(); if (!fresh(dto)) throw new Error('Module session expired. Reconnect to continue.'); cached = { key, dto }; return dto; })()
       .finally(() => { if (generation === version) flight = null; });
     flight = { key, promise }; return promise;
   }

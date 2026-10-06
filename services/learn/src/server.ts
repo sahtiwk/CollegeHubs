@@ -10,7 +10,7 @@ async function start() {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 5, connectionTimeoutMillis: 3000, query_timeout: 4000, statement_timeout: 4000 });
   pool.on('error', () => console.error('Learn database connection unavailable'));
   const app = createApp({ config, pool, store: createSessionStore(pool, config) });
-  const server = app.listen(Number(process.env.PORT || 5001), () => console.log('Learn API listening'));
+  const server = app.listen(Number(process.env.PORT || 5003), () => console.log('Learn API listening'));
   function stop() { const timer = setTimeout(() => process.exit(1), 10000); timer.unref(); server.close(async () => { await pool.end(); clearTimeout(timer); }); }
   server.on('error', () => { console.error('Learn listener failed'); void pool.end(); process.exitCode = 1; });
   process.once('SIGINT', stop); process.once('SIGTERM', stop);

@@ -32,7 +32,7 @@ services:
       - key: APP_ORIGIN
         sync: false
       - key: ENABLE_MODULES
-        value: learn
+        value: learn,arcade
       - key: CORE_MODULE_PRIVATE_KEY
         sync: false
       - key: CORE_MODULE_KEY_ID
@@ -74,4 +74,43 @@ services:
       - key: CORE_KEY_ID
         sync: false
       - key: CORE_SERVICE_KEY
+        sync: false
+  - type: web
+    name: collegehubs-arcade
+    runtime: node
+    plan: free
+    buildCommand: node deploy/build.mjs arcade
+    startCommand: npm start --workspace @collegehubs/arcade
+    healthCheckPath: /health/ready
+    buildFilter:
+      paths:
+        - services/arcade/**
+        - packages/contracts/**
+        - scripts/check-arcade.cjs
+        - deploy/build.mjs
+        - package.json
+        - package-lock.json
+        - render.yaml
+    envVars:
+      - key: NODE_VERSION
+        value: 24.12.0
+      - key: NODE_ENV
+        value: production
+      - key: ARCADE_MONGO_URI
+        sync: false
+      - key: APP_ORIGIN
+        sync: false
+      - key: CORE_API_BASE_URL
+        sync: false
+      - key: CORE_TOKEN_ISSUER
+        value: collegehubs-core
+      - key: CORE_TOKEN_AUDIENCE
+        value: collegehubs-arcade
+      - key: CORE_PUBLIC_KEY
+        sync: false
+      - key: CORE_KEY_ID
+        sync: false
+      - key: CORE_SERVICE_KEY
+        sync: false
+      - key: ARCADE_RECONCILE_KEY
         sync: false

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc -p tsconfig.arcade.json && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -17,10 +17,13 @@
     "socket.io-client": "^4.8.4"
   },
   "devDependencies": {
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^4.0.0",
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.0",
+    "typescript": "^5.9.3",
     "vite": "^5.0.0"
   },
   "type": "module"

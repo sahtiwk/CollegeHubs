@@ -1,0 +1,15 @@
+{
+  "version": "arcade-numberguess-v1",
+  "timezone": "Asia/Kolkata",
+  "timezonePolicyVersion": 1,
+  "types": {
+    "arcade.game_completed": {
+      "weight": 5,
+      "countCap": 3,
+      "sourceCap": 30
+    }
+  },
+  "games": {
+    "numberguess": "numberguess-v1"
+  }
+}

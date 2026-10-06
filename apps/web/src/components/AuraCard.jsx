@@ -24,7 +24,7 @@ export default function AuraCard() {
       <p className="muted">{data.streak.activeToday ? 'You have contributed today.' : 'No qualifying contribution today yet.'} One shared activity day across sources, using India time. External bonuses are not enabled.</p>
       {!!data.pending && <p role="status">{data.pending} saved study completion{data.pending === 1 ? '' : 's'} pending. Refresh after processing.</p>}
       {!!data.inactive && <p className="muted">{data.inactive} earlier contribution{data.inactive === 1 ? '' : 's'} recorded without scoring. Previous activity is not awarded retroactively.</p>}
-      <details><summary>How Aura is counted</summary>{data.scoring.status === 'active' ? <><ul>{Object.entries(data.scoring.types).map(([type, rule]) => <li key={type}>{auraLabels[type] || type}: {rule.weight} Aura, up to {rule.countCap} per day.</li>)}</ul><p className="muted">Combined daily limit: {data.scoring.dailyCap}. Duplicate contributions do not earn again. Eligible activity still counts toward your streak after reaching a cap.</p></> : <p>Scoring is not active. Contributions remain saved.</p>}</details>
+      <details><summary>How Aura is counted</summary>{data.scoring.status === 'active' ? <><ul>{Object.entries(data.scoring.types).map(([type, rule]) => <li key={type}>{auraLabels[type] || type}: {rule.weight} Aura, up to {rule.countCap} per day.</li>)}</ul><p className="muted">Native contribution daily limit: {data.scoring.dailyCap}. Duplicate contributions do not earn again. Eligible activity still counts toward your streak after reaching a cap.</p></> : <p>Scoring is not active. Contributions remain saved.</p>}</details>
       <AuraTicker receipts={data.recent} />
       <Link to="/leaderboard">See your college ranking →</Link>
     </>}

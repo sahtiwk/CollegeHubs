@@ -20,7 +20,7 @@ async function main() {
   const repl = await MongoMemoryReplSet.create({ binary: { version: '7.0.14' }, replSet: { count: 1 } });
   const keys = generateKeyPairSync('rsa', { modulusLength: 2048, publicKeyEncoding: { type: 'spki', format: 'pem' }, privateKeyEncoding: { type: 'pkcs8', format: 'pem' } });
   const origin = 'http://localhost:5182';
-  Object.assign(process.env, { JWT_SECRET: 'p32-local-disposable-core-secret', ALLOWED_ORIGINS: origin + ',http://127.0.0.1:5182', APP_ORIGIN: origin, ENABLE_MODULES: 'learn', NODE_ENV: 'test',
+  Object.assign(process.env, { JWT_SECRET: 'p32-local-disposable-core-secret', ALLOWED_ORIGINS: origin + ',http://127.0.0.1:5182', APP_ORIGIN: origin, ENABLE_MODULES: 'learn,arcade', NODE_ENV: 'test',
     CORE_MODULE_PRIVATE_KEY: keys.privateKey, CORE_MODULE_KEY_ID: 'p32-key', CORE_MODULE_PUBLIC_KEYS: JSON.stringify({ 'p32-key': keys.publicKey }), MONGO_URI: repl.getUri('collegehubs_demo_p32') });
   mongoose.set('autoCreate', false).set('autoIndex', false);
   await mongoose.connect(process.env.MONGO_URI);
@@ -37,18 +37,27 @@ async function main() {
   for (const [username, email, hubId] of [['cvr-preview', 'preview@cvr.ac.in', hub.id], ['cvr-peer', 'peer@cvr.ac.in', hub.id], ['sky-preview', 'preview@sky.example.test', secondHub.id]]) await models.User.create({ username, email, password: 'Preview-only-32!', hubId, membershipStatus: 'active', membershipVersion: 1, onboardingComplete: true });
   const { opaque, digest } = require('../services/core/services/moduleTokenService');
   const serviceKey = 'p32learn.' + opaque(); await models.ServiceCredential.create({ service: 'learn', keyId: 'p32learn', keyHash: digest(serviceKey) });
+  const arcadeKey = 'p71arcade.' + opaque(), reconcileKey = opaque();
+  await models.ServiceCredential.create({ service: 'arcade', keyId: 'p71arcade', keyHash: digest(arcadeKey), eventTypes: ['arcade.game_completed'] });
+  const arcadeUri = repl.getUri('collegehubs_demo_arcade');
   const children = [];
   function child(cwd, args, env) { const proc = spawn(process.execPath, args, { cwd: resolve(root, cwd), env: { ...process.env, ...env }, stdio: ['ignore', 'inherit', 'inherit'] }); children.push(proc); return proc; }
   let core = child('services/core', ['index.js'], { PORT: '5183' });
   const learnEnv = { PORT: '5184', DATABASE_URL: url.toString(), CORE_PUBLIC_KEY: keys.publicKey, CORE_KEY_ID: 'p32-key', CORE_TOKEN_ISSUER: 'collegehubs-core', CORE_TOKEN_AUDIENCE: 'collegehubs-learn', CORE_API_BASE_URL: 'http://127.0.0.1:5183', CORE_SERVICE_KEY: serviceKey };
   let learn = child('services/learn', ['dist/server.js'], learnEnv);
-  child('apps/web', ['../../node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '5182'], { CORE_API_ORIGIN: 'http://127.0.0.1:5183', LEARN_API_ORIGIN: 'http://127.0.0.1:5184', VITE_GOOGLE_CLIENT_ID: '', VITE_CORE_SOCKET_ORIGIN: 'http://localhost:5183' });
+  const arcadeEnv = { PORT: '5185', ARCADE_MONGO_URI: arcadeUri, CORE_PUBLIC_KEY: keys.publicKey, CORE_KEY_ID: 'p32-key', CORE_TOKEN_ISSUER: 'collegehubs-core', CORE_TOKEN_AUDIENCE: 'collegehubs-arcade', CORE_API_BASE_URL: 'http://127.0.0.1:5183', CORE_SERVICE_KEY: arcadeKey, ARCADE_RECONCILE_KEY: reconcileKey };
+  let arcade = child('services/arcade', ['src/server.js'], arcadeEnv);
+
+  child('apps/web', ['../../node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '5182'], { CORE_API_ORIGIN: 'http://127.0.0.1:5183', LEARN_API_ORIGIN: 'http://127.0.0.1:5184', ARCADE_API_ORIGIN: 'http://127.0.0.1:5185', VITE_GOOGLE_CLIENT_ID: '', VITE_CORE_SOCKET_ORIGIN: 'http://localhost:5183' });
+  let guardRunning = false;
   async function guards() {
+    if (guardRunning) { console.log("Guard run already in progress"); return; }
+    guardRunning = true;
     mkdirSync(resolve(root, '.local'), { recursive: true });
     const log = createWriteStream(resolve(root, '.local/p32-guards.tap'));
-    const proc = spawn(process.execPath, ['--test', '--test-reporter=tap', 'tests/guards/hub-isolation.test.js', 'tests/guards/module-grants.test.js', 'tests/guards/aura-events.test.js', 'tests/guards/study-room.test.js', 'tests/guards/schedules.test.js'], { cwd: root, env: { ...process.env, GUARD_MONGO_URI: repl.getUri(), GUARD_CORE_SIGNING_SECRET: process.env.JWT_SECRET, GUARD_APP_ORIGIN: origin, GUARD_LEARN_DATABASE_URL: url.toString() }, stdio: ['ignore', 'pipe', 'pipe'] });
+    const proc = spawn(process.execPath, ['--test', '--test-reporter=tap', 'tests/guards/hub-isolation.test.js', 'tests/guards/module-grants.test.js', 'tests/guards/aura-events.test.js', 'tests/guards/study-room.test.js', 'tests/guards/schedules.test.js'], { cwd: root, env: { ...process.env, GUARD_MONGO_URI: repl.getUri(), GUARD_ARCADE_MONGO_URI: arcadeUri, GUARD_ARCADE_SERVICE_KEY: arcadeKey, GUARD_ARCADE_RECONCILE_KEY: reconcileKey, GUARD_CORE_SIGNING_SECRET: process.env.JWT_SECRET, GUARD_APP_ORIGIN: origin, GUARD_LEARN_DATABASE_URL: url.toString() }, stdio: ['ignore', 'pipe', 'pipe'] });
     children.push(proc); proc.stdout.pipe(log, { end: false }); proc.stderr.pipe(log, { end: false });
-    await new Promise(resolve => proc.once('close', code => { log.end(); console.log('Guard exit:', code, '(report .local/p32-guards.tap)'); resolve(); }));
+    await new Promise(resolve => proc.once('close', code => { log.end(); guardRunning = false; console.log('Guard exit:', code, '(report .local/p32-guards.tap)'); resolve(); }));
   }
   let closing = false;
   async function close() { if (closing) return; closing = true; for (const proc of children) proc.kill(); await admin.query(`ALTER DATABASE "${databaseName}" ALLOW_CONNECTIONS true`); await pool.end(); await admin.end(); await mongoose.disconnect(); await repl.stop(); process.exit(); }
@@ -72,6 +81,9 @@ async function main() {
         console.log('Provider refresh disabled; Core routes remain available');
       }
 
+      if (command === 'stop-arcade') { arcade.kill(); console.log('Arcade stopped; Core and Learn remain live'); }
+      if (command === 'start-arcade') { arcade = child('services/arcade', ['src/server.js'], arcadeEnv); }
+      if (command === 'arcade-retry-due') { const db = mongoose.connection.useDb('collegehubs_demo_arcade'); await db.collection('gamesessions').updateMany({ deliveryStatus: 'pending' }, { $set: { nextAttemptAt: new Date(0) } }); console.log('Disposable pending Arcade events made due'); }
       if (command === 'stop-learn') { learn.kill(); console.log('Learn stopped'); }
       if (command === 'start-learn') { learn = child('services/learn', ['dist/server.js'], learnEnv); }
       if (command === 'expire-learn') { await pool.query("UPDATE module_session SET expires_at=now()-interval '1 second'"); console.log('Fixture Learn sessions expired'); }
@@ -80,6 +92,6 @@ async function main() {
       if (command === 'quit') await close();
     } catch { console.error('Fixture command failed'); }
   });
-  console.log('P3.2 fixture prepared at ' + origin + '. Commands: stop-core, start-core, guards, stop-learn, start-learn, expire-learn, db-down, db-up, schedule-timeout, schedule-disable, quit.');
+  console.log('P3.2 fixture prepared at ' + origin + '. Commands: stop-core, start-core, stop-arcade, start-arcade, arcade-retry-due, guards, stop-learn, start-learn, expire-learn, db-down, db-up, schedule-timeout, schedule-disable, quit.');
 }
 main().catch(() => { console.error('P3.2 fixture failed; check local disposable database and ports.'); process.exitCode = 1; });

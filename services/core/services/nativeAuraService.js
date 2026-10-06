@@ -10,13 +10,13 @@ const College = require('../models/College');
 const { canonicalJson } = require('./auraEventService');
 const { digest, failure } = require('./moduleTokenService');
 const configured = require('../config/auraRules.v1.json');
-async function activate() {
-  const rulesHash = digest(canonicalJson(configured));
-  let stored = await RuleSet.findOne({ version: configured.version });
+async function activate(config = configured) {
+  const rulesHash = digest(canonicalJson(config));
+  let stored = await RuleSet.findOne({ version: config.version });
   if (!stored) {
     const { localTime } = await mongoose.connection.db.command({ hello: 1 });
-    try { stored = await RuleSet.create({ version: configured.version, rules: configured, rulesHash, activatedAt: localTime }); }
-    catch (error) { if (error.code !== 11000) throw error; stored = await RuleSet.findOne({ version: configured.version }); }
+    try { stored = await RuleSet.create({ version: config.version, rules: config, rulesHash, activatedAt: localTime }); }
+    catch (error) { if (error.code !== 11000) throw error; stored = await RuleSet.findOne({ version: config.version }); }
   }
   if (stored.rulesHash !== rulesHash || digest(canonicalJson(stored.rules)) !== rulesHash) throw new Error('Aura rules changed without a new version');
   return stored;

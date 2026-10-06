@@ -4,7 +4,7 @@ Core owns points, receipts, caps and shared activity days. MongoDB must be a rep
 
 ## Activated rules
 
-Startup creates the immutable `native-v1` AuraRuleSet with MongoDB activation time and a hash of `config/auraRules.v1.json`. Restart reuses its timestamp; changing the same version's policy fails startup. A future policy needs an explicit version/migration implementation, not an edit to the persisted version. This release activates only implemented native facts:
+Startup creates the immutable `native-v1` AuraRuleSet with MongoDB activation time and a hash of `config/auraRules.v1.json`. Restart reuses its timestamp; changing the same version's policy fails startup. A future policy needs an explicit version/migration implementation, not an edit to the persisted version. P6.1 activates these implemented native facts:
 
 | Qualified contribution | Points | Count/day |
 | --- | ---: | ---: |
@@ -13,7 +13,7 @@ Startup creates the immutable `native-v1` AuraRuleSet with MongoDB activation ti
 | Code share | 5 | 5 |
 | HTTPS resource share | 5 | 5 |
 
-Native contributions combined earn at most 100 per India calendar day. A remaining budget below the normal weight receives a partial award. Zero-point cap receipts are final but qualifying participation still records the activity day. Posts, likes, login, reviews and casual play earn zero. Arcade/Interview/Learn completion scoring and live external bonuses remain disabled until their implementations ship. G3 injects separate fixture rules; these are not enabled in normal startup.
+Native contributions combined earn at most 100 per India calendar day. A remaining budget below the normal weight receives a partial award. Zero-point cap receipts are final but qualifying participation still records the activity day. Posts, likes, login, reviews and casual play earn zero. P7.1 enables NumberGuess completion scoring; other Arcade validators, Interview/Learn completion scoring and live external bonuses remain disabled. G3 injects separate fixture rules; these are not enabled in normal startup.
 
 ## Transactions and activation boundary
 
@@ -39,3 +39,7 @@ The shared dashboard uses college theme tokens for Aura totals, split, shared st
 Demo4 native total: **25 Study + 15 accepted answer + 5 code + 5 resource = 50 engagement**, zero external bonus. Repeating the same share/event cannot raise it. G3 separately tests concurrent caps, native rollback/replay/conflict, activation stability, legacy exclusion, rank beyond page 1, foreign cursor rejection and one day shared by native/module sources. Its external replacement fixture changes bonus 70 → 90 while keeping engagement unchanged. Future combined-module total 113 is not claimed as a live result in P6.1.
 
 See [P6.1 verification](p6.1-evidence.md). P6.2 schedules and calendar are outside this release.
+
+## P7.1 module activation
+
+Core also persists `arcade-numberguess-v1` when Arcade is enabled. Only validated `numberguess-v1` wins after activation qualify: first win per India day earns 5, later wins return zero. This uses the same balance, ledger and activity day. Other module validators remain gated. See [Arcade contracts](arcade.md).

@@ -16,7 +16,12 @@
     "build:web": "npm run build -w @collegehubs/web",
     "build:core": "npm run build -w @collegehubs/core",
     "build:learn": "npm run build -w @collegehubs/learn",
-    "test:guards": "node --test tests/guards/hub-isolation.test.js tests/guards/module-grants.test.js tests/guards/aura-events.test.js tests/guards/study-room.test.js tests/guards/schedules.test.js"
+    "test:guards": "node --test tests/guards/hub-isolation.test.js tests/guards/module-grants.test.js tests/guards/aura-events.test.js tests/guards/study-room.test.js tests/guards/schedules.test.js",
+    "dev:web": "npm run dev -w @collegehubs/web",
+    "dev:core": "npm run dev -w @collegehubs/core",
+    "dev:arcade": "npm run dev -w @collegehubs/arcade",
+    "dev:learn": "npm run dev -w @collegehubs/learn",
+    "build:arcade": "npm run build -w @collegehubs/arcade"
   },
   "devDependencies": {
     "mongodb-memory-server": "^10.4.1"

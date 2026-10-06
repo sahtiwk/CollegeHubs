@@ -342,3 +342,72 @@ test('G2: HTTP grant issuance requires exact Origin, gates unreleased modules an
     await assert.rejects(issueGrant(user, body, { enabled: [] }), { status: 503 });
   } finally { await new Promise(resolve => server.close(resolve)); }
 });
+
+
+test('G1/G2/G3: real Arcade handoff, owned game transitions and canonical receipt', { skip: !process.env.GUARD_ARCADE_MONGO_URI }, async () => {
+  const mongoose = require('mongoose'), {randomUUID}=require('node:crypto');
+  const base=process.env.GUARD_APP_ORIGIN, uri=new URL(process.env.GUARD_ARCADE_MONGO_URI);
+  assert.ok(['127.0.0.1','localhost'].includes(uri.hostname)); assert.equal(uri.pathname,'/collegehubs_demo_arcade');
+  const db=await mongoose.createConnection(process.env.GUARD_ARCADE_MONGO_URI).asPromise();
+  function client(){const jar=new Map();return {jar,async request(path,{method='GET',body,token,csrf,origin=base}={}){const response=await fetch(base+path,{method,headers:{...(origin?{Origin:origin}:{}),...(body?{'Content-Type':'application/json'}:{}),...(token?{Authorization:'Bearer '+token}:{}),...(csrf?{'X-CSRF-Token':csrf}:{}),Cookie:[...jar].map(([k,v])=>k+'='+v).join('; ')},...(body?{body:JSON.stringify(body)}:{})});for(const value of response.headers.getSetCookie()){const [k,v]=value.split(';')[0].split('=');jar.set(k,v);}return {status:response.status,data:await response.json(),headers:response.headers};}};}
+  const a=client(),b=client(),same=client();
+  const prefix='/api/arcade';
+  async function bootstrap(client,core){const start=await client.request(prefix+'/auth/start',{method:'POST'});assert.equal(start.status,201);const state=start.data.state;const issued=await client.request('/api/auth/module-grants',{method:'POST',token:core.token,body:{module:'arcade',state,returnPath:'/arcade'}});assert.equal(issued.status,201);const body={module:'arcade',state,grant:issued.data.grant};assert.equal((await client.request(prefix+'/auth/callback',{method:'POST',body,origin:'https://foreign.invalid'})).status,403);const done=await client.request(prefix+'/auth/callback',{method:'POST',body});assert.equal(done.status,200,JSON.stringify(done.data));assert.match(done.headers.get('set-cookie'),/Path=\/api\/arcade/);assert.match(done.headers.get('set-cookie'),/HttpOnly/);client.jar.set('ch_arcade_state',state);assert.equal((await client.request(prefix+'/auth/callback',{method:'POST',body})).status,409);return (await client.request(prefix+'/session')).data;}
+  try{
+    const name='arcade-'+randomUUID().slice(0,8);const reg=await a.request('/api/auth/register',{method:'POST',body:{username:name,email:name+'@cvr.ac.in',password:'Disposable-arcade-71!'}});assert.equal(reg.status,201);const core=reg.data;
+    const other=(await b.request('/api/auth/login',{method:'POST',body:{email:'preview@sky.example.test',password:'Preview-only-32!'}})).data;
+    const peer=(await same.request('/api/auth/login',{method:'POST',body:{email:'peer@cvr.ac.in',password:'Preview-only-32!'}})).data;
+    assert.equal((await a.request(prefix+'/sessions')).status,401);
+    const session=await bootstrap(a,core),foreign=await bootstrap(b,other),peerSession=await bootstrap(same,peer);
+    assert.equal(session.userId,core.user._id);assert.equal(session.hubId,core.user.hubId);assert.equal(session.token,undefined);assert.equal(session.theme.hubId,core.user.hubId);
+    const input={gameId:'numberguess',clientSessionId:randomUUID()};
+    assert.equal((await a.request(prefix+'/sessions',{method:'POST',body:input,csrf:'wrong'})).status,403);
+    const created=await a.request(prefix+'/sessions',{method:'POST',body:input,csrf:session.csrfToken});assert.equal(created.status,201);const game=created.data.game,path=prefix+'/sessions/'+game.id;
+    assert.equal((await a.request(prefix+'/sessions',{method:'POST',body:input,csrf:session.csrfToken})).data.game.id,game.id);
+    assert.ok(!JSON.stringify(created.data).includes('target'));assert.ok(!JSON.stringify(created.data).includes('accessJti'));
+    assert.equal((await b.request(path)).status,404);assert.equal((await same.request(path)).status,404);
+    assert.equal((await b.request(path+'/actions',{method:'POST',csrf:foreign.csrfToken,body:{seq:1,guess:50}})).status,404);
+    assert.equal((await a.request(path+'?hubId='+other.user.hubId)).status,400);
+    assert.equal((await a.request(path+'/complete',{method:'POST',csrf:session.csrfToken,body:{score:100}})).status,400);
+    assert.equal((await a.request(path+'/complete',{method:'POST',csrf:session.csrfToken,body:{}})).status,409);
+    const post=body=>a.request(path+'/actions',{method:'POST',csrf:session.csrfToken,body});
+    assert.equal((await post({seq:1,guess:50,awardedAura:999})).status,400);
+    const simultaneous=await Promise.all([post({seq:1,guess:50}),post({seq:1,guess:50})]);assert.deepEqual(simultaneous.map(r=>r.status),[200,200]);assert.deepEqual(simultaneous[0].data.transition,simultaneous[1].data.transition);
+    assert.equal((await post({seq:1,guess:51})).status,409);
+    let current=simultaneous[0].data.game,low=1,high=100;
+    while(current.status==='active'){const last=current.actions.at(-1);if(last.hint==='higher')low=last.guess+1;else high=last.guess-1;const reply=await post({seq:current.actions.length+1,guess:Math.floor((low+high)/2)});assert.equal(reply.status,200,JSON.stringify(reply.data));current=reply.data.game;}
+    assert.equal(current.status,'won');assert.ok(!JSON.stringify(current).includes('target'));
+    const completed=await a.request(path+'/complete',{method:'POST',csrf:session.csrfToken,body:{}});assert.equal(completed.status,200);
+    for(let i=0;i<15;i++){current=(await a.request(path)).data.game;if(current.deliveryStatus==='settled')break;await new Promise(r=>setTimeout(r,200));}
+    assert.equal(current.deliveryStatus,'settled',JSON.stringify(current));assert.equal(current.receipt.awardedAura,5);
+    assert.equal((await a.request('/api/me/aura',{token:core.token})).data.engagement,5);
+    assert.equal((await a.request(path+'/complete',{method:'POST',csrf:session.csrfToken,body:{}})).data.game.receipt.eventId,current.receipt.eventId);
+    // Lose Core's already-committed HTTP reply: retry must retain the exact event and receipt.
+    const GameModel=require('../../services/arcade/src/models/GameSession')(db);
+    const stored=await GameModel.findById(game.id).lean(), originalEvent=JSON.stringify(stored.event);
+    await GameModel.updateOne({_id:game.id},{$set:{deliveryStatus:'pending',receipt:null,nextAttemptAt:new Date(0)}});
+    const deliveryConfig={core:'http://127.0.0.1:5183',serviceKey:process.env.GUARD_ARCADE_SERVICE_KEY};
+    let forwarded=0;
+    const lostReply=require('../../services/arcade/src/services/coreEvents').createCoreEvents(GameModel,deliveryConfig,async(url,options)=>{const reply=await fetch(url,options);assert.equal(reply.status,200);forwarded++;await reply.text();throw Error('simulated lost reply');});
+    await lostReply.deliver(game.id);await lostReply.deliver(game.id);
+    const pending=await GameModel.findById(game.id).lean();assert.equal(pending.deliveryStatus,'pending');assert.equal(forwarded,1);assert.ok(+pending.nextAttemptAt>Date.now());assert.equal(JSON.stringify(pending.event),originalEvent);
+    await GameModel.updateOne({_id:game.id},{$set:{nextAttemptAt:new Date(0)}});
+    await require('../../services/arcade/src/services/coreEvents').createCoreEvents(GameModel,deliveryConfig).reconcile();
+    const recovered=await GameModel.findById(game.id).lean();assert.equal(recovered.deliveryStatus,'settled');assert.deepEqual(recovered.receipt,stored.receipt);
+    // A different successful NumberGuess on the same India day earns zero.
+    let again=(await a.request(prefix+'/sessions',{method:'POST',csrf:session.csrfToken,body:{...input,clientSessionId:randomUUID()}})).data.game;
+    let lo=1,hi=100;const againPath=prefix+'/sessions/'+again.id;
+    while(again.status==='active'){const reply=await a.request(againPath+'/actions',{method:'POST',csrf:session.csrfToken,body:{seq:again.actions.length+1,guess:Math.floor((lo+hi)/2)}});assert.equal(reply.status,200);again=reply.data.game;const step=again.actions.at(-1);if(step.hint==='higher')lo=step.guess+1;else hi=step.guess-1;}
+    for(let i=0;i<15;i++){again=(await a.request(againPath)).data.game;if(again.deliveryStatus==='settled')break;await new Promise(r=>setTimeout(r,200));}
+    assert.equal(again.status,'won');assert.equal(again.receipt.awardedAura,0);assert.equal((await a.request('/api/me/aura',{token:core.token})).data.engagement,5);
+    const rejected={...stored.event,eventId:'arcade:disabled:'+randomUUID(),metadata:{...stored.event.metadata,sourceId:randomUUID(),gameId:'mathamplitude'}};
+    assert.equal((await fetch(deliveryConfig.core+'/api/aura/events',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+deliveryConfig.serviceKey},body:JSON.stringify(rejected)})).status,503);
+    const newGame=(await a.request(prefix+'/sessions',{method:'POST',csrf:session.csrfToken,body:{...input,clientSessionId:randomUUID()}})).data.game;
+    await db.collection('gamesessions').updateOne({_id:new mongoose.Types.ObjectId(newGame.id)},{$set:{expiresAt:new Date(0)}});
+    assert.equal((await a.request(prefix+'/sessions/'+newGame.id)).data.game.status,'expired');
+    assert.equal((await a.request(prefix+'/sessions/'+newGame.id+'/actions',{method:'POST',csrf:session.csrfToken,body:{seq:1,guess:50}})).status,409);
+    assert.equal((await a.request(prefix+'/integration/reconcile',{method:'POST',body:{},csrf:session.csrfToken})).status,403);
+    assert.equal((await a.request(prefix+'/logout',{method:'POST',csrf:session.csrfToken})).status,200);assert.equal((await a.request(prefix+'/session')).status,401);
+    await db.collection('modulesessions').updateMany({user_id:other.user._id},{$set:{expires_at:new Date(0)}});assert.equal((await b.request(prefix+'/session')).status,401);
+  }finally{await db.close();}
+});

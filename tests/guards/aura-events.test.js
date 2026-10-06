@@ -321,3 +321,20 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
     await mongoose.disconnect();
   }
 });
+
+
+test('G3: NumberGuess accepts only ordered integer guesses and preserves immutable transitions', () => {
+  const { transition } = require('../../services/arcade/src/validators/numberGuess');
+  const state = { target: 42, actions: [], status: 'active', expiresAt: new Date(Date.now() + 60000) };
+  assert.throws(() => transition(state, { seq: 1, guess: 42, score: 99 }, new Date()), { status: 400 });
+  for (const guess of [0, 101, 1.5, '42']) assert.throws(() => transition(state, { seq: 1, guess }, new Date()), { status: 400 });
+  assert.throws(() => transition(state, { seq: 2, guess: 42 }, new Date()), { status: 409 });
+  const first = transition(state, { seq: 1, guess: 20 }, new Date()); assert.equal(first.hint, 'higher');
+  const next = { ...state, actions: [first] };
+  assert.deepEqual(transition(next, { seq: 1, guess: 20 }, new Date()), first);
+  assert.throws(() => transition(next, { seq: 1, guess: 21 }, new Date()), { status: 409 });
+  assert.equal(transition(next, { seq: 2, guess: 42 }, new Date()).status, 'won');
+  assert.throws(() => transition({ ...state, expiresAt: new Date(0) }, { seq: 1, guess: 42 }, new Date()), { status: 409 });
+  const used = { ...state, actions: Array.from({length:9}, (_,i) => ({seq:i+1,guess:1,status:'active',hint:'higher'})) };
+  assert.equal(transition(used, { seq:10, guess:1 }, new Date()).status, 'lost');
+});

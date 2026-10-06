@@ -12,7 +12,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Contests from './pages/Contests';
 import AboutPage from './pages/Aboutpage';
-import { LearnRoute } from './app/routes';
+import { LearnRoute, ArcadeRoute } from './app/routes';
 function MembershipGate() {
   const { user, loading, error, refresh } = useAuth();
   const [message, setMessage] = useState('');
@@ -44,6 +44,7 @@ export default function App() {
       <Route element={<HubShell />}>
       <Route path="/study-rooms/:id" element={<StudyRoom />} /><Route path="/channels/:id/study" element={<StudyLobby />} />
       <Route path="/channels/:id" element={<Channel />} />
+      <Route path="/arcade" element={<ArcadeRoute />} /><Route path="/arcade/numberguess/:id" element={<ArcadeRoute />} />
       <Route path="/learn/*" element={<LearnRoute />} /><Route path="/" element={<Dashboard />} /><Route path="/leaderboard" element={<Leaderboard />} /><Route path="/contests" element={<Contests />} />
     </Route></Route>
     <Route path="*" element={<Navigate to="/" replace />} />
