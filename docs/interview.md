@@ -1,6 +1,6 @@
-# Interview P8.1 contracts and operation
+# Interview contracts and operation
 
-The independent `services/interview` Express/Mongo service and shared `/interview` React feature adapt the supplied AI-Interviewer resume flow. The original MIT notice remains in [THIRD_PARTY](../THIRD_PARTY.md). There is no active local User/auth/admin/jobs/socket/provider stack. Generation, answer execution, evaluation and Aura delivery are P8.2, not enabled endpoints.
+The independent `services/interview` Express/Mongo service and shared `/interview` React feature adapt the supplied AI-Interviewer resume flow. The original MIT notice remains in [THIRD_PARTY](../THIRD_PARTY.md). P8.2 adds five-question Groq practice, durable answers, immutable reports and Core receipts. There is no active local User/auth/admin/jobs/socket stack.
 
 ## Identity and persistence
 
@@ -17,7 +17,7 @@ Every Resume/Interview/Session belongs to a string Core userId and hubId. Both s
 | GET `/api/interview/resumes` | Up to 20 owned metadata rows; no extracted text |
 | POST `/api/interview/resumes/upload` | One multipart `file`, application/pdf and .pdf filename; 201 metadata, or 200 for an identical owned content hash |
 | GET `/api/interview/resumes/:id` | Owned metadata and bounded private extractedText |
-| DELETE `/api/interview/resumes/:id` | Physically removes original extracted text; detaches owned draft references atomically |
+| DELETE `/api/interview/resumes/:id` | Physically removes original extracted text; detaches owned interview references and interrupts in-flight generation atomically |
 
 No extra multipart fields, DOC/DOCX, cloud upload, file URL, download, chunk-preview, AI reparse or default-resume hook is accepted. Public metadata explicitly says `storageDriver: "none"`, `fileUrl: null`. The PDF buffer exists only for the request/parser and is not written to disk, Mongo or a storage provider. Mongo retains extracted text until owned deletion. Do not log request bodies, extracted text or credentials; private browser state is cleared on account change/unmount.
 
@@ -33,12 +33,43 @@ Implementation follows [Mozilla's Node example](https://github.com/mozilla/pdf.j
 
 ## Draft boundary and deletion
 
-Owned draft CRUD exists at `/api/interview/interviews[/:id]`. POST accepts exactly `resumeId`, nonempty jobTitle (160 characters), nonempty jobDescription (5,000 characters) and 1–5 unique allowed questionTypes. Question count is fixed at five for the later phase. No generation/session endpoint is active. Deletion clears draft resumeId and sets resumeUnavailable; a deleted ID cannot attach again. Completed report/answer rows are retained and their schema has no copied resume-text field. P8.2 must resolve a live owned resume before starting new generation and preserve this boundary.
+Owned draft CRUD exists at `/api/interview/interviews[/:id]`. POST requires resumeId, jobTitle (160 characters), jobDescription (5,000 characters) and 1–5 unique questionTypes. Optional company (160), experienceLevel (entry/mid/senior) and UUID clientRequestId support preferences and idempotent setup. Changed content under the same request ID conflicts. At most 20 setups are retained. Only unused setups without frozen questions or sessions can be deleted.
+
+Deleting a resume clears all owned references and invalidates its generation lease in the same transaction. Generation resolves and fences a live owned resume both before the provider request and before committing questions. Existing frozen questions and completed reports remain available; report data contains no copied resume-text field.
+
+## Five-question practice API
+
+| Request (prefix /api/interview) | Result |
+|---|---|
+| GET /capabilities | AI availability and configured provider/model, no secret |
+| POST /interviews/:id/generate with {} | Exactly five unique schema-validated questions, frozen once; active lease returns 202 |
+| POST /sessions with {interviewId} | One session per owned interview; retry returns the same session |
+| GET /sessions or /sessions/:id | Owned history or canonical saved answers/report; result reads trigger due delivery |
+| PUT /sessions/:id/answers/:questionId | Exact {revision,answer,skipped}; next revision only, identical retry accepted; 2,000 characters; explicit skip requires empty answer |
+| POST /sessions/:id/complete with {} | All five slots must be saved; leased evaluation or explicit evaluation_failed; completed retry returns the immutable report |
+
+Questions honor selected categories in round-robin order. Internal expected keywords never appear in browser DTOs. Provider calls happen outside transactions. Mongo time and 30-second CAS leases serialize generation/evaluation across processes; attempts survive restarts. An expired lease is recoverable from the owned detail read. Save acknowledgements precede UI advance. Five scores (integers 0–10) always remain in the denominator: round(100 × sum / 50). Skipped answers are zero. Invalid/missing/duplicate question IDs, oversized feedback, malformed JSON, truncation, timeouts and 429 create no report or event. Failures retain inputs for retry after cooldown.
+
+Report, completed state and event commit atomically. Duration freezes when evaluation is requested, excluding provider latency. Completion uses the current signed module session's JTI and must occur before that credential expires. Web renews the handoff with at least 35 seconds remaining before a long operation. Reports label AI feedback as heuristic practice, never an employment decision.
+
+## Groq Free configuration and limits
+
+Set server-only GROQ_API_KEY, GROQ_FREE_CONFIRMED=true only for a verified Free account, and GROQ_MODEL=openai/gpt-oss-20b. INTERVIEW_AI_ENABLED=false is the safe stop for new provider calls. There is no paid/provider/model fallback. The endpoint is fixed to Groq HTTPS; redirects are rejected. Resume/JD/answer context is delimited as untrusted JSON, with strict JSON-schema output followed by independent application validation. Do not submit sensitive real resumes for demos.
+
+The transport deadline is 10 seconds, response cap 64 KiB and completion cap 2,500 tokens. Persisted admission allows one provider operation across the module, 3 generation attempts/hour/owner+Hub, 6 evaluation attempts/hour/owner+Hub and 30 total operations/UTC day. Failed attempts consume allowance. Local failures wait 30 seconds; provider 429 respects bounded Retry-After and a shared cooldown. Provider account/token limits can still reject requests; the app does not bypass them.
+
+Model/free access and strict structured output support were checked 2026-10-07 using [Groq models](https://console.groq.com/docs/models), [structured outputs](https://console.groq.com/docs/structured-outputs) and [rate limits](https://console.groq.com/docs/rate-limits). The official Free table listed 30 RPM, 1,000 RPD, 8,000 TPM and 200,000 TPD for this model. Account limits can differ/change. A key alone cannot prove billing status: Free is an operator assertion; never enable a paid upgrade for this deployment.
+
+## Durable Aura delivery
+
+Event ID is `interview:<sessionId>:completed:v1`; its saved facts never change on retry. The independent service sends only the A5 event contract to Core, using its own service credential scoped to interview.completed. Core activates prospective interview-five-v1 rules and remains the only award authority: at least three answered questions and 60 seconds qualify for 20 + floor(rawScore/10), at most 30, twice per India day, source cap 60. Shared Core DailyActivity/streak accounting is reused.
+
+Delivery uses a 15-second lease, bounded four-second Core request, durable pending state and exponential 30-second to one-hour backoff. A report survives Core outages and lost acknowledgements. Owned result reads trigger due delivery; refresh again to observe acknowledgement. Sleeping services make no background delivery promise. Set a separate 43-character base64url INTERVIEW_RECONCILE_KEY to enable direct service-only GET /api/interview/integration/pending-results (20 rows) and POST /api/interview/integration/reconcile with {} (up to three due rows). Send Bearer credential directly to the Interview origin with no Origin/Sec-Fetch-Site headers. The shared browser gateway intentionally strips this credential. No cron/worker is required; no browser can force retry timing.
 
 ## Run, deploy and safe stop
 
 `npm run dev:interview` starts independently. Root dev starts it only when ENABLE_MODULES includes interview. Configure server-only INTERVIEW_API_ORIGIN in the shared gateway; no second frontend exists. `/health/live` is process liveness; `/health/ready` and `/api/interview/health/ready` ping only Interview's own Mongo connection, returning 503 when unavailable. No Core/provider health dependency is added.
 
-`node deploy/build.mjs interview` installs only Interview/contracts production dependencies and checks source syntax. **Run from the repository root of the intended build checkout**, not by invoking a copied script from another current directory. `render.yaml` defines the fourth Free web service; no paid worker, disk, cron or API is needed. Provision service `interview` with the existing Core stdin provisioning script and `eventTypes: []`; it has no reward scope. See [deployment instructions](../deploy/README.md).
+`node deploy/build.mjs interview` installs only Interview/contracts production dependencies and checks source syntax. **Run from the repository root of the intended build checkout**, not by invoking a copied script from another current directory. `render.yaml` defines the fourth Free web service; no paid worker, disk, cron or API is needed. Provision service `interview` with the existing Core stdin provisioning script and `eventTypes: ["interview.completed"]`; existing credentials need this scope. See [deployment instructions](../deploy/README.md).
 
-Safe stop: remove interview from Core ENABLE_MODULES to stop new handoffs, disable the gateway origin or stop the Interview process. Preserve its database and Core credentials/ledger. Existing signed sessions remain valid until expiry if the service stays up. A rollback must retain compatible models; do not reset retained resumes/reports or fall back to legacy auth/Cloudinary. The Hub/Core/Learn/Arcade remain independently operable.
+Safe stop: disable INTERVIEW_AI_ENABLED to retain reports and saved answers while AI is unavailable. To stop new sessions, remove interview from Core ENABLE_MODULES to stop new handoffs, disable the gateway origin or stop the Interview process. Preserve its database and Core credentials/ledger. Existing signed sessions remain valid until expiry if the service stays up. A rollback must retain compatible models; do not reset retained resumes/reports or fall back to legacy auth/Cloudinary. The Hub/Core/Learn/Arcade remain independently operable.

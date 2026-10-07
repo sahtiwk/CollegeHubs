@@ -1,0 +1,7 @@
+{
+  "version": "interview-five-v1",
+  "timezone": "Asia/Kolkata",
+  "timezonePolicyVersion": 1,
+  "types": { "interview.completed": { "weight": 20, "countCap": 2, "sourceCap": 60 } },
+  "rubricVersion": "interview-five-v1"
+}

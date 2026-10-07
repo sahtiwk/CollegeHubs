@@ -151,3 +151,14 @@ services:
         sync: false
       - key: CORE_SERVICE_KEY
         sync: false
+
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-20b
+      - key: GROQ_FREE_CONFIRMED
+        sync: false
+      - key: INTERVIEW_AI_ENABLED
+        value: "true"
+      - key: INTERVIEW_RECONCILE_KEY
+        sync: false

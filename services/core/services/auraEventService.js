@@ -95,6 +95,10 @@ function createAuraEventService({ rules = null } = {}) {
       const stored = await require('../models/AuraRuleSet').findOne({ version: { $in: ['arcade-numberguess-v1', 'arcade-three-games-v1'] }, activatedAt: { $lte: new Date(event.occurredAt) } }).sort({ activatedAt: -1, version: -1 }).lean();
       if (stored && stored.rules.games?.[event.metadata.gameId] === event.metadata.rulesVersion && event.metadata.domainVersion === 'v1') activeRules = stored.rules;
     }
+    if (!activeRules && event.source === 'interview') {
+      const stored = await require('../models/AuraRuleSet').findOne({ version: 'interview-five-v1', activatedAt: { $lte: new Date(event.occurredAt) } }).lean();
+      if (stored && event.metadata.rubricVersion === stored.rules.rubricVersion && event.metadata.domainVersion === 'v1') activeRules = stored.rules;
+    }
     if (!activeRules || !activeRules.types[event.type]) throw failure(503, 'AURA_RULES_INACTIVE', 'Aura scoring is not activated yet; retain the pending result');
     const rule = activeRules.types[event.type], hash = digest(canonicalJson(event)), key = businessKey(event);
     const dayKey = new Intl.DateTimeFormat('en-CA', { timeZone: activeRules.timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(event.occurredAt));

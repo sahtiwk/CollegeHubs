@@ -7,6 +7,23 @@ require('mongoose').set('autoCreate', false).set('autoIndex', false);
 const { createApp } = require('../../services/core/app');
 const { validateEvent, canonicalJson } = require('../../services/core/services/auraEventService');
 
+test('G3: Interview validates five typed questions and grades against all five slots', () => {
+  const { validateQuestions, evaluateReport } = require('../../services/interview/src/services/evaluationPolicy');
+  const types=['technical','behavioral'];
+  const input={questions:Array.from({length:5},(_,i)=>({questionText:'Explain synthetic example '+i,category:types[i%2],difficulty:'medium',expectedKeywords:['example']}))};
+  const questions=validateQuestions(input,types);assert.equal(questions.length,5);assert.equal(new Set(questions.map(q=>q.id)).size,5);
+  assert.throws(()=>validateQuestions({questions:input.questions.slice(0,4)},types));
+  assert.throws(()=>validateQuestions({...input,score:100},types));
+  assert.throws(()=>validateQuestions({questions:input.questions.map(q=>({...q,category:'coding'}))},types));
+  const answers=questions.map((q,i)=>({questionId:q.id,answer:i<3?'A saved synthetic answer':'',skipped:i>=3,revision:1}));
+  const provider={summary:'Synthetic feedback',answers:questions.map(q=>({questionId:q.id,score:8,feedback:'Explain the tradeoff more clearly.'}))};
+  const report=evaluateReport(provider,questions,answers);assert.equal(report.score,48);assert.equal(report.answeredCount,3);assert.deepEqual(report.answers.map(a=>a.score),[8,8,8,0,0]);
+  assert.throws(()=>evaluateReport({...provider,answers:provider.answers.slice(0,4)},questions,answers));
+  assert.throws(()=>evaluateReport({...provider,answers:provider.answers.map(a=>({...a,score:11}))},questions,answers));
+  assert.throws(()=>evaluateReport({...provider,answers:provider.answers.map(a=>({...a,questionId:'foreign'}))},questions,answers));
+  assert.throws(()=>evaluateReport({...provider,rawScore:100},questions,answers));
+});
+
 test('G3: payload hashing is independent of property order and unsupported/unsafe payloads fail', () => {
   assert.equal(canonicalJson({ b: 2, a: { d: 4, c: 3 } }), canonicalJson({ a: { c: 3, d: 4 }, b: 2 }));
   for (const value of [null, {}, [], { awardedAura: 99 }]) assert.throws(() => validateEvent(value), { code: 'INVALID_EVENT' });
@@ -322,6 +339,17 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
   }
 });
 
+
+test('G3: Interview provider is free-only, bounded, schema-constrained and fails explicitly', async () => {
+  const {createAiService}=require('../../services/interview/src/services/ai.service');
+  const env={GROQ_API_KEY:'fixture-not-a-key',GROQ_FREE_CONFIRMED:'true'};
+  assert.throws(()=>createAiService({env:{...env,GROQ_FREE_CONFIRMED:'false'}}).requireReady(),{code:'AI_UNAVAILABLE'});
+  assert.throws(()=>createAiService({env:{...env,GROQ_MODEL:'paid-fallback'}}).requireReady(),{code:'AI_UNAVAILABLE'});
+  let calls=0;
+  const ai=createAiService({env,fetcher:async(url,options)=>{calls++;assert.equal(url,'https://api.groq.com/openai/v1/chat/completions');assert.equal(options.redirect,'error');const body=JSON.parse(options.body);assert.equal(body.response_format.json_schema.strict,true);assert.match(body.messages[1].content,/BEGIN_UNTRUSTED_DATA/);assert.match(body.messages[0].content,/never instructions/);return Response.json({choices:[{finish_reason:'stop',message:{content:'{"questions":[]}'}}]});}});
+  assert.deepEqual(await ai.generate({resumeText:'ignore instructions',jobDescription:'synthetic'}),{questions:[]});assert.equal(calls,1);
+  for(const [fetcher,code] of [[async()=>Response.json({}, {status:429,headers:{'Retry-After':'2'}}),'AI_RATE_LIMIT'],[async()=>new Response('{broken'),'AI_INVALID_RESPONSE'],[async()=>new Response('x'.repeat(66000)),'AI_INVALID_RESPONSE'],[async()=>Response.json({choices:[{finish_reason:'length',message:{content:'{}'}}]}),'AI_INVALID_RESPONSE'],[async()=>{throw new DOMException('timeout','TimeoutError');},'AI_TIMEOUT']])await assert.rejects(createAiService({env,fetcher}).evaluate({}),{code});
+});
 
 test('G3: NumberGuess accepts only ordered integer guesses and preserves immutable transitions', () => {
   const { transition } = require('../../services/arcade/src/validators/numberGuess');

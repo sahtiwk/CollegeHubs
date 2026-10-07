@@ -338,7 +338,7 @@ Order: local proof → free DB/account setup → Core → one released module at
 | Core | `PORT`, `NODE_ENV`, `MONGO_URI`, `JWT_SECRET`, `CORE_TOKEN_ISSUER`, `CORE_ACCESS_AUDIENCE`, `CORE_ACCESS_TTL_SECONDS`, `GOOGLE_CLIENT_ID`, `APP_ORIGIN`, `ALLOWED_ORIGINS`, `CORE_MODULE_PRIVATE_KEY`, `CORE_MODULE_KEY_ID`, `CORE_MODULE_PUBLIC_KEYS`, module TTL/binding retention settings, `ENABLE_MODULES`, `ENABLE_CHAT`, `ENABLE_STUDY`, `ENABLE_AURA`. |
 | Modules | `PORT`, `NODE_ENV`, `APP_ORIGIN`, `ALLOWED_ORIGINS`, `CORE_API_BASE_URL`, pinned issuer/audience/key IDs/public keys, `CORE_SERVICE_KEY`, `CORE_READ_SERVICE_KEY_HASH`, `EVENT_TIMEOUT_MS`, cookie/path configuration. |
 | Persistence | `ARCADE_MONGO_URI`, `INTERVIEW_MONGO_URI`, Learn `DATABASE_URL`; each credential only to its owner. |
-| Providers | Interview `GROQ_API_KEY`, `LLM_MODEL`, timeout/concurrency; Learn optional `GEMINI_API_KEY`, `YOUTUBE_API_KEY`, cache TTL/quota; optional Core `CLIST_USERNAME`, `CLIST_API_KEY`, timeout after free access verification. |
+| Providers | Interview `GROQ_API_KEY`, `GROQ_MODEL`, `GROQ_FREE_CONFIRMED`, `INTERVIEW_AI_ENABLED`, timeout/concurrency; Learn optional `GEMINI_API_KEY`, `YOUTUBE_API_KEY`, cache TTL/quota; optional Core `CLIST_USERNAME`, `CLIST_API_KEY`, timeout after free access verification. |
 | P10 reads | Core module API origins and read-service credential, short audience/scope-specific delegation. |
 | Setup/guards | `DEMO_RESET_ENABLED`, `DEMO_DB_NAME_ALLOWLIST`, explicit confirmation; existing `GUARD_MONGO_URI` and documented isolated module Mongo/SQL fixtures. Never default to live env. |
 
@@ -607,6 +607,8 @@ Goal: reuse PDF → questions → saved answers → evaluation → report in the
 **Contract/outcome:** `/api/interview/resumes` scoped text-only persistence. **Acceptance:** valid parse/list/delete, no original URL/storage object; foreign attach/read/delete denied; retired routes404; starts without removed keys. Deletion blocks future generation from that resume; retained completed reports contain no copied resume text. **Risk:** parser memory/CPU and extracted-text privacy. **Done:** common definition and bounded upload walkthrough.
 
 ### P8.2. Questions, saved answers, immutable report and receipt
+
+**Local status (2026-10-07): PASS.** Shared-shell setup/practice/history/report routes now use real Groq Free structured output, five frozen questions, revisioned saved answers, leased evaluation and one immutable report/event. Generation and evaluation failures remain retryable; Core independently confirms capped Aura through durable delivery. The real synthetic Demo5 produced an 86/100 report with Core offline, then confirmed 28 Aura after recovery. All 93 guards pass with zero failures/skips, all workspace builds and the isolated Interview production build pass. Mobile/theme/reload checks pass. See [P8.2 evidence](docs/p8.2-evidence.md) and [Interview operation](docs/interview.md). Hosted acceptance remains P11-gated; P9 is not started.
 
 **Scope:** five-question REST journey with real free-provider evaluation, no voice/socket streaming. **Prerequisite:** P8.1/P6.1 and verified free provider. **Guards:** G1/G3. **Effort:** 2–3 days.
 

@@ -22,6 +22,6 @@ module.exports = function resumeController(connection, models, owned) {
       } finally { req.file.buffer = null; }
     },
     get: async (req, res) => { const row = await owned(models.Resume, req, null, '+extractedText'); res.json({ resume: { ...metadata(row), extractedText: row.extractedText } }); },
-    delete: async (req, res) => { await connection.transaction(async session => { const row = await owned(models.Resume, req, session); await models.Resume.deleteOne({ ...req.scope, _id: row._id }, { session }); await models.Interview.updateMany({ ...req.scope, resumeId: row._id, status: 'draft' }, { $set: { resumeId: null, resumeUnavailable: true } }, { session }); }); res.json({ deleted: true }); },
+    delete: async (req, res) => { await connection.transaction(async session => { const row = await owned(models.Resume, req, session); await models.Resume.deleteOne({ ...req.scope, _id: row._id }, { session }); await models.Interview.updateMany({ ...req.scope, resumeId: row._id, status: 'generating' }, { $set: { status: 'generation_failed', generationLease: null, lastError: 'RESUME_UNAVAILABLE' } }, { session }); await models.Interview.updateMany({ ...req.scope, resumeId: row._id }, { $set: { resumeId: null, resumeUnavailable: true } }, { session }); }); res.json({ deleted: true }); },
   };
 };

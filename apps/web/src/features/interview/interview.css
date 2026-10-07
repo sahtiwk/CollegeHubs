@@ -1,0 +1,19 @@
+.interview-page{max-width:960px;width:100%;margin-inline:auto;min-width:0}
+.interview-page textarea,.interview-page select,.interview-page input:not([type=checkbox]){width:100%;box-sizing:border-box}
+.interview-form label{display:grid;gap:.5rem}
+.interview-form fieldset{border:1px solid var(--border);border-radius:12px;padding:1rem;min-width:0}
+.interview-form .interview-check{display:flex;align-items:center;gap:.5rem;text-transform:capitalize}
+.interview-page .interview-actions{display:flex;flex-wrap:wrap;gap:.75rem}
+.interview-page nav a{padding:.5rem .75rem;border-radius:8px}
+.interview-page nav a.active{background:var(--secondary);color:var(--accent)}
+.interview-page .interview-prompt{font-size:1.2rem;line-height:1.6}
+.interview-page .interview-score{font-size:2.5rem;color:var(--accent)}
+.interview-score small{font-size:1rem;color:var(--text-muted)}
+.interview-page meter{width:100%;height:1rem;accent-color:var(--accent)}
+.interview-page meter::-webkit-meter-bar{background:var(--surface-raised);border:1px solid var(--border)}
+.interview-page meter::-webkit-meter-optimum-value{background:var(--accent)}
+.interview-page meter::-moz-meter-bar{background:var(--accent)}
+.interview-answer{white-space:pre-wrap;overflow-wrap:anywhere;padding:1rem;border-left:3px solid var(--accent);background:var(--secondary)}
+.interview-questions{padding-left:1.5rem;display:grid;gap:1rem}
+.interview-page [aria-current=step]{outline:2px solid var(--accent);outline-offset:2px}
+@media(max-width:540px){.interview-page .section-heading{align-items:flex-start;gap:.75rem;flex-wrap:wrap}.interview-page .interview-actions button{flex:1 1 auto}.interview-page .card{min-width:0}.interview-page h2{overflow-wrap:anywhere}}

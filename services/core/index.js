@@ -19,6 +19,7 @@ async function start() {
   await require('./services/nativeAuraService').activate();
   if (require('./config/modules').moduleConfig().enabled.includes('arcade')) await require('./services/nativeAuraService').activate(require('./config/auraRules.arcade.v1.json'));
   if (require('./config/modules').moduleConfig().enabled.includes('arcade')) await require('./services/nativeAuraService').activate(require('./config/auraRules.arcade.v2.json'));
+  if (require('./config/modules').moduleConfig().enabled.includes('interview')) await require('./services/nativeAuraService').activate(require('./config/auraRules.interview.v1.json'));
   const stopDeadlines = await require('./services/studyDeadlineService').start(event => app.locals.publishStudy?.(event));
   const server = app.listen(process.env.PORT || 5000, () => console.log('Core API listening'));
   const io = require('./realtime').attachRealtime(server, app);

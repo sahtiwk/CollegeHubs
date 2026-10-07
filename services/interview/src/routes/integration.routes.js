@@ -1,0 +1,5 @@
+const {Router}=require('express');const {timingSafeEqual}=require('node:crypto');const {hash}=require('@collegehubs/contracts/module-session.cjs');const {fail}=require('../errors');const {wrap}=require('../auth/sessionRoutes');
+function integrationRoutes(Session,events,config){const router=Router();router.use((req,res,next)=>{const token=/^Bearer ([^\s]+)$/.exec(req.get('Authorization')||'')?.[1];if(!config.reconcileKey||req.get('Origin')||req.get('Sec-Fetch-Site')||!token||!timingSafeEqual(Buffer.from(hash(token)),Buffer.from(hash(config.reconcileKey))))return next(fail(403,'SERVICE_ONLY'));next();});
+router.get('/pending-results',wrap(async(req,res)=>res.json({items:(await Session.find({deliveryStatus:'pending'}).sort({nextAttemptAt:1,_id:1}).limit(20).select('_id nextAttemptAt attempts lastDeliveryError')).map(row=>({id:row.id,nextAttemptAt:row.nextAttemptAt,attempts:row.attempts,status:row.lastDeliveryError}))})));
+router.post('/reconcile',wrap(async(req,res)=>{if(req.body&&Object.keys(req.body).length)throw fail(400,'INVALID_BODY');res.json(await events.reconcile());}));return router;}
+module.exports={integrationRoutes};

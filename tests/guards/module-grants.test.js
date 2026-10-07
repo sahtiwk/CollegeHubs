@@ -463,6 +463,85 @@ test('G1/G2/G3: real Arcade handoff, owned game transitions and canonical receip
   }finally{await db.close();}
 });
 
+test('G1/G2/G3: Interview persists owned five-question practice, leases, retries and one canonical receipt', {skip:!process.env.GUARD_INTERVIEW_MONGO_URI}, async()=>{
+  const mongoose=require('mongoose'),{randomUUID}=require('node:crypto'),{pdfFixture}=require('../../scripts/pdf-fixture.cjs');
+  const base=process.env.GUARD_APP_ORIGIN,p='/api/interview',uri=new URL(process.env.GUARD_INTERVIEW_MONGO_URI);
+  assert.ok(['localhost','127.0.0.1'].includes(uri.hostname));assert.equal(uri.pathname,'/collegehubs_demo_interview');
+  const db=await mongoose.createConnection(uri.toString()).asPromise();
+  function client(){const jar=new Map();return {async call(path,{method='GET',body,csrf,token,origin=base}={}){const form=body instanceof FormData,response=await fetch(base+path,{method,headers:{...(origin?{Origin:origin}:{}),Cookie:[...jar].map(([k,v])=>k+'='+v).join('; '),...(body&&!form?{'Content-Type':'application/json'}:{}),...(csrf?{'X-CSRF-Token':csrf}:{}),...(token?{Authorization:'Bearer '+token}:{})},...(body?{body:form?body:JSON.stringify(body)}:{})});for(const value of response.headers.getSetCookie()){const [k,v]=value.split(';')[0].split('=');jar.set(k,v);}return {status:response.status,data:await response.json(),headers:response.headers};}};}
+  const owner=client(),peer=client();
+  async function bootstrap(c,core){const {state}=(await c.call(p+'/auth/start',{method:'POST'})).data;const {grant}=(await c.call('/api/auth/module-grants',{method:'POST',token:core.token,body:{module:'interview',state,returnPath:'/interview'}})).data;assert.equal((await c.call(p+'/auth/callback',{method:'POST',body:{module:'interview',state,grant}})).status,200);return (await c.call(p+'/session')).data;}
+  const oid=id=>new mongoose.Types.ObjectId(id);
+  try{
+    const username='practice-'+randomUUID().slice(0,8),registered=await owner.call('/api/auth/register',{method:'POST',body:{username,email:username+'@cvr.ac.in',password:'Disposable-practice-82!'}});assert.equal(registered.status,201);const core=registered.data;
+    let auth=await bootstrap(owner,core); const peerCore=(await peer.call('/api/auth/login',{method:'POST',body:{email:'peer@cvr.ac.in',password:'Preview-only-32!'}})).data,peerAuth=await bootstrap(peer,peerCore);
+    const call=(path,method='GET',body)=>owner.call(p+path,{method,body,csrf:auth.csrfToken});
+    assert.equal((await call('/capabilities')).data.provider,'Synthetic test provider','Guards must never use live LLM calls');
+    // Disposable provider counters only: deterministic repeatability, never a runtime bypass.
+    await db.collection('aicontrols').deleteMany({});
+    const form=new FormData();form.append('file',new Blob([pdfFixture('SYNTHETIC RESUME fixture candidate JavaScript tests')],{type:'application/pdf'}),'synthetic.pdf');
+    const uploaded=await call('/resumes/upload','POST',form);assert.equal(uploaded.status,201);const resumeId=uploaded.data.resume.id;
+    const draftBody={resumeId,jobTitle:'Synthetic intern',jobDescription:'JavaScript tests and teamwork',questionTypes:['technical','behavioral'],clientRequestId:randomUUID()};
+    const draft=await call('/interviews','POST',draftBody);assert.equal(draft.status,201,JSON.stringify(draft.data));const id=draft.data.interview.id;
+    assert.equal((await call('/interviews','POST',draftBody)).data.interview.id,id);
+    assert.equal((await call('/interviews','POST',{...draftBody,jobTitle:'changed'})).status,409);
+    assert.equal((await peer.call(p+'/interviews/'+id+'/generate',{method:'POST',csrf:peerAuth.csrfToken,body:{}})).status,404);
+    const generated=await call('/interviews/'+id+'/generate','POST',{});assert.equal(generated.status,200,JSON.stringify(generated.data));const questions=generated.data.interview.questions;
+    assert.equal(questions.length,5);assert.deepEqual(questions.map(q=>q.category),['technical','behavioral','technical','behavioral','technical']);assert.ok(questions.every(q=>!q.expectedKeywords));
+    assert.deepEqual((await call('/interviews/'+id+'/generate','POST',{})).data.interview.questions,questions);
+    const started=await call('/sessions','POST',{interviewId:id});assert.equal(started.status,201,JSON.stringify(started.data));const sid=started.data.session.id,path='/sessions/'+sid;
+    assert.equal((await call('/sessions','POST',{interviewId:id})).data.session.id,sid);
+    assert.equal((await call(path+'/complete','POST',{})).status,409);
+    assert.equal((await peer.call(p+path)).status,404);
+    assert.equal((await peer.call(p+path+'/answers/'+questions[0].id,{method:'PUT',csrf:peerAuth.csrfToken,body:{revision:1,answer:'foreign',skipped:false}})).status,404);
+    for(let i=0;i<5;i++){const body={revision:1,answer:i<3?'A concrete example and tradeoff.':'',skipped:i>=3};const saved=await call(path+'/answers/'+questions[i].id,'PUT',body);assert.equal(saved.status,200,JSON.stringify(saved.data));if(i===0){assert.equal((await call(path+'/answers/'+questions[i].id,'PUT',body)).status,200);assert.equal((await call(path+'/answers/'+questions[i].id,'PUT',{...body,answer:'changed'})).status,409);}}
+    assert.equal((await call(path)).data.session.answers.filter(a=>a.revision===1).length,5);
+    assert.equal((await call(path+'/answers/'+randomUUID(),'PUT',{revision:1,answer:'unknown',skipped:false})).status,404);
+    const originalJti=(await db.collection('modulesessions').findOne({user_id:core.user._id})).principal.jti;
+    await db.collection('modulesessions').updateMany({user_id:core.user._id},{$set:{expires_at:new Date(0)}});
+    auth=await bootstrap(owner,core);
+    // Explicit fixture clock to check qualification without delaying every guard run.
+    await db.collection('sessions').updateOne({_id:oid(sid)},{$set:{createdAt:new Date(Date.now()-61000)}});
+    const completed=await Promise.all([call(path+'/complete','POST',{}),call(path+'/complete','POST',{})]);assert.ok(completed.every(r=>[200,202].includes(r.status)),JSON.stringify(completed));
+    let result=(await call(path)).data.session;assert.equal(result.status,'completed');assert.equal(result.report.score,48);assert.equal(result.report.answeredCount,3);assert.deepEqual(result.report.answers.map(a=>a.score),[8,8,8,0,0]);const report=result.report;
+    assert.deepEqual((await call(path+'/complete','POST',{})).data.session.report,report);
+    assert.equal((await call(path+'/complete','POST',{score:100})).status,400);assert.equal((await call(path+'/answers/'+questions[0].id,'PUT',{revision:2,answer:'changed',skipped:false})).status,409);
+    for(let i=0;i<30&&result.deliveryStatus!=='settled';i++){await new Promise(resolve=>setTimeout(resolve,100));result=(await call(path)).data.session;}
+    assert.equal(result.deliveryStatus,'settled',JSON.stringify(result));assert.equal(result.receipt.awardedAura,24);
+    const stored=await db.collection('sessions').findOne({_id:oid(sid)});assert.equal(stored.evaluationAttempts,1);assert.equal(stored.event.eventId,`interview:${sid}:completed:v1`);assert.equal(stored.event.metadata.accessJti,(await db.collection('modulesessions').findOne({user_id:core.user._id},{sort:{_id:-1}})).principal.jti);assert.notEqual(stored.event.metadata.accessJti,originalJti);assert.equal(stored.event.metadata.questionCount,5);
+    assert.equal(JSON.stringify(result).includes('SYNTHETIC RESUME'),false);assert.equal(JSON.stringify(result).includes('expectedKeywords'),false);assert.equal(result.event,undefined);
+    // Simulate an acknowledgement lost after Core committed. Retry the unchanged fact.
+    const Session=require('../../services/interview/src/models/Session.model')(db),{createCoreEvents}=require('../../services/interview/src/services/coreEvents');
+    const config={core:'http://127.0.0.1:5183',serviceKey:process.env.GUARD_INTERVIEW_SERVICE_KEY};
+    await Session.updateOne({_id:sid},{$set:{deliveryStatus:'pending',receipt:null,nextAttemptAt:new Date(0),deliveryLeaseUntil:new Date(0)}});
+    await createCoreEvents(Session,config,async(...args)=>{const r=await fetch(...args);assert.equal(r.status,200);await r.arrayBuffer();throw new Error('Lost Core acknowledgement');}).deliver(sid);
+    assert.equal((await Session.findById(sid)).deliveryStatus,'pending');await Session.updateOne({_id:sid},{$set:{nextAttemptAt:new Date(0)}});await createCoreEvents(Session,config).deliver(sid);
+    assert.equal((await Session.findById(sid)).receipt.awardedAura,24);assert.deepEqual((await Session.findById(sid)).event,stored.event);
+    assert.equal((await owner.call(p+'/integration/reconcile',{method:'POST',token:process.env.GUARD_INTERVIEW_RECONCILE_KEY,body:{}})).status,403);
+    assert.equal((await fetch('http://127.0.0.1:5186'+p+'/integration/reconcile',{method:'POST',headers:{Authorization:'Bearer '+process.env.GUARD_INTERVIEW_RECONCILE_KEY,'Content-Type':'application/json'},body:'{}'})).status,200);
+    // A second generation fails explicitly, recovers its lease, then evaluates with a retry.
+    const d2=(await call('/interviews','POST',{...draftBody,clientRequestId:randomUUID(),jobDescription:'[fixture:malformed]'})).data.interview.id;
+    const bad=await call('/interviews/'+d2+'/generate','POST',{});assert.equal(bad.status,503);assert.equal((await call('/interviews/'+d2)).data.interview.status,'generation_failed');
+    await db.collection('interviews').updateOne({_id:oid(d2)},{$set:{jobDescription:'Synthetic role',status:'generating',generationLease:'interrupted',generationLeaseUntil:new Date(0),retryAt:new Date(0)}});
+    assert.equal((await call('/interviews/'+d2)).data.interview.lastError,'GENERATION_INTERRUPTED');assert.equal((await call('/interviews/'+d2+'/generate','POST',{})).status,200);
+    const second=(await call('/sessions','POST',{interviewId:d2})).data.session,secondPath='/sessions/'+second.id;
+    for(const q of second.questions)assert.equal((await call(secondPath+'/answers/'+q.id,'PUT',{revision:1,answer:'[fixture:429]',skipped:false})).status,200);
+    const limited=await call(secondPath+'/complete','POST',{});assert.equal(limited.status,429);assert.equal(limited.headers.get('retry-after'),'1');
+    const failed=(await call(secondPath)).data.session;assert.equal(failed.status,'evaluation_failed');assert.equal(failed.report,null);assert.equal(failed.deliveryStatus,'none');assert.equal((await db.collection('sessions').findOne({_id:oid(second.id)})).event,null);
+    for(const q of second.questions)await call(secondPath+'/answers/'+q.id,'PUT',{revision:2,answer:'Corrected synthetic example and tradeoff',skipped:false});
+    await db.collection('sessions').updateOne({_id:oid(second.id)},{$set:{status:'evaluating',evaluationLease:'killed',evaluationLeaseUntil:new Date(0),retryAt:new Date(0),createdAt:new Date(Date.now()-61000)}});
+    await db.collection('aicontrols').updateOne({_id:'provider'},{$set:{cooldownUntil:new Date(0)}});
+    assert.equal((await call(secondPath)).data.session.lastError,'EVALUATION_INTERRUPTED');
+    assert.equal((await call(secondPath+'/complete','POST',{})).data.session.report.score,80);
+    let r2;for(let i=0;i<30;i++){r2=(await call(secondPath)).data.session;if(r2.deliveryStatus==='settled')break;await new Promise(resolve=>setTimeout(resolve,100));}assert.equal(r2.receipt.awardedAura,28);
+    // Third attempted generation is blocked after three prior provider attempts (including failure).
+    const d3=(await call('/interviews','POST',{...draftBody,clientRequestId:randomUUID()})).data.interview.id;assert.equal((await call('/interviews/'+d3+'/generate','POST',{})).data.error.code,'AI_QUOTA');
+    assert.equal((await call('/resumes/'+resumeId,'DELETE')).status,200);assert.equal((await call('/interviews/'+id)).data.interview.resumeUnavailable,true);assert.deepEqual((await call(path)).data.session.report,report);
+    assert.equal((await call('/interviews/'+d3+'/generate','POST',{})).data.error.code,'RESUME_UNAVAILABLE');
+    assert.equal((await owner.call('/api/me/aura',{token:core.token})).data.total,52);
+  }finally{await db.close();}
+});
+
 test('G1/G2: independent Interview handoff, bounded text-only PDF and scoped resume references', {skip:!process.env.GUARD_INTERVIEW_MONGO_URI}, async()=>{
   const {randomUUID}=require('node:crypto'),mongoose=require('mongoose'),{pdfFixture}=require('../../scripts/pdf-fixture.cjs');
   const base=process.env.GUARD_APP_ORIGIN,uri=new URL(process.env.GUARD_INTERVIEW_MONGO_URI);
@@ -500,8 +579,8 @@ test('G1/G2: independent Interview handoff, bounded text-only PDF and scoped res
     assert.equal((await peer.call(p+'/interviews',{method:'POST',csrf:peerSession.csrfToken,body:draftBody})).status,404);
     const draft=await owner.call(p+'/interviews',{method:'POST',csrf:session.csrfToken,body:draftBody});assert.equal(draft.status,201);const draftPath=p+'/interviews/'+draft.data.interview.id;
     assert.equal((await foreign.call(draftPath)).status,404);assert.equal((await peer.call(draftPath,{method:'DELETE',csrf:peerSession.csrfToken})).status,404);
-    assert.equal((await owner.call(draftPath+'/generate',{method:'POST',csrf:session.csrfToken,body:{}})).status,404);
-    for(const path of ['/auth/login','/admin','/jobs','/users','/sessions','/resumes/chunk-preview', '/resumes/'+resume.id+'/parse'])assert.equal((await owner.call(p+path,{method:'POST',csrf:session.csrfToken,body:{}})).status,404);
+    assert.equal((await foreign.call(draftPath+'/generate',{method:'POST',csrf:foreignSession.csrfToken,body:{}})).status,404);
+    for(const path of ['/auth/login','/admin','/jobs','/users','/resumes/chunk-preview', '/resumes/'+resume.id+'/parse'])assert.equal((await owner.call(p+path,{method:'POST',csrf:session.csrfToken,body:{}})).status,404);
     const stored=await db.collection('resumes').findOne({_id:new mongoose.Types.ObjectId(resume.id)});assert.equal(stored.userId,core.user._id);assert.equal(stored.hubId,core.user.hubId);assert.equal(stored.fileUrl,null);assert.equal(stored.publicId,undefined);assert.ok(!Object.values(stored).some(Buffer.isBuffer));
     const Session=require('../../services/interview/src/models/Session.model')(db);
     assert.throws(()=>new Session({userId:core.user._id,hubId:core.user.hubId,interviewId:draft.data.interview.id,extractedText:'Must not be copied'}));
