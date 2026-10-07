@@ -15,7 +15,7 @@ async function main() {
   const tables = await client.query("SELECT tablename FROM pg_tables WHERE schemaname='public'");
   if (tables.rowCount) throw new Error('Bootstrap requires a fresh empty database');
   await client.query(schemaDDL); await client.query('COMMIT');
-  console.log('Fresh Learn schema v1 created: sessions, learners, scoped paths, nodes, resources, enrollments and state. No legacy tables installed.');
+  console.log('Fresh Learn schema v2 created: sessions, learners, scoped paths, nodes, resources, enrollments state, private quiz bank, attempts, completions, resources cache and outbox. No legacy tables installed.');
  } catch (error) { await client.query('ROLLBACK'); throw error; }
  finally { client.release(); await pool.end(); }
 }

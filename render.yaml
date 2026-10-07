@@ -75,6 +75,10 @@ services:
         sync: false
       - key: CORE_SERVICE_KEY
         sync: false
+      - key: LEARN_RECONCILE_KEY
+        sync: false
+      - key: LEARN_RESOURCE_LOOKUP_ENABLED
+        value: "false"
   - type: web
     name: collegehubs-arcade
     runtime: node

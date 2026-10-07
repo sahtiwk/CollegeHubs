@@ -13,7 +13,7 @@ async function main() {
   if (!['arcade', 'interview', 'learn'].includes(service) || !/^[a-zA-Z0-9_-]{8,64}$/.test(keyId || '') ||
       typeof key !== 'string' || !new RegExp('^' + keyId + '\\.[a-zA-Z0-9_-]{43}$').test(key) ||
       !['active', 'disabled'].includes(status) || !process.env.MONGO_URI) throw new Error('Invalid configuration');
-  const allowed = { arcade: ['arcade.game_completed'], interview: ['interview.completed'], learn: [] };
+  const allowed = { arcade: ['arcade.game_completed'], interview: ['interview.completed'], learn: ['learn.quiz_completed','learn.node_mastered'] };
   if (!Array.isArray(eventTypes) || new Set(eventTypes).size !== eventTypes.length || eventTypes.some(type => !allowed[service].includes(type))) throw new Error('Invalid event scopes');
   await mongoose.connect(process.env.MONGO_URI);
   await ServiceCredential.init();

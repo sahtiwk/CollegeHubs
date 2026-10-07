@@ -5,7 +5,8 @@ import { createApp } from './app.ts';
 import { configuration, createSessionStore } from './auth/sessionService.ts';
 dotenv.config({ path: fileURLToPath(new URL('../.env', import.meta.url)) });
 async function start() {
-  const config = configuration();
+  const config = { ...configuration(), reconcileKey: process.env.LEARN_RECONCILE_KEY };
+  if(process.env.LEARN_RECONCILE_KEY&&!/^[a-zA-Z0-9_-]{43}$/.test(process.env.LEARN_RECONCILE_KEY))throw Error('Invalid reconciliation key');
   if (!process.env.DATABASE_URL) throw new Error('Learn DATABASE_URL required');
   const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 5, connectionTimeoutMillis: 3000, query_timeout: 4000, statement_timeout: 4000 });
   pool.on('error', () => console.error('Learn database connection unavailable'));

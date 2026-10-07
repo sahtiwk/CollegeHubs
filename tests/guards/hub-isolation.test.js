@@ -1,6 +1,59 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
+test('G1: P9.2 private SQL attempts, thresholds, locks, reset retention and resource cache isolation', {skip:!process.env.GUARD_LEARN_DATABASE_URL}, async()=>{
+  const {Pool}=require('pg'),{randomUUID,randomBytes}=require('node:crypto');
+  const url=new URL(process.env.GUARD_LEARN_DATABASE_URL);assert.ok(['localhost','127.0.0.1'].includes(url.hostname));assert.match(url.pathname,/^\/collegehubs_demo_learn_/);
+  const pool=new Pool({connectionString:url.toString(),max:10});
+  const {learnerService}=await import('../../services/learn/src/services/learnerService.ts'),{attemptService}=await import('../../services/learn/src/services/attemptService.ts'),{resourceLookup}=await import('../../services/learn/src/services/roadmapAdapter.ts');
+  const learning=learnerService(pool),quizzes=attemptService(pool),id=()=>randomBytes(12).toString('hex');
+  const a={hubId:id(),userId:id()},peer={hubId:a.hubId,userId:id()},b={hubId:id(),userId:id()},principal={jti:randomUUID(),exp:Math.floor(Date.now()/1000)+900};
+  async function saved(o,attempt){return (await pool.query('SELECT * FROM quiz_attempt WHERE hub_id=$1 AND user_id=$2 AND id=$3',[o.hubId,o.userId,attempt.id])).rows[0];}
+  async function solve(o,dto,correct){let index=dto.answeredCount;while(dto.question){const snap=await saved(o,dto);const q=snap.questions.find(q=>q.id===dto.question.id);const option=index<correct?q.correct:q.options.find(v=>v.id!==q.correct).id;dto=await quizzes.answer(o,dto.id,q.id,option,randomUUID());index++;}return quizzes.finalize(o,dto.id,principal);}
+  const privateKeys=/"(?:correct|correctOptionId|explanation|seedId|accessJti|answers)":/;
+  try{
+    await Promise.all([learning.initialize(a,'dsa'),learning.initialize(a,'web'),learning.initialize(peer,'dsa'),learning.initialize(b,'dsa')]);
+    const graph=await learning.graph(a),root=graph.nodes.find(n=>n.domain==='dsa'&&n.status==='unlocked'),locked=graph.nodes.find(n=>n.domain==='dsa'&&n.status==='locked'),web=graph.nodes.find(n=>n.domain==='web'&&n.status==='unlocked');
+    await assert.rejects(quizzes.create(a,locked.id,'checkpoint',randomUUID()),{status:403});
+    await assert.rejects(quizzes.create(b,root.id,'checkpoint',randomUUID()),{status:404});
+    const request=randomUUID(),created=await Promise.all(Array.from({length:8},()=>quizzes.create(a,root.id,'checkpoint',request)));let first=created[0];assert.equal(new Set(created.map(a=>a.id)).size,1);assert.doesNotMatch(JSON.stringify(first),privateKeys);
+    await assert.rejects(quizzes.create(a,web.id,'checkpoint',request),{status:409});
+    await assert.rejects(quizzes.get(peer,first.id),{status:404});await assert.rejects(quizzes.get(b,first.id),{status:404});
+    await assert.rejects(quizzes.finalize(a,first.id,principal),{status:409});
+    await assert.rejects(quizzes.answer(a,first.id,randomUUID(),randomUUID(),randomUUID()),{status:400});
+    const initial=await saved(a,first),q=initial.questions[0],answerRequest=randomUUID();
+    const repeats=await Promise.all(Array.from({length:5},()=>quizzes.answer(a,first.id,q.id,q.correct,answerRequest)));assert.ok(repeats.every(a=>a.answeredCount===1));assert.doesNotMatch(JSON.stringify(repeats[0]),privateKeys);
+    await assert.rejects(quizzes.answer(a,first.id,q.id,q.options.find(v=>v.id!==q.correct).id,answerRequest),{status:409});
+    await assert.rejects(quizzes.answer(a,first.id,repeats[0].question.id,repeats[0].question.options[0].id,answerRequest),{status:409});
+    first=await solve(a,repeats[0],2);assert.equal(first.result.passed,false);assert.equal(first.result.correctCount,2);assert.equal(first.rewards.length,0);assert.equal((await learning.graph(a)).nodes.find(n=>n.id===locked.id).status,'locked');
+    await assert.rejects(quizzes.create(a,root.id,'test-out',randomUUID()),{status:409});
+    const next=await quizzes.create(a,root.id,'checkpoint',randomUUID());let dto=next;while(dto.question){const snap=await saved(a,dto),q=snap.questions.find(q=>q.id===dto.question.id);dto=await quizzes.answer(a,dto.id,q.id,dto.answeredCount<3?q.correct:q.options.find(v=>v.id!==q.correct).id,randomUUID());}
+    const finals=await Promise.all(Array.from({length:6},()=>quizzes.finalize(a,next.id,principal)));assert.ok(finals.every(r=>r.result.passed));assert.ok(finals.every(r=>r.rewards.length===2));assert.deepEqual(finals[0],finals[5]);
+    assert.equal((await learning.graph(a)).nodes.find(n=>n.id===locked.id).status,'unlocked');
+    assert.equal((await pool.query('SELECT count(*)::int AS n FROM node_completion WHERE hub_id=$1 AND user_id=$2',[a.hubId,a.userId])).rows[0].n,1);
+    await assert.rejects(pool.query("UPDATE quiz_attempt SET result='{}' WHERE hub_id=$1 AND user_id=$2 AND id=$3",[a.hubId,a.userId,next.id]),/Immutable/);
+    await assert.rejects(pool.query('DELETE FROM node_completion WHERE hub_id=$1 AND user_id=$2',[a.hubId,a.userId]),/Immutable/);
+    await assert.rejects(pool.query('INSERT INTO node_completion(hub_id,user_id,node_id,version,attempt_id,completed_at) VALUES($1,$2,$3,$4,$5,now())',[a.hubId,a.userId,root.id,'foreign-version',next.id]),{code:'23503'});
+    const testOut=await solve(a,await quizzes.create(a,locked.id,'test-out',randomUUID()),7);assert.equal(testOut.result.passed,false);assert.equal(testOut.result.threshold,.8);assert.equal(testOut.rewards.length,0);
+    await assert.rejects(quizzes.create(a,locked.id,'test-out',randomUUID()),{status:409});
+    const webPass=await solve(a,await quizzes.create(a,web.id,'test-out',randomUUID()),8);assert.equal(webPass.result.passed,true);assert.equal(webPass.rewards.length,2);
+    assert.equal((await learning.graph(a)).nodes.find(n=>n.domain==='web'&&n.id!==web.id).status,'unlocked');
+    const active=await quizzes.create(a,locked.id,'checkpoint',randomUUID());const before=(await pool.query('SELECT payload FROM learn_event WHERE hub_id=$1 AND user_id=$2 ORDER BY event_id',[a.hubId,a.userId])).rows;
+    await learning.reset(a,'dsa');assert.equal((await quizzes.get(a,active.id)).status,'cancelled');await assert.rejects(quizzes.finalize(a,active.id,principal),{status:409});
+    assert.deepEqual((await quizzes.finalize(a,next.id,principal)).result,finals[0].result);
+    await learning.initialize(a,'dsa');const again=await solve(a,await quizzes.create(a,root.id,'checkpoint',randomUUID()),5);assert.equal(again.result.passed,true);assert.equal(again.rewards.length,0);
+    assert.deepEqual((await pool.query('SELECT payload FROM learn_event WHERE hub_id=$1 AND user_id=$2 ORDER BY event_id',[a.hubId,a.userId])).rows,before);
+    await assert.rejects(quizzes.create(a,locked.id,'test-out',randomUUID()),{status:409});
+    let calls=0;const lookup=resourceLookup(pool,{enabled:true,fetcher:async()=>{calls++;return new Response(JSON.stringify(['Arrays',['Array data structure'],[''],['https://en.wikipedia.org/wiki/Array_data_structure']]));}});
+    await assert.rejects(lookup(b,root.id),{status:404});assert.equal(calls,0);
+    const live=await lookup(a,root.id);assert.equal(live.source,'live');assert.equal(calls,1);assert.equal((await lookup(a,root.id)).source,'cache');assert.equal(calls,1);
+    await pool.query("UPDATE resource_cache SET fetched_at=now()-interval '2 days',retry_at=to_timestamp(0) WHERE hub_id=$1 AND node_id=$2",[a.hubId,root.id]);
+    const timeout=resourceLookup(pool,{enabled:true,fetcher:async()=>{throw Error('provider timeout');}});const stale=await timeout(a,root.id);assert.equal(stale.source,'cache');assert.equal(stale.stale,true);assert.equal(stale.items[0].url,live.items[0].url);
+    await assert.rejects(timeout(b,root.id),{status:404});const fallback=await timeout(a,web.id);assert.equal(fallback.source,'seed');assert.ok(fallback.items.length);
+    assert.equal((await resourceLookup(pool,{enabled:false})(a,root.id)).source,'seed');
+  }finally{await pool.end();}
+});
+
 test('G1: P9.1 SQL enrollment races, scoped FKs, locked resources, preferences and reset', { skip: !process.env.GUARD_LEARN_DATABASE_URL }, async () => {
   const { Pool } = require('pg'), crypto = require('node:crypto');
   const { createApp } = await import('../../services/learn/src/app.ts');
@@ -51,6 +104,19 @@ test('G1: P9.1 SQL enrollment races, scoped FKs, locked resources, preferences a
     await call(b,'/recommendation','POST',{nodeId:root.id},404);
     assert.equal(resourceReads,startReads,'denied access must precede resource reads');
     const content = await call(a,'/nodes/'+root.id); assert.equal(content.source,'seed'); assert.equal(content.resources.length,1);
+    const assessmentBody={nodeId:root.id,mode:'checkpoint',requestId:crypto.randomUUID()};
+    await call(a,'/quiz/attempts','POST',assessmentBody,403,{'X-CSRF-Token':'forged'});
+    await call(a,'/quiz/attempts','POST',{...assessmentBody,earnedPoints:999},400);
+    await call(a,'/quiz/attempts','POST',{...assessmentBody,nodeId:locked.id},403);
+    const assessment=await call(a,'/quiz/attempts','POST',assessmentBody);
+    assert.doesNotMatch(JSON.stringify(assessment),/"(?:correct|correctOptionId|explanation|seedId|answers)":/);
+    await call(peer,'/quiz/attempts/'+assessment.id,'GET',undefined,404);
+    await call(b,'/quiz/next','POST',{attemptId:assessment.id},404);
+    await call(a,'/quiz/answer','POST',{attemptId:assessment.id,questionId:assessment.question.id,optionId:assessment.question.options[0].id,requestId:crypto.randomUUID(),newTheta:3},400);
+    await call(a,'/quiz/finalize','POST',{attemptId:assessment.id,total:100},400);
+    await call(a,'/quiz/finalize','POST',{attemptId:assessment.id},409);
+    await call(a,'/resources','POST',{nodeId:locked.id},403);
+    await call(b,'/resources','POST',{nodeId:root.id},404);
     const rec = await call(a,'/recommendation','POST',{nodeId:root.id}); assert.equal(rec.recommendedItem.id,content.resources[0].id);
     const guide = await call(a,'/tutor/fast','POST',{nodeId:root.id,contentId:content.resources[0].id}); assert.equal(guide.source,'template');
     await call(a,'/tutor/fast','POST',{nodeId:root.id,contentId:crypto.randomUUID()},404);
@@ -72,10 +138,10 @@ test('G1: P9.1 SQL enrollment races, scoped FKs, locked resources, preferences a
     const bg = await call(b,'/dashboard/graph'); assert.ok(bg.nodes.every(n=>!graph.nodes.some(x=>x.id===n.id)));
     await call(a,'/tutor/fast','POST',{nodeId:root.id,contentId:(await call(b,'/nodes/'+bg.nodes.find(n=>n.status==='unlocked').id)).resources[0].id},404);
     const fk = await pool.query('SELECT id FROM skill_node WHERE hub_id=$1 LIMIT 1',[hubB]);
-    await assert.rejects(pool.query('INSERT INTO learner_node_state(hub_id,user_id,domain,version,node_id,status) VALUES($1,$2,$3,$4,$5,$6)',[hubA,a.userId,'dsa','reading-v1',fk.rows[0].id,'unlocked']),{code:'23503'});
+    await assert.rejects(pool.query('INSERT INTO learner_node_state(hub_id,user_id,domain,version,node_id,status) VALUES($1,$2,$3,$4,$5,$6)',[hubA,a.userId,'dsa','demo-v1',fk.rows[0].id,'unlocked']),{code:'23503'});
     await assert.rejects(pool.query('UPDATE content_item SET node_id=$1 WHERE hub_id=$2',[fk.rows[0].id,hubA]),{code:'23503'});
     await assert.rejects(pool.query('UPDATE learner_node_state SET theta=4,assessed_at=now() WHERE hub_id=$1 AND user_id=$2',[hubA,a.userId]),{code:'23514'});
-    for(const p of ['/maintenance','/generate-dag','/process-llm','/ingest','/quiz-generate','/tutor/slow','/quiz/attempts','/quiz/answer','/quiz/next','/quiz/finalize','/profile','/dashboard/leaderboard']) {
+    for(const p of ['/maintenance','/generate-dag','/process-llm','/ingest','/quiz-generate','/tutor/slow','/profile','/dashboard/leaderboard']) {
       await call(a,p,'GET',undefined,404); await call(a,p,'POST',{},404);
     }
     // Future assessed state simulates a reset/re-init without making a public grading API.

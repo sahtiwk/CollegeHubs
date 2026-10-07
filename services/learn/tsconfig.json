@@ -1,4 +1,4 @@
 {
-  "compilerOptions": { "target": "ES2023", "module": "NodeNext", "moduleResolution": "NodeNext", "outDir": "dist", "rootDir": "src", "strict": true, "esModuleInterop": true, "allowJs": true, "checkJs": false, "skipLibCheck": true, "rewriteRelativeImportExtensions": true },
+  "compilerOptions": { "target": "ES2023", "module": "NodeNext", "moduleResolution": "NodeNext", "outDir": "dist", "rootDir": "src", "strict": true, "esModuleInterop": true, "allowJs": true, "checkJs": false, "skipLibCheck": true, "rewriteRelativeImportExtensions": true, "resolveJsonModule": true },
   "include": ["src/**/*"]
 }

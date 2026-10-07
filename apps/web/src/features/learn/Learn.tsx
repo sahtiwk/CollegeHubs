@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage';
 import OnboardingPage from './pages/OnboardingPage';
 import NodePage from './pages/NodePage';
 import PreferencesPage from './pages/PreferencesPage';
+import QuizPage, {HistoryPage} from './pages/QuizPage';
 import './learn.css';
 
 export type RequestLearn = (path: string, method?: string, body?: unknown, signal?: AbortSignal) => Promise<any>;
@@ -49,7 +50,7 @@ export function useLearnLoad(path: string) {
     request(path, 'GET', undefined, abort.signal).then(value => { if (!abort.signal.aborted) setData(value); }).catch(e => { if (!abort.signal.aborted) setError(learningError(e)); });
     return () => abort.abort();
   }, [path, revision, request]);
-  return { data, error, refresh: () => setRevision(n => n + 1) };
+  return { data, setData, error, refresh: () => setRevision(n => n + 1) };
 }
 export function useLearnAction() {
   const { request } = useContext(Access), current = useRef<AbortController | null>(null);
@@ -70,10 +71,11 @@ export function LoadState({ load }: { load: ReturnType<typeof useLearnLoad> }) {
 export default function Learn() {
   const { user } = useAuth();
   return <div className="learn-page stack">
-    <nav className="learn-nav" aria-label="Learn navigation"><NavLink to="/learn" end>My learning</NavLink><NavLink to="/learn/onboarding">Explore paths</NavLink><NavLink to="/learn/preferences">Learning preferences</NavLink></nav>
+    <nav className="learn-nav" aria-label="Learn navigation"><NavLink to="/learn" end>My learning</NavLink><NavLink to="/learn/onboarding">Explore paths</NavLink><NavLink to="/learn/history">Assessments</NavLink><NavLink to="/learn/preferences">Learning preferences</NavLink></nav>
     <LearnAccess key={[user._id, user.hubId, user.membershipVersion].join(':')}><Routes>
       <Route index element={<DashboardPage />} /><Route path="onboarding" element={<OnboardingPage />} />
       <Route path="nodes/:id" element={<NodePage />} /><Route path="preferences" element={<PreferencesPage />} />
+      <Route path="quiz/:id" element={<QuizPage />} /><Route path="history" element={<HistoryPage />} />
       <Route path="*" element={<p className="panel">This Learn page is unavailable. <Link to="/learn">Return to your learning.</Link></p>} />
     </Routes></LearnAccess>
   </div>;

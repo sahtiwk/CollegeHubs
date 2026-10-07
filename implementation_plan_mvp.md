@@ -45,9 +45,10 @@ Existing `docs/p0.1-evidence.md` through available `docs/p3.1-evidence.md` recor
 | P7.2 | **Local PASS (2026-10-07):** three validated ranked games, shared catalogue, prospective rules and receipt/recovery evidence. See `docs/p7.2-evidence.md`. |
 | P8.1-P8.2 | **Local PASS:** independent Interview resume and practice/report journeys; real Groq Free and canonical receipt evidence. See `docs/p8.1-evidence.md` and `docs/p8.2-evidence.md`. |
 | P9.1 | **Implemented; automated/API checks PASS (2026-10-07), browser acceptance pending.** Scoped SQL/API extraction, integrated learner pages and fresh-schema proof. Browser tool policy verification prevented visual checks. See `docs/p9.1-evidence.md`. |
-| P9.2-P11 | Future; execute only the requested sub-phase. |
+| P9.2 | **Local PASS (2026-10-08):** versioned DSA/Web assessments, server grading/unlocks, durable Core facts, 101 passing guards, shared-theme quiz/history and recovery evidence. See `docs/p9.2-evidence.md`. |
+| P10-P11 | Future; execute only the requested sub-phase. |
 
-**P9.1 implementation and automated/API verification are delivered; its browser acceptance remains pending. P9.2 has not started.** Next, finish the P9.1 desktop/mobile/theme walkthrough when browser access is restored; execute P9.2 only when requested. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
+**P9.2 is implemented and locally verified.** Browser access is restored; current Learn observations are recorded in `docs/p9.2-evidence.md`, while the historical P9.1 checklist retains any unperformed checks. Next feature development is P10.2 before P10.1; the Tier2 hosted release gate is P11.1/P11.2. Preserve migrated source and historical evidence; do not restart P0.
 
 ## Tier map
 
@@ -641,6 +642,8 @@ Goal: preserve graph/resources and server-assessed DSA/Web journeys, using the u
 
 ### P9.2. Seeded graph, server assessment and completion facts
 
+**Local status (2026-10-08): PASS.** Schema v2, four seeded topics/60 reviewed practice questions, owned frozen checkpoint/test-out attempts, immutable server results, prerequisite unlocks and first-completion facts are implemented. Reset cannot repeat rewards. Shared-shell quiz/history/resources and accessible graph/list use the Hub theme. All101 guards pass with zero failures/skips; workspace and isolated Learn deployment builds pass. Desktop/mobile, saved-answer restart, real Core outage/recovery and exactly20 confirmed Aura are verified. See [P9.2 evidence](docs/p9.2-evidence.md) and [Learn contracts](docs/learn.md). Hosted verification remains P11-gated.
+
 **Scope:** DSA/Web graph/list/resources, checkpoint/test-out/theta, quiz/mastery events; no extra domains/path award/remedial generator. **Prerequisite:** P9.1/P6.1. **Guards:** G1/G3. **Effort:** 3–5 days; split below this ID if larger.
 
 1. Add Learn `src/data/{curriculum,questions}/demo-v1.json`, `scripts/{seed_curriculum,generate_question_seed}.ts`: two nodes/domain, at least 15 reviewed items/node, attribution/version, no cycles/missing references. Seed tooling is not a public HTTP API.
@@ -863,7 +866,7 @@ flowchart LR
   Polish --> Topics[P10.1 optional topics]
 ```
 
-P3.2 checkpoints A-D and P4-P8 now pass locally. P9.1 code and automated/API checks pass; its browser acceptance remains pending, and P9.2 is not started. Hosted release still requires P11 verification. Do not restart P0 or claim old P3.1 satisfies the new Learn gate. Local coding does not wait for hosting login; public release does wait for actual hosted verification. Existing completed work is revalidated when its paths/contracts change.
+P3.2 checkpoints A-D and P4-P9.2 now have local implementation and automated evidence. P9.2 adds browser/recovery evidence; see its report for the exact coverage of the historical P9.1 manual checklist. Hosted release still requires P11 verification. Do not restart P0 or claim old P3.1 satisfies the new Learn gate. Local coding does not wait for hosting login; public release does wait for actual hosted verification. Existing completed work is revalidated when its paths/contracts change.
 
 ## D3. Effort and risks
 

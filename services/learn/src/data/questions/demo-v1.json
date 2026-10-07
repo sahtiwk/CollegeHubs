@@ -1,0 +1,1540 @@
+{
+  "version": "demo-v1",
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Codex content and answer review",
+    "reviewedAt": "2026-10-07",
+    "notes": "Original practice questions reviewed against linked MDN concepts. Not a calibrated examination or human subject-expert certification."
+  },
+  "attribution": "Original CollegeHubs practice questions; linked references belong to MDN Web Docs contributors.",
+  "nodes": [
+    {
+      "slug": "arrays",
+      "domain": "dsa",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Indexed_collections",
+      "items": [
+        {
+          "id": "arrays-01",
+          "mode": "checkpoint",
+          "prompt": "Which index identifies the first element of a JavaScript array?",
+          "options": [
+            {
+              "id": "a",
+              "text": "0"
+            },
+            {
+              "id": "b",
+              "text": "1"
+            },
+            {
+              "id": "c",
+              "text": "-1"
+            },
+            {
+              "id": "d",
+              "text": "The array length"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Array indexing starts at zero."
+        },
+        {
+          "id": "arrays-02",
+          "mode": "checkpoint",
+          "prompt": "What is [4, 7, 9][1]?",
+          "options": [
+            {
+              "id": "a",
+              "text": "7"
+            },
+            {
+              "id": "b",
+              "text": "4"
+            },
+            {
+              "id": "c",
+              "text": "9"
+            },
+            {
+              "id": "d",
+              "text": "undefined"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Index 1 selects the second element."
+        },
+        {
+          "id": "arrays-03",
+          "mode": "checkpoint",
+          "prompt": "How many elements are in [2, 5, 8]?",
+          "options": [
+            {
+              "id": "a",
+              "text": "3"
+            },
+            {
+              "id": "b",
+              "text": "2"
+            },
+            {
+              "id": "c",
+              "text": "4"
+            },
+            {
+              "id": "d",
+              "text": "8"
+            }
+          ],
+          "correct": "a",
+          "explanation": "This array contains three listed elements."
+        },
+        {
+          "id": "arrays-04",
+          "mode": "checkpoint",
+          "prompt": "Which method appends an element to an array?",
+          "options": [
+            {
+              "id": "a",
+              "text": "push"
+            },
+            {
+              "id": "b",
+              "text": "pop"
+            },
+            {
+              "id": "c",
+              "text": "shift"
+            },
+            {
+              "id": "d",
+              "text": "slice"
+            }
+          ],
+          "correct": "a",
+          "explanation": "push adds elements at the end."
+        },
+        {
+          "id": "arrays-05",
+          "mode": "checkpoint",
+          "prompt": "Which loop condition visits each index of a dense array a, starting at i = 0?",
+          "options": [
+            {
+              "id": "a",
+              "text": "i < a.length"
+            },
+            {
+              "id": "b",
+              "text": "i <= a.length"
+            },
+            {
+              "id": "c",
+              "text": "i > a.length"
+            },
+            {
+              "id": "d",
+              "text": "i === a.length"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Valid indices run from zero through length minus one."
+        },
+        {
+          "id": "arrays-06",
+          "mode": "test-out",
+          "prompt": "After const a = [3, 8]; a[0] = 6; what is a?",
+          "options": [
+            {
+              "id": "a",
+              "text": "[6, 8]"
+            },
+            {
+              "id": "b",
+              "text": "[3, 6]"
+            },
+            {
+              "id": "c",
+              "text": "[3, 8, 6]"
+            },
+            {
+              "id": "d",
+              "text": "[6]"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Assignment replaces the value at index zero."
+        },
+        {
+          "id": "arrays-07",
+          "mode": "test-out",
+          "prompt": "What does [10, 20, 30].slice(1, 3) return?",
+          "options": [
+            {
+              "id": "a",
+              "text": "[20, 30]"
+            },
+            {
+              "id": "b",
+              "text": "[10, 20]"
+            },
+            {
+              "id": "c",
+              "text": "[20]"
+            },
+            {
+              "id": "d",
+              "text": "[10, 20, 30]"
+            }
+          ],
+          "correct": "a",
+          "explanation": "slice includes the start index and excludes the end index."
+        },
+        {
+          "id": "arrays-08",
+          "mode": "test-out",
+          "prompt": "After const a = [2, 4]; const x = a.pop(); what is x?",
+          "options": [
+            {
+              "id": "a",
+              "text": "4"
+            },
+            {
+              "id": "b",
+              "text": "2"
+            },
+            {
+              "id": "c",
+              "text": "[2]"
+            },
+            {
+              "id": "d",
+              "text": "2,4"
+            }
+          ],
+          "correct": "a",
+          "explanation": "pop removes and returns the last element."
+        },
+        {
+          "id": "arrays-09",
+          "mode": "test-out",
+          "prompt": "After const a = [1]; const b = a; b.push(2); what is a.length?",
+          "options": [
+            {
+              "id": "a",
+              "text": "2"
+            },
+            {
+              "id": "b",
+              "text": "1"
+            },
+            {
+              "id": "c",
+              "text": "0"
+            },
+            {
+              "id": "d",
+              "text": "3"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Both variables reference the same array."
+        },
+        {
+          "id": "arrays-10",
+          "mode": "test-out",
+          "prompt": "Which expression produces a new array with each value doubled?",
+          "options": [
+            {
+              "id": "a",
+              "text": "a.map(x => x * 2)"
+            },
+            {
+              "id": "b",
+              "text": "a.pop(x => x * 2)"
+            },
+            {
+              "id": "c",
+              "text": "a.length * 2"
+            },
+            {
+              "id": "d",
+              "text": "a.push(x => x * 2)"
+            }
+          ],
+          "correct": "a",
+          "explanation": "map returns a new array of callback results."
+        },
+        {
+          "id": "arrays-11",
+          "mode": "test-out",
+          "prompt": "What does [1, 4, 6].filter(x => x > 3) return?",
+          "options": [
+            {
+              "id": "a",
+              "text": "[4, 6]"
+            },
+            {
+              "id": "b",
+              "text": "[1]"
+            },
+            {
+              "id": "c",
+              "text": "[true, true]"
+            },
+            {
+              "id": "d",
+              "text": "[1, 4, 6]"
+            }
+          ],
+          "correct": "a",
+          "explanation": "filter retains values for which the predicate is true."
+        },
+        {
+          "id": "arrays-12",
+          "mode": "test-out",
+          "prompt": "What is the final valid index of a nonempty dense array of length n?",
+          "options": [
+            {
+              "id": "a",
+              "text": "n - 1"
+            },
+            {
+              "id": "b",
+              "text": "n"
+            },
+            {
+              "id": "c",
+              "text": "n + 1"
+            },
+            {
+              "id": "d",
+              "text": "1"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Zero-based indexing means the final index is one below the length."
+        },
+        {
+          "id": "arrays-13",
+          "mode": "test-out",
+          "prompt": "Which expression checks whether a value is an array?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Array.isArray(value)"
+            },
+            {
+              "id": "b",
+              "text": "value.isArray"
+            },
+            {
+              "id": "c",
+              "text": "typeof value === \"array\""
+            },
+            {
+              "id": "d",
+              "text": "value === Array"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Array.isArray is the built-in array check."
+        },
+        {
+          "id": "arrays-14",
+          "mode": "test-out",
+          "prompt": "What is [5, 10].indexOf(7)?",
+          "options": [
+            {
+              "id": "a",
+              "text": "-1"
+            },
+            {
+              "id": "b",
+              "text": "0"
+            },
+            {
+              "id": "c",
+              "text": "1"
+            },
+            {
+              "id": "d",
+              "text": "2"
+            }
+          ],
+          "correct": "a",
+          "explanation": "indexOf returns minus one when the value is absent."
+        },
+        {
+          "id": "arrays-15",
+          "mode": "test-out",
+          "prompt": "After const a = [1, 2, 3]; a.splice(1, 1); what remains?",
+          "options": [
+            {
+              "id": "a",
+              "text": "[1, 3]"
+            },
+            {
+              "id": "b",
+              "text": "[2, 3]"
+            },
+            {
+              "id": "c",
+              "text": "[1, 2]"
+            },
+            {
+              "id": "d",
+              "text": "[1, 2, 3]"
+            }
+          ],
+          "correct": "a",
+          "explanation": "splice removes one item starting at index one."
+        }
+      ]
+    },
+    {
+      "slug": "iteration",
+      "domain": "dsa",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Loops_and_iteration",
+      "items": [
+        {
+          "id": "iteration-01",
+          "mode": "checkpoint",
+          "prompt": "How many times does for (let i = 0; i < 3; i++) execute its body?",
+          "options": [
+            {
+              "id": "a",
+              "text": "3"
+            },
+            {
+              "id": "b",
+              "text": "2"
+            },
+            {
+              "id": "c",
+              "text": "4"
+            },
+            {
+              "id": "d",
+              "text": "0"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The body runs for i equal to zero, one and two."
+        },
+        {
+          "id": "iteration-02",
+          "mode": "checkpoint",
+          "prompt": "Which statement exits the nearest loop immediately?",
+          "options": [
+            {
+              "id": "a",
+              "text": "break"
+            },
+            {
+              "id": "b",
+              "text": "continue"
+            },
+            {
+              "id": "c",
+              "text": "const"
+            },
+            {
+              "id": "d",
+              "text": "else"
+            }
+          ],
+          "correct": "a",
+          "explanation": "break exits the nearest enclosing loop or switch."
+        },
+        {
+          "id": "iteration-03",
+          "mode": "checkpoint",
+          "prompt": "What does continue do inside a for loop?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Skips the rest of this iteration"
+            },
+            {
+              "id": "b",
+              "text": "Exits the function"
+            },
+            {
+              "id": "c",
+              "text": "Restarts the program"
+            },
+            {
+              "id": "d",
+              "text": "Removes the loop condition"
+            }
+          ],
+          "correct": "a",
+          "explanation": "continue moves to the next iteration, including the for update step."
+        },
+        {
+          "id": "iteration-04",
+          "mode": "checkpoint",
+          "prompt": "What does for...of iterate over when used with an array?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Element values"
+            },
+            {
+              "id": "b",
+              "text": "Only property names"
+            },
+            {
+              "id": "c",
+              "text": "Only the last element"
+            },
+            {
+              "id": "d",
+              "text": "The array length repeatedly"
+            }
+          ],
+          "correct": "a",
+          "explanation": "for...of visits iterable values."
+        },
+        {
+          "id": "iteration-05",
+          "mode": "checkpoint",
+          "prompt": "When is a while loop condition checked?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Before each iteration"
+            },
+            {
+              "id": "b",
+              "text": "Only after the last iteration"
+            },
+            {
+              "id": "c",
+              "text": "Only once at declaration"
+            },
+            {
+              "id": "d",
+              "text": "After the loop is removed"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A false initial condition can cause zero iterations."
+        },
+        {
+          "id": "iteration-06",
+          "mode": "test-out",
+          "prompt": "What is s after let s = 0; for (const x of [2, 3, 4]) s += x;?",
+          "options": [
+            {
+              "id": "a",
+              "text": "9"
+            },
+            {
+              "id": "b",
+              "text": "6"
+            },
+            {
+              "id": "c",
+              "text": "4"
+            },
+            {
+              "id": "d",
+              "text": "0"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The accumulator adds two, three and four."
+        },
+        {
+          "id": "iteration-07",
+          "mode": "test-out",
+          "prompt": "How many iterations occur in for (let i = 1; i <= 5; i += 2)?",
+          "options": [
+            {
+              "id": "a",
+              "text": "3"
+            },
+            {
+              "id": "b",
+              "text": "2"
+            },
+            {
+              "id": "c",
+              "text": "5"
+            },
+            {
+              "id": "d",
+              "text": "4"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The values of i are one, three and five."
+        },
+        {
+          "id": "iteration-08",
+          "mode": "test-out",
+          "prompt": "What is the final s: let s=0; for(let i=0;i<4;i++){if(i===2) continue;s+=i;}?",
+          "options": [
+            {
+              "id": "a",
+              "text": "4"
+            },
+            {
+              "id": "b",
+              "text": "6"
+            },
+            {
+              "id": "c",
+              "text": "3"
+            },
+            {
+              "id": "d",
+              "text": "2"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The sum includes zero, one and three but skips two."
+        },
+        {
+          "id": "iteration-09",
+          "mode": "test-out",
+          "prompt": "How many times does the inner body run: for(let i=0;i<2;i++){for(let j=0;j<3;j++){work();}}?",
+          "options": [
+            {
+              "id": "a",
+              "text": "6"
+            },
+            {
+              "id": "b",
+              "text": "5"
+            },
+            {
+              "id": "c",
+              "text": "3"
+            },
+            {
+              "id": "d",
+              "text": "2"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Each of two outer iterations runs three inner iterations."
+        },
+        {
+          "id": "iteration-10",
+          "mode": "test-out",
+          "prompt": "Which loop executes its body at least once?",
+          "options": [
+            {
+              "id": "a",
+              "text": "do...while"
+            },
+            {
+              "id": "b",
+              "text": "while"
+            },
+            {
+              "id": "c",
+              "text": "for...of over an empty array"
+            },
+            {
+              "id": "d",
+              "text": "for with an initially false condition"
+            }
+          ],
+          "correct": "a",
+          "explanation": "do...while checks its condition after executing the body."
+        },
+        {
+          "id": "iteration-11",
+          "mode": "test-out",
+          "prompt": "What is the last logged value: for(let i=0;i<5;i++){if(i===3) break;console.log(i);}?",
+          "options": [
+            {
+              "id": "a",
+              "text": "2"
+            },
+            {
+              "id": "b",
+              "text": "3"
+            },
+            {
+              "id": "c",
+              "text": "4"
+            },
+            {
+              "id": "d",
+              "text": "5"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The loop exits before logging three."
+        },
+        {
+          "id": "iteration-12",
+          "mode": "test-out",
+          "prompt": "Which update lets while (i > 0) eventually stop when i starts at 3?",
+          "options": [
+            {
+              "id": "a",
+              "text": "i--"
+            },
+            {
+              "id": "b",
+              "text": "i++"
+            },
+            {
+              "id": "c",
+              "text": "i += 3"
+            },
+            {
+              "id": "d",
+              "text": "i = 3"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Decrementing eventually makes i zero."
+        },
+        {
+          "id": "iteration-13",
+          "mode": "test-out",
+          "prompt": "For a dense array a of length 4, which condition would read one index beyond its end?",
+          "options": [
+            {
+              "id": "a",
+              "text": "i <= a.length, starting at 0"
+            },
+            {
+              "id": "b",
+              "text": "i < a.length, starting at 0"
+            },
+            {
+              "id": "c",
+              "text": "i < 4, starting at 0"
+            },
+            {
+              "id": "d",
+              "text": "i <= 3, starting at 0"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The index equal to length is beyond the final element."
+        },
+        {
+          "id": "iteration-14",
+          "mode": "test-out",
+          "prompt": "In a classic for loop, which part executes after the body and before the next condition check?",
+          "options": [
+            {
+              "id": "a",
+              "text": "The update expression"
+            },
+            {
+              "id": "b",
+              "text": "The initialization expression"
+            },
+            {
+              "id": "c",
+              "text": "The entire function again"
+            },
+            {
+              "id": "d",
+              "text": "No expression"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The normal order is initialization, condition, body, update, then condition."
+        },
+        {
+          "id": "iteration-15",
+          "mode": "test-out",
+          "prompt": "If break runs in an inner loop, what happens to the outer loop?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It continues unless separately stopped"
+            },
+            {
+              "id": "b",
+              "text": "It always exits too"
+            },
+            {
+              "id": "c",
+              "text": "It automatically restarts at zero"
+            },
+            {
+              "id": "d",
+              "text": "It becomes a while loop"
+            }
+          ],
+          "correct": "a",
+          "explanation": "An unlabeled break affects only the nearest loop."
+        }
+      ]
+    },
+    {
+      "slug": "html",
+      "domain": "web",
+      "source": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Basic_HTML_syntax",
+      "items": [
+        {
+          "id": "html-01",
+          "mode": "checkpoint",
+          "prompt": "What is the main purpose of HTML?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Describe document structure"
+            },
+            {
+              "id": "b",
+              "text": "Encrypt network traffic"
+            },
+            {
+              "id": "c",
+              "text": "Store database passwords"
+            },
+            {
+              "id": "d",
+              "text": "Schedule server processes"
+            }
+          ],
+          "correct": "a",
+          "explanation": "HTML marks up document structure and meaning."
+        },
+        {
+          "id": "html-02",
+          "mode": "checkpoint",
+          "prompt": "Which tag creates a paragraph?",
+          "options": [
+            {
+              "id": "a",
+              "text": "<p>"
+            },
+            {
+              "id": "b",
+              "text": "<img>"
+            },
+            {
+              "id": "c",
+              "text": "<br>"
+            },
+            {
+              "id": "d",
+              "text": "<input>"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The p element represents a paragraph."
+        },
+        {
+          "id": "html-03",
+          "mode": "checkpoint",
+          "prompt": "Which syntax closes a strong element?",
+          "options": [
+            {
+              "id": "a",
+              "text": "</strong>"
+            },
+            {
+              "id": "b",
+              "text": "<strong/>"
+            },
+            {
+              "id": "c",
+              "text": "<endstrong>"
+            },
+            {
+              "id": "d",
+              "text": "</end>"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A closing tag uses a slash before the element name."
+        },
+        {
+          "id": "html-04",
+          "mode": "checkpoint",
+          "prompt": "Where do attributes belong?",
+          "options": [
+            {
+              "id": "a",
+              "text": "In the opening tag"
+            },
+            {
+              "id": "b",
+              "text": "Only after the closing tag"
+            },
+            {
+              "id": "c",
+              "text": "In a separate SQL table"
+            },
+            {
+              "id": "d",
+              "text": "Before the doctype only"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Attributes add information to the opening tag."
+        },
+        {
+          "id": "html-05",
+          "mode": "checkpoint",
+          "prompt": "Which element is a void element?",
+          "options": [
+            {
+              "id": "a",
+              "text": "<br>"
+            },
+            {
+              "id": "b",
+              "text": "<p>"
+            },
+            {
+              "id": "c",
+              "text": "<div>"
+            },
+            {
+              "id": "d",
+              "text": "<strong>"
+            }
+          ],
+          "correct": "a",
+          "explanation": "br has no content or closing tag."
+        },
+        {
+          "id": "html-06",
+          "mode": "test-out",
+          "prompt": "Which nesting is correct?",
+          "options": [
+            {
+              "id": "a",
+              "text": "<p><strong>Hi</strong></p>"
+            },
+            {
+              "id": "b",
+              "text": "<p><strong>Hi</p></strong>"
+            },
+            {
+              "id": "c",
+              "text": "</p><strong>Hi<p></strong>"
+            },
+            {
+              "id": "d",
+              "text": "<p>Hi</strong></p>"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Nested elements must close in the reverse order in which they opened."
+        },
+        {
+          "id": "html-07",
+          "mode": "test-out",
+          "prompt": "Which part of <a href=\"/learn\">Learn</a> supplies the link destination?",
+          "options": [
+            {
+              "id": "a",
+              "text": "href=\"/learn\""
+            },
+            {
+              "id": "b",
+              "text": "Learn"
+            },
+            {
+              "id": "c",
+              "text": "</a>"
+            },
+            {
+              "id": "d",
+              "text": "The space before Learn"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The href attribute identifies the link target."
+        },
+        {
+          "id": "html-08",
+          "mode": "test-out",
+          "prompt": "Which section contains the visible page content?",
+          "options": [
+            {
+              "id": "a",
+              "text": "body"
+            },
+            {
+              "id": "b",
+              "text": "doctype"
+            },
+            {
+              "id": "c",
+              "text": "The closing html tag"
+            },
+            {
+              "id": "d",
+              "text": "The file extension"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The body holds the document content displayed on the page."
+        },
+        {
+          "id": "html-09",
+          "mode": "test-out",
+          "prompt": "What does <!doctype html> declare?",
+          "options": [
+            {
+              "id": "a",
+              "text": "The HTML document type"
+            },
+            {
+              "id": "b",
+              "text": "A CSS color"
+            },
+            {
+              "id": "c",
+              "text": "A JavaScript variable"
+            },
+            {
+              "id": "d",
+              "text": "An image location"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The doctype tells the browser the document uses modern HTML."
+        },
+        {
+          "id": "html-10",
+          "mode": "test-out",
+          "prompt": "Which is an HTML comment?",
+          "options": [
+            {
+              "id": "a",
+              "text": "<!-- note -->"
+            },
+            {
+              "id": "b",
+              "text": "// note"
+            },
+            {
+              "id": "c",
+              "text": "/* note */"
+            },
+            {
+              "id": "d",
+              "text": "# note"
+            }
+          ],
+          "correct": "a",
+          "explanation": "HTML comments use the opening less-than exclamation double-hyphen delimiter and a matching closing delimiter."
+        },
+        {
+          "id": "html-11",
+          "mode": "test-out",
+          "prompt": "Which character reference displays a less-than sign as text?",
+          "options": [
+            {
+              "id": "a",
+              "text": "&lt;"
+            },
+            {
+              "id": "b",
+              "text": "&gt;"
+            },
+            {
+              "id": "c",
+              "text": "&amp;"
+            },
+            {
+              "id": "d",
+              "text": "&quot;"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The lt character reference represents the less-than sign."
+        },
+        {
+          "id": "html-12",
+          "mode": "test-out",
+          "prompt": "What is the role of an element attribute such as class?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Provide additional information about the element"
+            },
+            {
+              "id": "b",
+              "text": "Close the element"
+            },
+            {
+              "id": "c",
+              "text": "Replace every child element"
+            },
+            {
+              "id": "d",
+              "text": "Run a database query"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A class attribute supplies classification information that can be used by CSS and scripts."
+        },
+        {
+          "id": "html-13",
+          "mode": "test-out",
+          "prompt": "Which filename conventionally identifies a website directory landing page?",
+          "options": [
+            {
+              "id": "a",
+              "text": "index.html"
+            },
+            {
+              "id": "b",
+              "text": "styles.css"
+            },
+            {
+              "id": "c",
+              "text": "package-lock.json"
+            },
+            {
+              "id": "d",
+              "text": "server.sql"
+            }
+          ],
+          "correct": "a",
+          "explanation": "index.html is commonly used as a directory entry page."
+        },
+        {
+          "id": "html-14",
+          "mode": "test-out",
+          "prompt": "Which is a properly quoted attribute?",
+          "options": [
+            {
+              "id": "a",
+              "text": "<a href=\"/learn\">"
+            },
+            {
+              "id": "b",
+              "text": "<a href/learn>"
+            },
+            {
+              "id": "c",
+              "text": "<a /learn=\"href\">"
+            },
+            {
+              "id": "d",
+              "text": "<a =href \"/learn\">"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The attribute name is followed by an equals sign and its quoted value."
+        },
+        {
+          "id": "html-15",
+          "mode": "test-out",
+          "prompt": "What is the content in <p>Hello</p>?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Hello"
+            },
+            {
+              "id": "b",
+              "text": "p"
+            },
+            {
+              "id": "c",
+              "text": "</p>"
+            },
+            {
+              "id": "d",
+              "text": "<p>"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The content is between the opening and closing tags."
+        }
+      ]
+    },
+    {
+      "slug": "css",
+      "domain": "web",
+      "source": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/What_is_CSS",
+      "items": [
+        {
+          "id": "css-01",
+          "mode": "checkpoint",
+          "prompt": "What is CSS primarily used for?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Styling document presentation"
+            },
+            {
+              "id": "b",
+              "text": "Creating database users"
+            },
+            {
+              "id": "c",
+              "text": "Issuing login tokens"
+            },
+            {
+              "id": "d",
+              "text": "Compiling server code"
+            }
+          ],
+          "correct": "a",
+          "explanation": "CSS controls how structured content is presented."
+        },
+        {
+          "id": "css-02",
+          "mode": "checkpoint",
+          "prompt": "In p { color: red; }, what is the selector?",
+          "options": [
+            {
+              "id": "a",
+              "text": "p"
+            },
+            {
+              "id": "b",
+              "text": "color"
+            },
+            {
+              "id": "c",
+              "text": "red"
+            },
+            {
+              "id": "d",
+              "text": ";"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The selector chooses the elements to style."
+        },
+        {
+          "id": "css-03",
+          "mode": "checkpoint",
+          "prompt": "In color: red;, what is the property?",
+          "options": [
+            {
+              "id": "a",
+              "text": "color"
+            },
+            {
+              "id": "b",
+              "text": "red"
+            },
+            {
+              "id": "c",
+              "text": ":"
+            },
+            {
+              "id": "d",
+              "text": ";"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A declaration pairs a property name with a value."
+        },
+        {
+          "id": "css-04",
+          "mode": "checkpoint",
+          "prompt": "Which property changes text color?",
+          "options": [
+            {
+              "id": "a",
+              "text": "color"
+            },
+            {
+              "id": "b",
+              "text": "font-color"
+            },
+            {
+              "id": "c",
+              "text": "text-paint"
+            },
+            {
+              "id": "d",
+              "text": "foreground-text"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The color property sets the foreground text color."
+        },
+        {
+          "id": "css-05",
+          "mode": "checkpoint",
+          "prompt": "Which punctuation separates a CSS property from its value?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Colon"
+            },
+            {
+              "id": "b",
+              "text": "Comma"
+            },
+            {
+              "id": "c",
+              "text": "Question mark"
+            },
+            {
+              "id": "d",
+              "text": "Slash"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Declarations use property: value syntax."
+        },
+        {
+          "id": "css-06",
+          "mode": "test-out",
+          "prompt": "Which selector targets elements with class card?",
+          "options": [
+            {
+              "id": "a",
+              "text": ".card"
+            },
+            {
+              "id": "b",
+              "text": "#card"
+            },
+            {
+              "id": "c",
+              "text": "card()"
+            },
+            {
+              "id": "d",
+              "text": "@card"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A dot introduces a class selector."
+        },
+        {
+          "id": "css-07",
+          "mode": "test-out",
+          "prompt": "Which selector targets the element with id main?",
+          "options": [
+            {
+              "id": "a",
+              "text": "#main"
+            },
+            {
+              "id": "b",
+              "text": ".main"
+            },
+            {
+              "id": "c",
+              "text": "main[]"
+            },
+            {
+              "id": "d",
+              "text": "@main"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A hash introduces an ID selector."
+        },
+        {
+          "id": "css-08",
+          "mode": "test-out",
+          "prompt": "Which selector targets all paragraph elements?",
+          "options": [
+            {
+              "id": "a",
+              "text": "p"
+            },
+            {
+              "id": "b",
+              "text": ".p"
+            },
+            {
+              "id": "c",
+              "text": "#p"
+            },
+            {
+              "id": "d",
+              "text": "@p"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A type selector is the element name."
+        },
+        {
+          "id": "css-09",
+          "mode": "test-out",
+          "prompt": "Which syntax correctly groups two declarations in a rule?",
+          "options": [
+            {
+              "id": "a",
+              "text": "p { color: red; font-size: 20px; }"
+            },
+            {
+              "id": "b",
+              "text": "p (color = red, font-size = 20px)"
+            },
+            {
+              "id": "c",
+              "text": "p [color red font-size 20px]"
+            },
+            {
+              "id": "d",
+              "text": "p => color:red;font-size:20px"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A declaration block uses braces and semicolon-separated declarations."
+        },
+        {
+          "id": "css-10",
+          "mode": "test-out",
+          "prompt": "Which HTML element links an external stylesheet?",
+          "options": [
+            {
+              "id": "a",
+              "text": "<link rel=\"stylesheet\" href=\"styles.css\">"
+            },
+            {
+              "id": "b",
+              "text": "<script src=\"styles.css\">"
+            },
+            {
+              "id": "c",
+              "text": "<img src=\"styles.css\">"
+            },
+            {
+              "id": "d",
+              "text": "<p stylesheet=\"styles.css\">"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A link element with the stylesheet relationship loads external CSS."
+        },
+        {
+          "id": "css-11",
+          "mode": "test-out",
+          "prompt": "Which is a CSS comment?",
+          "options": [
+            {
+              "id": "a",
+              "text": "/* note */"
+            },
+            {
+              "id": "b",
+              "text": "<!-- note -->"
+            },
+            {
+              "id": "c",
+              "text": "// note"
+            },
+            {
+              "id": "d",
+              "text": "# note"
+            }
+          ],
+          "correct": "a",
+          "explanation": "CSS comments use slash-star delimiters."
+        },
+        {
+          "id": "css-12",
+          "mode": "test-out",
+          "prompt": "What does background-color control?",
+          "options": [
+            {
+              "id": "a",
+              "text": "The background color of an element"
+            },
+            {
+              "id": "b",
+              "text": "Only the text color"
+            },
+            {
+              "id": "c",
+              "text": "The document title"
+            },
+            {
+              "id": "d",
+              "text": "The URL of a link"
+            }
+          ],
+          "correct": "a",
+          "explanation": "background-color paints the element background."
+        },
+        {
+          "id": "css-13",
+          "mode": "test-out",
+          "prompt": "Which declaration gives text a size of twenty pixels?",
+          "options": [
+            {
+              "id": "a",
+              "text": "font-size: 20px;"
+            },
+            {
+              "id": "b",
+              "text": "text-size = 20px;"
+            },
+            {
+              "id": "c",
+              "text": "font: pixels(20);"
+            },
+            {
+              "id": "d",
+              "text": "size-font: 20;"
+            }
+          ],
+          "correct": "a",
+          "explanation": "font-size accepts lengths such as pixels."
+        },
+        {
+          "id": "css-14",
+          "mode": "test-out",
+          "prompt": "Where can a document contain an internal stylesheet?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Inside a style element"
+            },
+            {
+              "id": "b",
+              "text": "Inside the doctype"
+            },
+            {
+              "id": "c",
+              "text": "Only inside an image"
+            },
+            {
+              "id": "d",
+              "text": "In a closing tag attribute"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A style element can contain CSS rules."
+        },
+        {
+          "id": "css-15",
+          "mode": "test-out",
+          "prompt": "Which example is an inline style?",
+          "options": [
+            {
+              "id": "a",
+              "text": "<p style=\"color: red;\">Hi</p>"
+            },
+            {
+              "id": "b",
+              "text": "<p class=\"red\">Hi</p>"
+            },
+            {
+              "id": "c",
+              "text": "<p id=\"red\">Hi</p>"
+            },
+            {
+              "id": "d",
+              "text": "<p href=\"red\">Hi</p>"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Inline CSS is supplied through the style attribute."
+        }
+      ]
+    }
+  ]
+}

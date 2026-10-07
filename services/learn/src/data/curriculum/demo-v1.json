@@ -1,0 +1,41 @@
+{
+  "version": "demo-v1",
+  "nodes": [
+    {
+      "slug": "arrays",
+      "domain": "dsa",
+      "label": "Arrays & indexed collections",
+      "prerequisites": [],
+      "resourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Indexed_collections",
+      "wikipediaTitle": "Array data structure"
+    },
+    {
+      "slug": "iteration",
+      "domain": "dsa",
+      "label": "Iteration & traversal",
+      "prerequisites": [
+        "arrays"
+      ],
+      "resourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Loops_and_iteration",
+      "wikipediaTitle": "Iteration"
+    },
+    {
+      "slug": "html",
+      "domain": "web",
+      "label": "HTML foundations",
+      "prerequisites": [],
+      "resourceUrl": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Basic_HTML_syntax",
+      "wikipediaTitle": "HTML"
+    },
+    {
+      "slug": "css",
+      "domain": "web",
+      "label": "CSS foundations",
+      "prerequisites": [
+        "html"
+      ],
+      "resourceUrl": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/What_is_CSS",
+      "wikipediaTitle": "CSS"
+    }
+  ]
+}

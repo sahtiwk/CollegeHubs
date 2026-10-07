@@ -1,6 +1,6 @@
 // Original short descriptions; linked reading belongs to MDN contributors.
-// P9.1 reading catalog, NOT the reviewed assessment bank required by P9.2.
-export const curriculumVersion = 'reading-v1';
+// Reading descriptions for the versioned P9.2 curriculum; private questions live separately.
+export const curriculumVersion = 'demo-v1';
 export const starterPaths = {
   dsa: { label: 'Data structures & algorithms', description: 'Start with collections, then follow how an algorithm visits them.', nodes: [
     { slug: 'arrays', label: 'Arrays & indexed collections', description: 'Represent an ordered sequence and access an item by its position.', prerequisite: null,

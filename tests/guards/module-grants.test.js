@@ -101,7 +101,7 @@ test('G2: Learn HTTP adapter is JSON-only, scoped and fail-closed', async () => 
   const { createApp: createLearnApp } = await import('../../services/learn/src/app.ts');
   const state = 's'.repeat(43);
   const app = createLearnApp({ config: { origin: 'http://localhost:5173', secure: false },
-    pool: { query: async () => ({ rows: [{ version: 1 }] }) },
+    pool: { query: async () => ({ rows: [{ version: 2 }] }) },
     store: { start: async () => state, get: async () => { throw Object.assign(new Error('denied'), { status: 401 }); } } });
   const server = app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve));
   const base = 'http://127.0.0.1:' + server.address().port;
@@ -616,6 +616,14 @@ test('G2: P9.1 retained learning routes require a module session before SQL or r
       const res = await fetch(base+'/api/learn'+path,{method,headers:{Origin:'http://localhost:5173','Content-Type':'application/json'},...(method==='GET'?{}:{body:'{}'})});
       assert.equal(res.status,401,method+' '+path);
     }
+    for (const [method,path] of [['GET','/quiz/attempts'],['GET','/quiz/attempts/00000000-0000-4000-8000-000000000001'],['POST','/quiz/attempts'],['POST','/quiz/next'],['POST','/quiz/answer'],['POST','/quiz/finalize'],['POST','/resources']]) {
+      const res=await fetch(base+'/api/learn'+path,{method,headers:{Origin:'http://localhost:5173','Content-Type':'application/json'},...(method==='GET'?{}:{body:'{}'})});
+      assert.equal(res.status,401,method+' '+path);
+    }
+    for(const path of ['/integration/pending-results','/integration/reconcile']) {
+      const res=await fetch(base+'/api/learn'+path,{method:path.endsWith('reconcile')?'POST':'GET',headers:{Origin:'http://localhost:5173'}});
+      assert.equal(res.status,403);
+    }
     assert.equal(sql,0);
   } finally { await new Promise(r => server.close(r)); }
 });
@@ -633,9 +641,9 @@ test('G2: P9.1 fresh bootstrap refuses unconfirmed, production and populated tar
       const r=spawnSync(process.execPath,['services/learn/scripts/setup_demo.ts',...args],{env:{...env,...overrides},encoding:'utf8'});
       assert.equal(r.status,1); assert.match(r.stderr,/bootstrap refused or failed/); assert.equal(await snapshot(),before);
     }
-    assert.equal((await pool.query('SELECT version FROM learn_schema')).rows[0].version,1);
+    assert.equal((await pool.query('SELECT version FROM learn_schema')).rows[0].version,2);
     const names=(await pool.query("SELECT tablename FROM pg_tables WHERE schemaname='public'")).rows.map(r=>r.tablename);
-    assert.ok(!names.some(n=>/aura|streak|vector|clerk|quiz/i.test(n)));
+    assert.ok(!names.some(n=>/aura|streak|vector|clerk/i.test(n)));
   } finally {await pool.end();}
 });
 

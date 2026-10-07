@@ -1,0 +1,10 @@
+{
+  "version": "learn-demo-v1",
+  "timezone": "Asia/Kolkata",
+  "timezonePolicyVersion": 1,
+  "curriculumVersion": "demo-v1",
+  "types": {
+    "learn.quiz_completed": { "weight": 5, "countCap": 5, "sourceCap": 100 },
+    "learn.node_mastered": { "weight": 15, "countCap": 100, "sourceCap": 100 }
+  }
+}

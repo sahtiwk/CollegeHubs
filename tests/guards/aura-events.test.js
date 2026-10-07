@@ -335,6 +335,33 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
       assert.equal(streak.dayKey(new Date('2026-10-02T18:29:59Z')), '2026-10-02');
       assert.equal(streak.dayKey(new Date('2026-10-02T18:30:00Z')), '2026-10-03');
     });
+    await t.test('P9.2 durable Learn outbox recovers transport failure and a lost Core receipt exactly once', {skip:!process.env.GUARD_LEARN_DATABASE_URL}, async()=>{
+      const {Pool}=require('pg'), url=new URL(process.env.GUARD_LEARN_DATABASE_URL);
+      assert.ok(['localhost','127.0.0.1'].includes(url.hostname));assert.match(url.pathname,/^\/collegehubs_demo_learn_/);
+      const pool=new Pool({connectionString:url.toString()});
+      const {learnerService}=await import('../../services/learn/src/services/learnerService.ts'),{attemptService}=await import('../../services/learn/src/services/attemptService.ts'),{coreEvents}=await import('../../services/learn/src/services/coreEvents.ts');
+      const learner=await models.User.create({username:'learn-'+randomUUID(),email:randomUUID()+'@g3.example.test',password:opaque(),hubId:hub.id,membershipStatus:'active',membershipVersion:1});
+      const binding=await models.ModuleGrant.create({userId:learner.id,hubId:hub.id,module:'learn',grantHash:digest(opaque()),stateHash:digest(opaque()),returnPath:'/learn',membershipVersion:1,themeVersion:1,expiresAt:new Date(Date.now()+60000),consumedAt:new Date(),accessJti:randomUUID(),accessExpiresAt:new Date(Date.now()+900000),retainUntil:new Date(Date.now()+30*86400000)});
+      const owner={hubId:hub.id,userId:learner.id},learning=learnerService(pool),quiz=attemptService(pool),config={origin:'http://localhost:5173',secure:false,core:'http://127.0.0.1:'+server.address().port,serviceKey:keys.learn};
+      try{
+        await learning.initialize(owner,'dsa');const node=(await learning.graph(owner)).nodes.find(n=>n.status==='unlocked');
+        let attempt=await quiz.create(owner,node.id,'checkpoint',randomUUID());
+        const snapshot=(await pool.query('SELECT questions FROM quiz_attempt WHERE hub_id=$1 AND user_id=$2 AND id=$3',[owner.hubId,owner.userId,attempt.id])).rows[0].questions;
+        while(attempt.question){const q=snapshot.find(q=>q.id===attempt.question.id);attempt=await quiz.answer(owner,attempt.id,q.id,q.correct,randomUUID());}
+        const result=await quiz.finalize(owner,attempt.id,{jti:binding.accessJti,exp:Math.floor(+binding.accessExpiresAt/1000)});assert.equal(result.rewards.length,2);
+        const ids=result.rewards.map(r=>r.eventId),due=()=>pool.query("UPDATE learn_event SET next_attempt_at=to_timestamp(0) WHERE hub_id=$1 AND user_id=$2 AND status='pending'",[owner.hubId,owner.userId]);
+        await coreEvents(pool,config,async()=>{throw Error('Core offline');}).deliver(ids[0]);
+        assert.equal((await quiz.get(owner,attempt.id)).rewards[0].status,'pending');assert.equal(await models.AuraEvent.countDocuments({userId:learner.id}),0);
+        await due();let accepted;
+        await coreEvents(pool,config,async(...args)=>{const response=await fetch(...args);accepted=await response.json();assert.ok([200,201].includes(response.status));throw Error('Reply lost after commit');}).deliver(ids[0]);
+        assert.ok(accepted.receipt);assert.equal(await models.AuraEvent.countDocuments({userId:learner.id}),1);assert.equal((await quiz.get(owner,attempt.id)).rewards[0].status,'pending');
+        await due();const restarted=coreEvents(pool,config);await Promise.all([restarted.reconcile(owner,attempt.id),restarted.reconcile(owner,attempt.id)]);
+        const final=await quiz.get(owner,attempt.id);assert.ok(final.rewards.every(r=>r.status==='settled'));assert.equal(final.rewards.reduce((n,r)=>n+r.receipt.awardedAura,0),20);
+        assert.equal(await models.AuraEvent.countDocuments({userId:learner.id}),2);assert.equal((await models.AuraBalance.findOne({userId:learner.id})).total,20);
+        await restarted.reconcile(owner,attempt.id);assert.deepEqual((await quiz.get(owner,attempt.id)).result,result.result);
+        await assert.rejects(pool.query("UPDATE learn_event SET status='pending' WHERE event_id=$1",[ids[0]]),/Immutable/);
+      }finally{await pool.end();}
+    });
     await t.test('malformed JSON and oversized bodies use bounded contract errors; throttling supplies Retry-After', async () => {
       const url = 'http://127.0.0.1:' + server.address().port + '/api/aura/events';
       for (const [body, status] of [['{broken', 400], [JSON.stringify({ text: 'x'.repeat(66000) }), 413]]) {
@@ -420,4 +447,24 @@ test('G3: Sorting requires a complete bounded comparison/swap trace and complexi
   assert.throws(()=>transition(game,{seq:game.actions.length+1,type:'complexity',choice:'linear'},at),{status:400});
   const win=action({type:'complexity',choice:'quadratic'});assert.equal(win.status,'won');assert.ok(game.actions.length<=7);
   assert.deepEqual(transition(game,{seq:win.seq,type:'complexity',choice:'quadratic'},at).step,win);
+});
+
+test('G3: P9.2 grades frozen answers on the server at exact thresholds', async () => {
+  const {validateCurriculum,curriculum,bank}=await import('../../services/learn/src/services/plannerAgent.ts');
+  assert.deepEqual(validateCurriculum(),{nodes:4,questions:60,version:'demo-v1'});
+  const cycle=structuredClone(curriculum);cycle.nodes[0].prerequisites=[cycle.nodes[1].slug];assert.throws(()=>validateCurriculum(cycle,bank),/cycle/);
+  const missing=structuredClone(curriculum);missing.nodes[1].prerequisites=['missing'];assert.throws(()=>validateCurriculum(missing,bank));
+  const draft=structuredClone(bank);draft.review.status='draft';assert.throws(()=>validateCurriculum(curriculum,draft));
+  const bad=structuredClone(bank);bad.nodes[0].items[0].correct='z';assert.throws(()=>validateCurriculum(curriculum,bad),/Invalid question/);
+  const { gradeAttempt } = await import('../../services/learn/src/services/assessmentService.ts');
+  const questions = Array.from({length:10},(_,i)=>({id:'q'+i,correct:'a',explanation:'Reason',options:[{id:'a',text:'yes'},{id:'b',text:'no'}]}));
+  const answers = count => Object.fromEntries(questions.map((q,i)=>[q.id,{optionId:i<count?'a':'b'}]));
+  assert.equal(gradeAttempt('checkpoint',questions.slice(0,5),answers(3)).passed,true);
+  assert.equal(gradeAttempt('checkpoint',questions.slice(0,5),answers(2)).passed,false);
+  assert.equal(gradeAttempt('test-out',questions,answers(8)).passed,true);
+  assert.equal(gradeAttempt('test-out',questions,answers(7)).passed,false);
+  assert.equal(gradeAttempt('test-out',questions,answers(10)).theta,3);
+  assert.equal(gradeAttempt('test-out',questions,answers(0)).theta,-3);
+  assert.throws(()=>gradeAttempt('checkpoint',questions,answers(10)));
+  assert.throws(()=>gradeAttempt('checkpoint',questions.slice(0,5),{}));
 });
