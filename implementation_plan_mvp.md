@@ -43,9 +43,11 @@ Existing `docs/p0.1-evidence.md` through available `docs/p3.1-evidence.md` recor
 | P5.1-P6.2 | Complete locally; phase sections link to verification evidence. Hosted acceptance remains pending. |
 | P7.1 | **Local PASS (2026-10-06):** independent Arcade API, integrated NumberGuess, canonical daily receipt and pending recovery. See `docs/p7.1-evidence.md`. |
 | P7.2 | **Local PASS (2026-10-07):** three validated ranked games, shared catalogue, prospective rules and receipt/recovery evidence. See `docs/p7.2-evidence.md`. |
-| P8-P11 | Future; execute only the requested sub-phase. |
+| P8.1-P8.2 | **Local PASS:** independent Interview resume and practice/report journeys; real Groq Free and canonical receipt evidence. See `docs/p8.1-evidence.md` and `docs/p8.2-evidence.md`. |
+| P9.1 | **Implemented; automated/API checks PASS (2026-10-07), browser acceptance pending.** Scoped SQL/API extraction, integrated learner pages and fresh-schema proof. Browser tool policy verification prevented visual checks. See `docs/p9.1-evidence.md`. |
+| P9.2-P11 | Future; execute only the requested sub-phase. |
 
-**P7.2 is complete locally. Next planned phase: P8.1, only when requested.** P3.2/P4.1 retain passing local evidence. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
+**P9.1 implementation and automated/API verification are delivered; its browser acceptance remains pending. P9.2 has not started.** Next, finish the P9.1 desktop/mobile/theme walkthrough when browser access is restored; execute P9.2 only when requested. Hosted release remains P11-gated. Preserve migrated source and historical evidence; do not restart P0.
 
 ## Tier map
 
@@ -608,7 +610,7 @@ Goal: reuse PDF → questions → saved answers → evaluation → report in the
 
 ### P8.2. Questions, saved answers, immutable report and receipt
 
-**Local status (2026-10-07): PASS.** Shared-shell setup/practice/history/report routes now use real Groq Free structured output, five frozen questions, revisioned saved answers, leased evaluation and one immutable report/event. Generation and evaluation failures remain retryable; Core independently confirms capped Aura through durable delivery. The real synthetic Demo5 produced an 86/100 report with Core offline, then confirmed 28 Aura after recovery. All 93 guards pass with zero failures/skips, all workspace builds and the isolated Interview production build pass. Mobile/theme/reload checks pass. See [P8.2 evidence](docs/p8.2-evidence.md) and [Interview operation](docs/interview.md). Hosted acceptance remains P11-gated; P9 is not started.
+**Local status (2026-10-07): PASS.** Shared-shell setup/practice/history/report routes now use real Groq Free structured output, five frozen questions, revisioned saved answers, leased evaluation and one immutable report/event. Generation and evaluation failures remain retryable; Core independently confirms capped Aura through durable delivery. The real synthetic Demo5 produced an 86/100 report with Core offline, then confirmed 28 Aura after recovery. All 93 guards pass with zero failures/skips, all workspace builds and the isolated Interview production build pass. Mobile/theme/reload checks pass. See [P8.2 evidence](docs/p8.2-evidence.md) and [Interview operation](docs/interview.md). Hosted acceptance remains P11-gated; current P9.1 status is recorded below.
 
 **Scope:** five-question REST journey with real free-provider evaluation, no voice/socket streaming. **Prerequisite:** P8.1/P6.1 and verified free provider. **Guards:** G1/G3. **Effort:** 2–3 days.
 
@@ -624,6 +626,8 @@ Goal: reuse PDF → questions → saved answers → evaluation → report in the
 Goal: preserve graph/resources and server-assessed DSA/Web journeys, using the unified frontend and separate SQL backend. Entry: revised P3.2 local PASS/P6.1. Read A1–A8/H. Human: Neon free setup, review attributed/generated seed questions; runtime Gemini optional. Safe stop: disable unsafe learning routes, keep seeded content during provider outage. Trace: Learn/FR6/NFR3/NFR4.
 
 ### P9.1. Full scoped API extraction and learner pages
+
+**Status (2026-10-07): implemented; automated/API PASS, visual acceptance pending.** Fresh SQL schema v1, scoped DSA/Web enrollment/graph/resource/preferences APIs and shared-shell learner pages are implemented. All 98 guards pass with zero failures/skips; all workspace builds and the isolated Learn deployment build pass. Fresh bootstrap/refusal, Core-ledger preservation, real gateway reads, Learn restart and SQL outage isolation are verified. Browser desktop/mobile/theme/navigation checks could not run because the browser tool could not verify its admin-enforced policy; this is not full manual acceptance. See [P9.1 evidence](docs/p9.1-evidence.md) and [Learn route/setup inventory](docs/learn.md). Assessment remains P9.2-gated; no hosted PASS is claimed.
 
 **Scope:** retained identity/enrollment/graph/resource APIs and pages; grading routes stay gated until P9.2. **Prerequisite:** P3.2 local gate and dedicated Learn DB. **Guards:** G1/G2. **Effort:** 2–4 days.
 
@@ -859,7 +863,7 @@ flowchart LR
   Polish --> Topics[P10.1 optional topics]
 ```
 
-P3.2 checkpoints A-D now pass locally. Next requested implementation can start P4.1; hosted release still requires P11 verification. Do not restart P0 or claim old P3.1 satisfies the new Learn gate. Local coding does not wait for hosting login; public release does wait for actual hosted verification. Existing completed work is revalidated when its paths/contracts change.
+P3.2 checkpoints A-D and P4-P8 now pass locally. P9.1 code and automated/API checks pass; its browser acceptance remains pending, and P9.2 is not started. Hosted release still requires P11 verification. Do not restart P0 or claim old P3.1 satisfies the new Learn gate. Local coding does not wait for hosting login; public release does wait for actual hosted verification. Existing completed work is revalidated when its paths/contracts change.
 
 ## D3. Effort and risks
 

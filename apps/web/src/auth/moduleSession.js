@@ -6,13 +6,14 @@ import { createSessionCoordinator } from './moduleSessionState';
 const coordinator = createSessionCoordinator(() => localStorage.getItem('socialstream_token'));
 const identity = user => [user?._id, user?.hubId, user?.membershipVersion].join(':');
 const expired = dto => !dto || Date.parse(dto.expiresAt) <= Date.now() + 1000;
+/** @param {string} path @param {{method?: string, body?: unknown, signal?: AbortSignal, timeout?: number, csrf?: string}} options */
 export async function learnRequest(path, { method = 'GET', body, signal, timeout = 15000, csrf } = {}) {
-  if (!['/session', '/auth/start', '/auth/callback', '/logout', '/spike/graph', '/health/ready'].includes(path)) throw new Error('Unknown Learn route');
+  if (!['/session', '/auth/start', '/auth/callback', '/logout', '/spike/graph', '/health/ready', '/dashboard/graph', '/dashboard/domains', '/dashboard/stats', '/dashboard/milestones', '/onboarding', '/onboarding/profile', '/learner/intake', '/learner/init-graph', '/recommendation', '/tutor/fast', '/profile/preferences', '/profile/path'].includes(path) && !/^\/nodes\/[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(path)) throw new Error('Unknown Learn route');
   const response = await fetch(moduleUrl('/api' + path), { method, credentials: 'same-origin', redirect: 'error', cache: 'no-store',
     signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(timeout)]) : AbortSignal.timeout(timeout),
     headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...(csrf ? { 'X-CSRF-Token': csrf } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
   const dto = await response.json();
-  if (!response.ok) throw Object.assign(new Error('Learn is temporarily unavailable. Retry when it is ready.'), { status: response.status, code: dto.error?.code });
+  if (!response.ok) throw Object.assign(new Error(dto.error?.message || 'Learn is temporarily unavailable. Retry when it is ready.'), { status: response.status, code: dto.error?.code });
   return dto;
 }
 function checked(dto, user) {
@@ -28,6 +29,7 @@ export function clearModuleSession({ remote = false } = {}) {
 window.addEventListener('core-session', () => clearModuleSession({ remote: true }));
 window.addEventListener('storage', event => { if (!event.key || event.key === 'socialstream_token') clearModuleSession({ remote: true }); });
 
+/** @param {any} user @param {(message: string) => void} progress */
 export function ensureLearnSession(user, progress = () => {}) {
   const key = identity(user);
   return coordinator.run(key, async (signal, current) => {

@@ -1,4 +1,32 @@
-.learn-page { max-width: 1040px; padding-bottom: 3rem; }
+.learn-page { width: 100%; min-width: 0; max-width: 1040px; padding-bottom: 3rem; }
+.learn-page .panel { border: 1px solid var(--border); border-radius: 16px; background: var(--surface); padding: 22px; }
+.learn-overview .panel { display: flex; flex-direction: column; gap: .8rem; }
+.learn-page select { font: inherit; }
+.learn-nav, .learn-domain-tabs { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem; }
+.learn-nav a { padding: .55rem .8rem; border-radius: 10px; }
+.learn-nav a.active { background: var(--secondary); color: var(--text); font-weight: 700; }
+.learn-overview, .learn-path-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.learn-form { max-width: 780px; }
+.learn-form fieldset { border: 0; padding: 0; min-width: 0; display: grid; gap: 1rem; }
+.learn-form legend { font-weight: 700; margin-bottom: 1rem; }
+.learn-page label { display: grid; gap: .6rem; }
+.learn-page input, .learn-page select { width: 100%; max-width: 100%; box-sizing: border-box; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: .8rem; }
+.learn-page .learn-path-option { display: flex; align-items: flex-start; padding: 1.2rem; border: 1px solid var(--border); border-radius: 14px; cursor: pointer; }
+.learn-path-option.selected { background: var(--secondary); border-color: var(--accent); }
+.learn-path-option input { width: auto; margin-top: .3rem; accent-color: var(--accent); }
+.learn-path-option > span { display: grid; gap: .65rem; }
+.learn-path-option small { color: var(--text-muted); }
+.learn-cta { font-weight: 700; padding: .6rem 0; }
+.learn-resource { padding: 1.25rem 0; border-top: 1px solid var(--border); }
+.learn-resource h3 { margin: 0; }
+.learn-resource button, .learn-form > button { align-self: start; }
+.learn-guidance, .learn-reset { background: var(--surface-raised); border: 1px solid var(--border); border-radius: 14px; padding: 1.2rem; }
+.learn-domain-tabs button[aria-pressed=true] { background: var(--secondary); border-color: var(--accent); }
+.learn-page :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.learn-page button:disabled { cursor: not-allowed; }
+.learn-node.locked { color: var(--text-muted); opacity: 1; }
+.learn-node.locked:hover { transform: none; }
+@media(max-width: 680px) { .learn-overview, .learn-path-options { grid-template-columns: 1fr; } .learn-nav { gap: .25rem; } .learn-nav a { padding: .5rem; } }
 .learn-heading { padding: 1.5rem 0 1rem; }
 .learn-heading h1 { font-size: clamp(2.4rem, 5vw, 4rem); line-height: 1.12; margin: .6rem 0 1.2rem; }
 .learn-heading > p:last-child { color: var(--text-muted); max-width: 34rem; }

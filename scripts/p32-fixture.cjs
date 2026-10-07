@@ -1,5 +1,5 @@
 // Explicit local/disposable integration fixture. Starts independent API listeners and Vite.
-// PostgreSQL must already exist with the guarded session-only schema.
+// PostgreSQL must already exist with the current guarded fresh Learn schema.
 const { spawn } = require('node:child_process');
 const { resolve } = require('node:path');
 const { generateKeyPairSync } = require('node:crypto');

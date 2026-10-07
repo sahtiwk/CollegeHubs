@@ -18,6 +18,8 @@
     "resolveJsonModule": true
   },
   "include": [
+    "src/features/learn/**/*.ts",
+    "src/features/learn/**/*.tsx",
     "src/features/arcade/**/*.ts",
     "src/features/arcade/**/*.tsx",
     "src/features/interview/**/*.ts",

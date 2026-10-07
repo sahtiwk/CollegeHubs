@@ -1,6 +1,108 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
+test('G1: P9.1 SQL enrollment races, scoped FKs, locked resources, preferences and reset', { skip: !process.env.GUARD_LEARN_DATABASE_URL }, async () => {
+  const { Pool } = require('pg'), crypto = require('node:crypto');
+  const { createApp } = await import('../../services/learn/src/app.ts');
+  const { createSessionStore } = require('../../services/learn/src/auth/sessionBoundary.cjs');
+  const url = new URL(process.env.GUARD_LEARN_DATABASE_URL);
+  assert.ok(['localhost','127.0.0.1'].includes(url.hostname)); assert.match(url.pathname, /^\/collegehubs_demo_learn_/);
+  const pool = new Pool({ connectionString: url.toString(), max: 8 });
+  let resourceReads = 0;
+  const observed = { query: pool.query.bind(pool), connect: async () => {
+    const client = await pool.connect();
+    return { query: (sql, values) => { if (/FROM content_item/i.test(sql)) resourceReads++; return client.query(sql, values); }, release: () => client.release() };
+  } };
+  const origin = 'http://localhost:5173', store = createSessionStore(pool, { origin });
+  const server = createApp({ config: { origin, secure: false }, pool: observed, store }).listen(0, '127.0.0.1');
+  await new Promise(r => server.once('listening', r)); const base = 'http://127.0.0.1:' + server.address().port;
+  const digest = value => crypto.createHash('sha256').update(value).digest('hex');
+  const hubA = crypto.randomBytes(12).toString('hex'), hubB = crypto.randomBytes(12).toString('hex');
+  async function owner(hubId) {
+    const userId = crypto.randomBytes(12).toString('hex'), handle = crypto.randomBytes(32).toString('base64url'), csrf = digest('csrf:' + handle), exp = Math.floor(Date.now()/1000)+900;
+    await pool.query('INSERT INTO module_session(session_hash,user_id,hub_id,principal,theme,csrf_hash,expires_at) VALUES($1,$2,$3,$4,$5,$6,$7)', [digest(handle),userId,hubId,{ sub:userId,hubId,exp },{},digest(csrf),new Date(exp*1000)]);
+    return { userId,hubId,handle,csrf };
+  }
+  const a = await owner(hubA), peer = await owner(hubA), b = await owner(hubB);
+  async function call(o, path, method='GET', body, expected=200, headers={}) {
+    const r = await fetch(base+'/api/learn'+path, { method, headers: { Origin:origin, Cookie:'ch_learn_session='+o.handle, 'X-CSRF-Token':o.csrf, ...(body ? {'Content-Type':'application/json'} : {}), ...headers }, ...(body ? {body:JSON.stringify(body)} : {}) });
+    const dto = await r.json(); assert.equal(r.status,expected,path+': '+JSON.stringify(dto)); return dto;
+  }
+  try {
+    assert.equal((await call(a,'/dashboard/graph')).nodes.length,0);
+    await call(a,'/learner/intake','POST',{domain:'dsa',selfRating:'advanced'},404);
+    await call(a,'/learner/init-graph','POST',{domain:'dsa'},403,{'X-CSRF-Token':'forged'});
+    await call(a,'/learner/init-graph','POST',{domain:'dsa'},403,{Origin:'https://foreign.example'});
+    await call(a,'/onboarding','POST',{domain:'dsa',selfRating:'new',goal:'x',dailyMinutes:20,hubId:hubB},400);
+    await call(a,'/onboarding','POST',{domain:'machine-learning',selfRating:'new',goal:'x',dailyMinutes:20},400);
+    await Promise.all(Array.from({length:8}, () => call(a,'/learner/init-graph','POST',{domain:'dsa'})));
+    let graph = await call(a,'/dashboard/graph'); assert.equal(graph.nodes.length,2); assert.equal(graph.links.length,1);
+    assert.equal(graph.userId,a.userId); assert.equal(graph.hubId,hubA);
+    const root = graph.nodes.find(n=>n.status==='unlocked'), locked = graph.nodes.find(n=>n.status==='locked');
+    assert.ok(root && locked); assert.equal(graph.nodes.some(n=>'resources' in n || 'theta' in n),false);
+    assert.equal((await pool.query('SELECT count(*)::int AS n FROM learner_node_state WHERE hub_id=$1 AND user_id=$2',[hubA,a.userId])).rows[0].n,2);
+    assert.equal((await pool.query('SELECT count(*)::int AS n FROM learner WHERE hub_id=$1 AND user_id=$2',[hubA,a.userId])).rows[0].n,1);
+    const startReads = resourceReads;
+    await call(peer,'/nodes/'+root.id,'GET',undefined,404);
+    await call(b,'/nodes/'+root.id,'GET',undefined,404);
+    await call(a,'/nodes/'+locked.id,'GET',undefined,403);
+    await call(a,'/recommendation','POST',{nodeId:locked.id},403);
+    await call(a,'/tutor/fast','POST',{nodeId:locked.id,contentId:crypto.randomUUID()},403);
+    await call(b,'/recommendation','POST',{nodeId:root.id},404);
+    assert.equal(resourceReads,startReads,'denied access must precede resource reads');
+    const content = await call(a,'/nodes/'+root.id); assert.equal(content.source,'seed'); assert.equal(content.resources.length,1);
+    const rec = await call(a,'/recommendation','POST',{nodeId:root.id}); assert.equal(rec.recommendedItem.id,content.resources[0].id);
+    const guide = await call(a,'/tutor/fast','POST',{nodeId:root.id,contentId:content.resources[0].id}); assert.equal(guide.source,'template');
+    await call(a,'/tutor/fast','POST',{nodeId:root.id,contentId:crypto.randomUUID()},404);
+    await call(a,'/nodes/not-a-uuid','GET',undefined,400);
+    await call(a,'/dashboard/graph?hubId='+hubB,'GET',undefined,400);
+    await call(a,'/profile/preferences','PUT',{goal:'<script>literal goal</script>',dailyMinutes:30});
+    assert.equal((await call(a,'/profile/preferences')).goal,'<script>literal goal</script>');
+    assert.equal((await call(peer,'/profile/preferences')).goal,'');
+    await call(a,'/profile/preferences','PUT',{goal:'x'.repeat(241),dailyMinutes:20},400);
+    await call(a,'/profile/preferences','PUT',{goal:'x',dailyMinutes:21},400);
+    await call(a,'/learner/intake','POST',{domain:'dsa',selfRating:'advanced'});
+    await call(a,'/learner/intake','POST',{domain:'dsa',selfRating:'advanced',theta:3,status:'completed'},400);
+    graph = await call(a,'/dashboard/graph'); assert.equal(graph.nodes.find(n=>n.id===locked.id).status,'locked');
+    assert.equal((await pool.query('SELECT count(*)::int AS n FROM learner_node_state WHERE hub_id=$1 AND user_id=$2 AND theta IS NOT NULL',[hubA,a.userId])).rows[0].n,0);
+    assert.deepEqual((await call(a,'/dashboard/milestones')).milestones,[]);
+    assert.equal((await call(a,'/dashboard/stats')).availableTopics,1);
+    await call(peer,'/learner/init-graph','POST',{domain:'dsa'});
+    await call(b,'/learner/init-graph','POST',{domain:'dsa'});
+    const bg = await call(b,'/dashboard/graph'); assert.ok(bg.nodes.every(n=>!graph.nodes.some(x=>x.id===n.id)));
+    await call(a,'/tutor/fast','POST',{nodeId:root.id,contentId:(await call(b,'/nodes/'+bg.nodes.find(n=>n.status==='unlocked').id)).resources[0].id},404);
+    const fk = await pool.query('SELECT id FROM skill_node WHERE hub_id=$1 LIMIT 1',[hubB]);
+    await assert.rejects(pool.query('INSERT INTO learner_node_state(hub_id,user_id,domain,version,node_id,status) VALUES($1,$2,$3,$4,$5,$6)',[hubA,a.userId,'dsa','reading-v1',fk.rows[0].id,'unlocked']),{code:'23503'});
+    await assert.rejects(pool.query('UPDATE content_item SET node_id=$1 WHERE hub_id=$2',[fk.rows[0].id,hubA]),{code:'23503'});
+    await assert.rejects(pool.query('UPDATE learner_node_state SET theta=4,assessed_at=now() WHERE hub_id=$1 AND user_id=$2',[hubA,a.userId]),{code:'23514'});
+    for(const p of ['/maintenance','/generate-dag','/process-llm','/ingest','/quiz-generate','/tutor/slow','/quiz/attempts','/quiz/answer','/quiz/next','/quiz/finalize','/profile','/dashboard/leaderboard']) {
+      await call(a,p,'GET',undefined,404); await call(a,p,'POST',{},404);
+    }
+    // Future assessed state simulates a reset/re-init without making a public grading API.
+    await pool.query("UPDATE learner_node_state SET status='completed',theta=1,assessed_at=now() WHERE hub_id=$1 AND user_id=$2 AND node_id=$3",[hubA,a.userId,root.id]);
+    await call(a,'/learner/init-graph','POST',{domain:'dsa'});
+    assert.equal((await call(a,'/dashboard/graph')).nodes.find(n=>n.id===root.id).status,'completed','init cannot overwrite progress');
+    assert.equal((await call(a,'/dashboard/milestones')).milestones[0].nodeId,root.id);
+    assert.deepEqual((await call(peer,'/dashboard/milestones')).milestones,[]);
+    assert.deepEqual((await call(b,'/dashboard/milestones')).milestones,[]);
+    const reset = await call(a,'/profile/path','DELETE',{domain:'dsa'}); assert.equal(reset.rewardHistoryPreserved,true);
+    assert.equal((await call(a,'/dashboard/graph')).nodes.length,0);
+    assert.deepEqual((await call(a,'/dashboard/milestones')).milestones,[]);
+    await call(a,'/nodes/'+root.id,'GET',undefined,404);
+    assert.equal((await call(peer,'/dashboard/graph')).nodes.length,2);
+    assert.equal((await call(b,'/dashboard/graph')).nodes.length,2);
+    await call(a,'/profile/path','DELETE',{domain:'dsa'});
+    await call(a,'/onboarding','POST',{domain:'dsa',selfRating:'advanced',goal:'Resume fundamentals',dailyMinutes:20});
+    const resetGraph = await call(a,'/dashboard/graph'); assert.equal(resetGraph.nodes.length,2); assert.equal(resetGraph.nodes.find(n=>n.id===root.id).status,'unlocked');
+    assert.equal(resetGraph.nodes.find(n=>n.id===locked.id).status,'locked');
+    await call(a,'/onboarding','POST',{domain:'web',selfRating:'new',goal:'Build a page',dailyMinutes:20});
+    assert.equal((await call(a,'/dashboard/graph')).nodes.length,4);
+    await pool.query("UPDATE module_session SET expires_at=now()-interval '1 second' WHERE session_hash=$1",[digest(a.handle)]);
+    await call(a,'/dashboard/graph','GET',undefined,401);
+    await call(a,'/profile/path','DELETE',{domain:'dsa'},401);
+  } finally { await new Promise(r=>server.close(r)); await pool.end(); }
+});
+
 test('G1: text-only PDF parsing rejects unsafe inputs and terminates bounded workers', async()=>{
   const {inspectFile,parsePdf}=require('../../services/interview/src/services/fileStorage');
   const {pdfFixture}=require('../../scripts/pdf-fixture.cjs');

@@ -280,6 +280,24 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
       balance = await models.AuraBalance.findOne(principal);
       assert.equal(balance.total, balance.engagement + balance.externalBonus);
     });
+    await t.test('P9.1 owned Learn reset preserves Core ledger, balance and mastery uniqueness', { skip: !process.env.GUARD_LEARN_DATABASE_URL }, async () => {
+      const { Pool } = require('pg');
+      const url = new URL(process.env.GUARD_LEARN_DATABASE_URL);
+      assert.ok(['localhost','127.0.0.1'].includes(url.hostname)); assert.match(url.pathname, /^\/collegehubs_demo_learn_/);
+      const pool = new Pool({ connectionString: url.toString() });
+      const { learnerService } = await import('../../services/learn/src/services/learnerService.ts');
+      const learn = learnerService(pool), owner = { userId:user.id, hubId:hub.id };
+      const snapshot = async () => JSON.stringify({ events:await models.AuraEvent.find({userId:user.id}).sort({_id:1}).lean(), balance:await models.AuraBalance.findOne({userId:user.id}).lean(), days:await models.DailyActivity.find({userId:user.id}).sort({_id:1}).lean() });
+      try {
+        const before = await snapshot();
+        const receipt = await models.AuraEvent.findOne({userId:user.id,type:'learn.node_mastered',canonical:true,awardedAura:15}).lean(); assert.ok(receipt);
+        await learn.initialize(owner,'dsa'); await learn.reset(owner,'dsa'); await learn.initialize(owner,'dsa');
+        assert.equal(await snapshot(),before);
+        const fact = {schemaVersion:1,eventId:receipt.eventId,userId:user.id,hubId:hub.id,source:receipt.source,type:receipt.type,value:receipt.value,occurredAt:receipt.occurredAt.toISOString(),metadata:receipt.metadata};
+        const replay = await post(fact); assert.equal(replay.status,200); assert.equal(replay.body.receipt.awardedAura,15);
+        assert.equal(await snapshot(),before,'re-enrollment must not clear Core award uniqueness');
+      } finally { await pool.end(); }
+    });
     await t.test('expired access permits late delivery within binding, while old/future/unissued facts fail', async () => {
       await models.ModuleGrant.updateOne({ _id: bindings.arcade.id }, { $set: { accessExpiresAt: new Date(Date.now() - 1000) } });
       const past = { ...event(), occurredAt: new Date(Date.now() - 2000).toISOString() };

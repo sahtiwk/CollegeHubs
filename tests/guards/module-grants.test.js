@@ -101,7 +101,7 @@ test('G2: Learn HTTP adapter is JSON-only, scoped and fail-closed', async () => 
   const { createApp: createLearnApp } = await import('../../services/learn/src/app.ts');
   const state = 's'.repeat(43);
   const app = createLearnApp({ config: { origin: 'http://localhost:5173', secure: false },
-    pool: { query: async () => ({ rows: [{ ok: 1 }] }) },
+    pool: { query: async () => ({ rows: [{ version: 1 }] }) },
     store: { start: async () => state, get: async () => { throw Object.assign(new Error('denied'), { status: 401 }); } } });
   const server = app.listen(0, '127.0.0.1'); await new Promise(resolve => server.once('listening', resolve));
   const base = 'http://127.0.0.1:' + server.address().port;
@@ -603,4 +603,46 @@ test('G1/G2: independent Interview handoff, bounded text-only PDF and scoped res
     const probeBase='http://127.0.0.1:'+probe.address().port;
     try{assert.equal((await fetch(probeBase+'/health/ready')).status,200);await db.close();assert.equal((await fetch(probeBase+'/health/ready')).status,503);assert.equal((await fetch(probeBase+'/health/live')).status,200);assert.equal((await fetch(base+'/api/health')).status,200);}finally{await new Promise(resolve=>probe.close(resolve));}
   }finally{await db.close();}
+});
+
+test('G2: P9.1 retained learning routes require a module session before SQL or resource work', async () => {
+  const { createApp } = await import('../../services/learn/src/app.ts');
+  let sql = 0;
+  const app = createApp({ config: { origin: 'http://localhost:5173', secure: false }, pool: { query: async () => { sql++; throw Error('must not query'); } }, store: { get: async () => { throw Object.assign(Error('session'), { status: 401, code: 'LEARN_SESSION_REQUIRED' }); } } });
+  const server = app.listen(0, '127.0.0.1'); await new Promise(r => server.once('listening', r));
+  const base = 'http://127.0.0.1:' + server.address().port;
+  try {
+    for (const [method, path] of [['GET','/dashboard/graph'],['GET','/dashboard/domains'],['GET','/dashboard/stats'],['GET','/dashboard/milestones'],['GET','/profile/preferences'],['GET','/nodes/00000000-0000-4000-8000-000000000001'],['POST','/onboarding'],['POST','/onboarding/profile'],['POST','/learner/intake'],['POST','/learner/init-graph'],['POST','/recommendation'],['POST','/tutor/fast'],['PUT','/profile/preferences'],['DELETE','/profile/path']]) {
+      const res = await fetch(base+'/api/learn'+path,{method,headers:{Origin:'http://localhost:5173','Content-Type':'application/json'},...(method==='GET'?{}:{body:'{}'})});
+      assert.equal(res.status,401,method+' '+path);
+    }
+    assert.equal(sql,0);
+  } finally { await new Promise(r => server.close(r)); }
+});
+
+test('G2: P9.1 fresh bootstrap refuses unconfirmed, production and populated targets without changing data', {skip: !process.env.GUARD_LEARN_DATABASE_URL}, async()=>{
+  const {Pool}=require('pg'), {spawnSync}=require('node:child_process');
+  const url=new URL(process.env.GUARD_LEARN_DATABASE_URL), name=url.pathname.slice(1);
+  assert.ok(['localhost','127.0.0.1'].includes(url.hostname)); assert.match(name,/^collegehubs_demo_learn_[a-z0-9_]+$/);
+  const pool=new Pool({connectionString:url.toString()});
+  const snapshot=async()=>JSON.stringify((await pool.query("SELECT tablename FROM pg_tables WHERE schemaname='public' ORDER BY tablename")).rows);
+  try {
+    const before=await snapshot(); assert.match(before,/learner_node_state/);
+    const env={...process.env,DATABASE_URL:url.toString(),NODE_ENV:'test',DEMO_RESET_ENABLED:'true',DEMO_DB_NAME_ALLOWLIST:name};
+    for(const [args,overrides] of [[[],{}],[['--confirm='+name,'--disposable-data-only'],{NODE_ENV:'production'}],[['--confirm='+name,'--disposable-data-only'],{DEMO_DB_NAME_ALLOWLIST:''}],[['--confirm='+name,'--disposable-data-only'],{}]]) {
+      const r=spawnSync(process.execPath,['services/learn/scripts/setup_demo.ts',...args],{env:{...env,...overrides},encoding:'utf8'});
+      assert.equal(r.status,1); assert.match(r.stderr,/bootstrap refused or failed/); assert.equal(await snapshot(),before);
+    }
+    assert.equal((await pool.query('SELECT version FROM learn_schema')).rows[0].version,1);
+    const names=(await pool.query("SELECT tablename FROM pg_tables WHERE schemaname='public'")).rows.map(r=>r.tablename);
+    assert.ok(!names.some(n=>/aura|streak|vector|clerk|quiz/i.test(n)));
+  } finally {await pool.end();}
+});
+
+test('G2: P9.1 Learn readiness rejects a missing schema marker and redacts SQL failures', async()=>{
+  const {createApp}=await import('../../services/learn/src/app.ts');
+  let fail=false;
+  const app=createApp({config:{origin:'http://localhost:5173',secure:false},pool:{query:async()=>{if(fail)throw Error('private SQL connection details');return {rows:[]};}},store:{}});
+  const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));
+  try{for(const error of [false,true]){fail=error;const r=await fetch('http://127.0.0.1:'+server.address().port+'/health/ready');assert.equal(r.status,503);assert.doesNotMatch(await r.text(),/private SQL/);}}finally{await new Promise(r=>server.close(r));}
 });

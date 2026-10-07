@@ -1,7 +1,7 @@
 // Execute with Node >=22.18: node --experimental-strip-types scripts/setup_demo.ts.
 // Additive fresh bootstrap only. Never drops, resets or migrates an existing DB.
 import { Pool } from 'pg';
-import { sessionDDL } from '../src/db/schema.ts';
+import { schemaDDL } from '../src/db/schema.ts';
 async function main() {
  const url = new URL(process.env.DATABASE_URL || '');
  const name = decodeURIComponent(url.pathname.slice(1));
@@ -14,8 +14,8 @@ async function main() {
   await client.query('SELECT pg_advisory_xact_lock(31001)');
   const tables = await client.query("SELECT tablename FROM pg_tables WHERE schemaname='public'");
   if (tables.rowCount) throw new Error('Bootstrap requires a fresh empty database');
-  await client.query(sessionDDL); await client.query('COMMIT');
-  console.log('Fresh Learn session-only schema created. No legacy tables installed.');
+  await client.query(schemaDDL); await client.query('COMMIT');
+  console.log('Fresh Learn schema v1 created: sessions, learners, scoped paths, nodes, resources, enrollments and state. No legacy tables installed.');
  } catch (error) { await client.query('ROLLBACK'); throw error; }
  finally { client.release(); await pool.end(); }
 }

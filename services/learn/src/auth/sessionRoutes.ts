@@ -5,7 +5,7 @@ import { sessionDto } from './sessionService.ts';
 
 const failure = (status: number, code: string) => Object.assign(new Error(code), { status, code });
 export const wrap = (fn: (req: Request, res: Response) => Promise<unknown>) => (req: Request, res: Response, next: NextFunction) => { Promise.resolve(fn(req, res)).catch(next); };
-function cookie(req: Request, name: string) {
+export function cookie(req: Request, name: string) {
   const entries = (req.headers.cookie || '').split(';').map(part => part.trim()).filter(part => part.startsWith('ch_learn_' + name + '='));
   return entries.length === 1 ? entries[0].split('=')[1] : '';
 }

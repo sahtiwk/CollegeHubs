@@ -1,0 +1,17 @@
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useLearnLoad, useLearnAction, LoadState } from '../Learn';
+import { RatingOptions } from './OnboardingPage';
+export default function PreferencesPage() {
+  const profile = useLearnLoad('/profile/preferences'), paths = useLearnLoad('/dashboard/domains'), action = useLearnAction();
+  const [goal, setGoal] = useState(''), [minutes, setMinutes] = useState(20), [message, setMessage] = useState(''), [confirm, setConfirm] = useState('');
+  useEffect(() => { if (profile.data) { setGoal(profile.data.goal); setMinutes(profile.data.dailyMinutes); } }, [profile.data]);
+  return <><header className="learn-heading"><p className="eyebrow">Learn / make it yours</p><h1>A pace that fits.</h1><p>Keep your goal, reading time and self-ratings here. Your college account and Aura remain in the main app.</p></header>
+    {!profile.data || !paths.data ? <LoadState load={!profile.data ? profile : paths} /> : <>
+      <form className="panel stack learn-form" onSubmit={e => { e.preventDefault(); setMessage(''); action.run(async call => { await call('/profile/preferences', 'PUT', { goal, dailyMinutes: minutes }); setMessage('Learning preferences saved.'); }); }}><h2>Your learning preferences</h2><label>Your goal<input maxLength={240} value={goal} onChange={e => setGoal(e.target.value)} disabled={action.busy} /></label><label>Daily reading time<select value={minutes} onChange={e => setMinutes(Number(e.target.value))} disabled={action.busy}>{[10,20,30,45,60].map(n => <option key={n} value={n}>{n} minutes</option>)}</select></label><button className="primary" disabled={action.busy}>Save preferences</button></form>
+      <section className="panel stack"><h2>Your paths</h2>{!paths.data.domains.some((p: any) => p.enrolled) && <p>No active paths yet. <Link to="/learn/onboarding">Choose a path.</Link></p>}{paths.data.domains.filter((p: any) => p.enrolled).map((p: any) => <article className="learn-resource stack" key={p.domain}><h3>{p.label}</h3><label>Self-rating<select value={p.selfRating} disabled={action.busy} onChange={e => { const selfRating = e.target.value; setMessage(''); action.run(async call => { await call('/learner/intake', 'POST', { domain: p.domain, selfRating }); paths.refresh(); setMessage('Self-rating saved. Assessed progress has not changed.'); }); }}><RatingOptions /></select></label>
+        {confirm === p.domain ? <div className="learn-reset stack" role="group" aria-label={'Confirm reset of ' + p.label}><p>Reset this path? It will leave your active paths and clear its current learning state. You can enroll again. Your Core Aura and award history are preserved.</p><div className="learn-nav"><button disabled={action.busy} onClick={() => action.run(async call => { await call('/profile/path', 'DELETE', { domain: p.domain }); setConfirm(''); paths.refresh(); setMessage('Path reset. Your Aura history is unchanged.'); })}>Confirm path reset</button><button disabled={action.busy} onClick={() => setConfirm('')}>Cancel</button></div></div> : <button disabled={action.busy} onClick={() => { setMessage(''); setConfirm(p.domain); }}>Reset this path</button>}
+      </article>)}</section>
+    </>}{action.error && <p role="alert">{action.error}</p>}{message && <p role="status">{message}</p>}<p className="muted">Self-ratings never unlock topics or grant rewards. View your canonical Aura in <Link to="/leaderboard">the college leaderboard</Link>.</p>
+  </>;
+}

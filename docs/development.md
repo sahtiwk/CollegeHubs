@@ -16,7 +16,7 @@ Core alone requires `MONGO_URI`, `JWT_SECRET`, `ALLOWED_ORIGINS`. A replica set 
 
 The Vite and Pages gateways share one implementation: `/api/learn/*`, `/api/arcade/*` and `/api/interview/*` go to their configured services, other `/api/*` to Core. Feature UI routes and assets stay in Vite/Pages. Missing services fail JSON503, unknown APIs JSON404, and redirects/HTML responses are rejected. No caller chooses an upstream. Core sockets use the direct Core origin. P8.1 streams only the bounded resume upload; other request bodies retain the 64 KiB cap.
 
-Core validates settings and its own Mongo connection before listen. `/health/live` is process health; `/health/ready` and `/api/health` check Core's DB only. Learn validates service configuration before listen; `/health/ready` and `/api/learn/health/ready` check its own SQL session table with a bounded deadline. Optional service failures never participate in Core readiness.
+Core validates settings and its own Mongo connection before listen. `/health/live` is process health; `/health/ready` and `/api/health` check Core's DB only. Learn validates service configuration before listen; `/health/ready` and `/api/learn/health/ready` check its own current schema marker and required SQL tables with a bounded deadline. Optional service failures never participate in Core readiness.
 
 Arcade and Interview use their own Mongo database/user and distinct module service credentials. Set ENABLE_MODULES=learn,arcade,interview only when those services are configured. See [Interview contracts](interview.md) for resume privacy, startup, limits and safe stop. None of its retained P8.1 routes require an AI/cloud-storage/local-JWT key.
 
@@ -30,7 +30,7 @@ For Learn's **fresh disposable** database, use a name matching `collegehubs_demo
 node services/learn/scripts/setup_demo.ts --confirm=collegehubs_demo_learn_local --disposable-data-only
 ```
 
-Substitute the same explicit database name everywhere. The command refuses production mode, nonmatching/unnamed targets, missing confirmation and existing public tables. It installs only handoff/session tables, never drops data. Ordinary startup never seeds/resets. Remove operator reset flags after setup.
+Substitute the same explicit database name everywhere. The command refuses production mode, nonmatching/unnamed targets, missing confirmation and existing public tables. It installs the current P9.1 handoff/session and scoped learner/path/node/content/enrollment/state schema, never drops data. Existing session-only schemas require a separate fresh disposable database; this command does not migrate them. Ordinary startup never seeds/resets. Remove operator reset flags after setup.
 
 Core's inherited `reset:demo` remains separate and guarded. Stop writers, use only declared disposable data, and run `npm run reset:demo -w @collegehubs/core -- --database=collegehubs_demo_local --confirm=collegehubs_demo_local --disposable-data-only --dry-run` before any reset. It requires development/test, explicit allowlist/URI/name agreement and rejects unexpected collections, non-synthetic users or Google-linked accounts. It cannot reset the CVR preview fixture because that deliberately uses `cvr.ac.in`. Do not loosen its checks.
 
@@ -73,3 +73,8 @@ Core uses the anonymous Codeforces API with a persistent last-good cache and req
 ## P7.1 Arcade
 
 Configure `services/arcade/.env.example`, a separate replica-set database and explicitly scoped Core service credential; see [Arcade setup](arcade.md). The disposable `scripts/p32-fixture.cjs` starts Arcade on 5185 behind the shared 5182 gateway and runs its G1/G2/G3 checks with `guards`. `stop-arcade` / `start-arcade` verify service isolation; `stop-core` / `start-core` verify pending completion. `arcade-retry-due` changes only disposable pending retry timestamps for recovery verification. No production retry-bypass endpoint exists.
+
+
+## P9.1 Learn reading paths
+
+Learn now has saved DSA/Web enrollment, scoped roadmaps/readings, template guidance and learning preferences in the shared shell. Assessments and rewards remain P9.2-gated. No new API key is required. See [Learn setup and route inventory](learn.md) and [P9.1 verification status](p9.1-evidence.md). Start the integration fixture with `GUARD_LEARN_DATABASE_URL` pointing to the fresh current schema, then use its `guards` command for all services. Its earlier session-only database is not sufficient for current Learn readiness. The deployment installer is intended for an isolated build workspace, not an active development workspace.
