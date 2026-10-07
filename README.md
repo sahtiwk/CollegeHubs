@@ -1,10 +1,11 @@
 # CollegeHubs
 
-One npm monorepo, one React frontend, independently deployable Core, Arcade and Learn backends.
+One npm monorepo, one React frontend, independently deployable Core, Arcade, Interview and Learn backends.
 
 - `apps/web`: shared Vite SPA, Core shell/auth/theme and lazy Learn roadmap preview.
 - `services/core`: Express/MongoDB identity, Hub/feed and durable reward receipt foundation.
 - `services/arcade`: independent MongoDB sessions, three validated ranked games and durable completion delivery.
+- `services/interview`: independent MongoDB sessions and private text-only PDF resumes.
 - `services/learn`: Express/TypeScript/PostgreSQL session API and scoped synthetic graph.
 - `packages/contracts`: shared server credential contracts, no cross-service database access.
 - `legacy`: preserved imported projects/notices; excluded from active builds.
@@ -15,7 +16,7 @@ Use Node 24.12+ and `npm ci` at the root. Configure workspace `.env` files from 
 
 CVR's exact `cvr.ac.in` domain is active based on user confirmation. Provision explicitly with `npm run provision:hubs -w @collegehubs/core`; no startup reset runs. Unknown domains remain onboarding-only. The default palette remains plum/cream/peach/sky with Abril Fatface and Archivo.
 
-P0?P2 behavior is preserved. Learn currently demonstrates secure sessions and an integrated synthetic roadmap, not complete courses, progress, quizzes or rewards. NumberGuess, MathAmplitude and Sorting Complexity are active in P7.2 with canonical daily rewards; Interview remains a later phase. Local browser acceptance and hosted acceptance are recorded separately; deployment configuration is not proof of deployment.
+P0?P2 behavior is preserved. Learn currently demonstrates secure sessions and an integrated synthetic roadmap, not complete courses, progress, quizzes or rewards. NumberGuess, MathAmplitude and Sorting Complexity are active in P7.2 with canonical daily rewards. Interview P8.1 supports private PDF resume upload, review and deletion; question generation, evaluation and rewards remain P8.2 work. Local browser acceptance and hosted acceptance are recorded separately; deployment configuration is not proof of deployment.
 
 Historical evidence: [P0.1](docs/p0.1-evidence.md), [P0.2](docs/p0.2-evidence.md), [P1.1](docs/p1.1-evidence.md), [P1.2](docs/p1.2-evidence.md), [P2.1](docs/p2.1-evidence.md), [P2.2](docs/p2.2-evidence.md), [P3.1](docs/p3.1-evidence.md). Historical paths refer to their pre-migration locations. [Third-party notices](THIRD_PARTY.md) remain applicable.
 
@@ -28,3 +29,5 @@ P6.1 canonical native Aura, one shared activity day, and college ranking are com
 P7.1 integrates server-validated NumberGuess in the existing shell. See [Arcade setup and recovery](docs/arcade.md) and [P7.1 evidence](docs/p7.1-evidence.md).
 
 P7.2 completes the three ranked Arcade games and shared catalogue. See [P7.2 evidence](docs/p7.2-evidence.md). Other legacy games remain unavailable.
+
+P8.1 completes independent Interview sessions and private text-only PDF upload/review/delete in the shared shell. See [Interview setup](docs/interview.md) and [P8.1 evidence](docs/p8.1-evidence.md). Practice generation/evaluation remains P8.2.

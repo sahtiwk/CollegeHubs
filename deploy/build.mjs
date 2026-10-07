@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 const service = process.argv[2];
-if (!['core', 'arcade', 'learn'].includes(service)) throw new Error('Choose core, arcade or learn');
+if (!['core', 'arcade', 'learn', 'interview'].includes(service)) throw new Error('Choose core, arcade, learn or interview');
 const scope = ['--workspace', '@collegehubs/' + service, '--workspace', '@collegehubs/contracts', '--include-workspace-root=false'];
 function npm(args) {
   const result = spawnSync('npm', args, { stdio: 'inherit', shell: process.platform === 'win32' });

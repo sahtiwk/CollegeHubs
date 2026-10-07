@@ -232,6 +232,14 @@ select { display: block; width: 100%; min-height: 44px; padding: 10px; margin-to
 @media (max-width: 800px) { .schedule-layout { grid-template-columns: minmax(0, 1fr); } }
 
 .arcade-guess { display: flex; align-items: end; gap: 16px; }
+.interview-page { max-width: 1000px; }
+.interview-page h3 { overflow-wrap: anywhere; }
+.interview-drop { border: 2px dashed var(--border); border-radius: 12px; padding: 24px; background: var(--surface-raised); overflow-wrap: anywhere; }
+.interview-drop input { width: 100%; min-width: 0; }
+.interview-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.interview-text { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 420px; overflow: auto; background: var(--surface-raised); color: var(--text); padding: 16px; border-radius: 10px; font: inherit; }
+.interview-page .section-heading { flex-wrap: wrap; gap: 12px; }
+@media (max-width: 480px) { .interview-drop { padding: 16px; } .interview-actions button { flex: 1 1 auto; } }
 .arcade-guess label { flex: 1; min-width: 0; }
 .arcade-history { padding-left: 24px; overflow-wrap: anywhere; }
 .arcade-history li { padding: 8px 0; }

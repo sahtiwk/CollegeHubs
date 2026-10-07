@@ -1,0 +1,19 @@
+{
+  "name": "@collegehubs/interview",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node src/server.js",
+    "start": "node src/server.js",
+    "build": "node ../../scripts/check-interview.cjs"
+  },
+  "dependencies": {
+    "@collegehubs/contracts": "1.0.0",
+    "express": "^4.19.2",
+    "mongoose": "^8.10.0",
+    "dotenv": "^16.4.7",
+    "multer": "2.4.0",
+    "pdfjs-dist": "6.4.299"
+  }
+}

@@ -19,6 +19,9 @@
   },
   "include": [
     "src/features/arcade/**/*.ts",
-    "src/features/arcade/**/*.tsx"
+    "src/features/arcade/**/*.tsx",
+    "src/features/interview/**/*.ts",
+    "src/features/interview/**/*.tsx",
+    "functions/api/**/*.ts"
   ]
 }

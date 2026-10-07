@@ -7,15 +7,18 @@ Node 24.12+, npm workspaces, one root lock. Run `npm ci` at repository root. Leg
 | `apps/web` | 5173 | One React 18/Vite frontend |
 | `services/core` | 5000 | Express, own MongoDB database |
 | `services/arcade` | 5001 | Express, own MongoDB database |
+| `services/interview` | 5002 | Express, own MongoDB database and bounded PDF worker |
 | `services/learn` | 5003 | Express/TypeScript, own PostgreSQL database |
 
 Copy each workspace's `.env.example` to its private `.env`. Root's old environment files were preserved, but runtime loading is workspace-scoped. Only the public Google client ID was carried into `apps/web/.env.local`; API requests default to `/api`. No secret may have a `VITE_` prefix. Use one exact localhost origin consistently (default `http://localhost:5173`) for Core `APP_ORIGIN`/`ALLOWED_ORIGINS` and Learn `APP_ORIGIN`. Learn's `CORE_API_BASE_URL` is Core's direct origin. Secure cookies are mandatory on HTTPS/production; explicit nonproduction localhost uses HttpOnly/SameSite cookies without Secure.
 
 Core alone requires `MONGO_URI`, `JWT_SECRET`, `ALLOWED_ORIGINS`. A replica set is required for transactions. To enable Learn, add `ENABLE_MODULES=learn`, the RSA signing/public-key configuration and matching Learn settings from [deployment instructions](../deploy/README.md). Start only enabled services with root `npm run dev`. Or use `npm run dev -w @collegehubs/web`, `npm start -w @collegehubs/core`, and `npm run dev -w @collegehubs/learn` in separate terminals. No Docker installation is required.
 
-The Vite and Pages gateways share one implementation: `/api/learn/*` goes to Learn, reserved Arcade/Interview prefixes to their configured services, other `/api/*` to Core. UI `/learn/*` and assets stay in Vite/Pages. Missing services fail JSON503, unknown APIs JSON404, and redirects/HTML responses are rejected. No caller chooses an upstream. Future Core sockets use the direct Core origin; P3.2 does not implement sockets.
+The Vite and Pages gateways share one implementation: `/api/learn/*`, `/api/arcade/*` and `/api/interview/*` go to their configured services, other `/api/*` to Core. Feature UI routes and assets stay in Vite/Pages. Missing services fail JSON503, unknown APIs JSON404, and redirects/HTML responses are rejected. No caller chooses an upstream. Core sockets use the direct Core origin. P8.1 streams only the bounded resume upload; other request bodies retain the 64 KiB cap.
 
 Core validates settings and its own Mongo connection before listen. `/health/live` is process health; `/health/ready` and `/api/health` check Core's DB only. Learn validates service configuration before listen; `/health/ready` and `/api/learn/health/ready` check its own SQL session table with a bounded deadline. Optional service failures never participate in Core readiness.
+
+Arcade and Interview use their own Mongo database/user and distinct module service credentials. Set ENABLE_MODULES=learn,arcade,interview only when those services are configured. See [Interview contracts](interview.md) for resume privacy, startup, limits and safe stop. None of its retained P8.1 routes require an AI/cloud-storage/local-JWT key.
 
 ## Database setup
 
@@ -38,7 +41,7 @@ Core's inherited `reset:demo` remains separate and guarded. Stop writers, use on
 Only G1/G2/G3/G4 run with `npm run test:guards`. No environment file is loaded by guards. G3 requires `GUARD_MONGO_URI` pointing to an explicit disposable local replica set and creates/drops only its own random database. Real Learn guards require `GUARD_APP_ORIGIN` and `GUARD_LEARN_DATABASE_URL`, both local, against the isolated fixture below. Database skips are not a full pass.
 
 1. Install/start local PostgreSQL and create a fresh `collegehubs_demo_learn_<suffix>` DB. Bootstrap it with the guarded command above.
-2. Set `GUARD_LEARN_DATABASE_URL` to that local database and run `node scripts/p32-fixture.cjs` in an interactive terminal. It starts an ephemeral Mongo replica set and separate Core/Learn/frontend processes on 5183/5184/5182. mongodb-memory-server may download its pinned MongoDB binary on first use.
+2. Set `GUARD_LEARN_DATABASE_URL` to that local database and run `node scripts/p32-fixture.cjs` in an interactive terminal. It starts an ephemeral Mongo replica set and separate Core/Learn/Arcade/Interview/frontend processes on 5183/5184/5185/5186/5182. Interview and Arcade use distinct logical Mongo databases; the Interview child is explicitly stripped of retired provider/Core private configuration. mongodb-memory-server may download its pinned MongoDB binary on first use.
 3. At the fixture prompt, enter `guards` for all G1-G4 with real databases. Enter `stop-learn`, `start-learn`, or `expire-learn`, `db-down`, or `db-up` for failure/expiry checks; `quit` stops fixture processes/Mongo. PostgreSQL is operator-managed and is not dropped.
 4. Open `http://localhost:5182`. Synthetic fixture logins are `preview@cvr.ac.in` and `preview@sky.example.test`, password `Preview-only-32!`. They exist only in ephemeral local Mongo; never use them for hosted/retained data. CVR uses the requested palette, Sky the alternate fixture palette.
 5. Verify Core?Learn without document navigation, deep-link reload, Back/Forward, 360px Menu/focus/keyboard, accessible roadmap list, two accounts/themes, reconnect on expiry, and Core usability with Learn/API DB unavailable. Save actual screenshots/evidence in `docs/learn-spike.md`.

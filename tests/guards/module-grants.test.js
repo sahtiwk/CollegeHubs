@@ -86,6 +86,17 @@ test('G2: gateway preserves boundary headers/body/cookies and rejects redirect/o
   assert.equal((await proxyApi(new Request('https://app.example/api/arcade/session'), { LEARN_API_ORIGIN: 'https://learn.example' }, fake)).status, 503);
 });
 
+test('G2: only Interview PDF upload has a bounded streamed large-body allowance', async()=>{
+  const {proxyApi}=await import('../../apps/web/functions/api/[[path]].ts');
+  const env={INTERVIEW_API_ORIGIN:'https://interview.example',CORE_API_ORIGIN:'https://core.example'};
+  const make=(path,bytes)=>new Request('https://app.example'+path,{method:'POST',headers:{'Content-Type':'multipart/form-data; boundary=fixture',Cookie:'ch_interview_session=owned; ch_arcade_session=foreign; core=private',Authorization:'Bearer core-private'},body:bytes});
+  const fake=async(_url,options)=>{assert.equal(options.headers.get('cookie'),'ch_interview_session=owned');assert.equal(options.headers.get('authorization'),null);assert.ok(options.body instanceof ReadableStream);assert.equal((await new Response(options.body).arrayBuffer()).byteLength,70000);return new Response('{}',{headers:{'Content-Type':'application/json'}});};
+  assert.equal((await proxyApi(make('/api/interview/resumes/upload',new Uint8Array(70000)),env,fake)).status,200);
+  assert.equal((await proxyApi(make('/api/interview/resumes',new Uint8Array(70000)),env,fake)).status,413);
+  const consume=async(_url,options)=>{await new Response(options.body).arrayBuffer();return new Response('{}',{headers:{'Content-Type':'application/json'}});};
+  assert.equal((await proxyApi(make('/api/interview/resumes/upload',new Uint8Array(6*1024*1024)),env,consume)).status,413);
+});
+
 test('G2: Learn HTTP adapter is JSON-only, scoped and fail-closed', async () => {
   const { createApp: createLearnApp } = await import('../../services/learn/src/app.ts');
   const state = 's'.repeat(43);
@@ -449,5 +460,68 @@ test('G1/G2/G3: real Arcade handoff, owned game transitions and canonical receip
     assert.equal((await a.request(prefix+'/integration/reconcile',{method:'POST',body:{},csrf:session.csrfToken})).status,403);
     assert.equal((await a.request(prefix+'/logout',{method:'POST',csrf:session.csrfToken})).status,200);assert.equal((await a.request(prefix+'/session')).status,401);
     await db.collection('modulesessions').updateMany({user_id:other.user._id},{$set:{expires_at:new Date(0)}});assert.equal((await b.request(prefix+'/session')).status,401);
+  }finally{await db.close();}
+});
+
+test('G1/G2: independent Interview handoff, bounded text-only PDF and scoped resume references', {skip:!process.env.GUARD_INTERVIEW_MONGO_URI}, async()=>{
+  const {randomUUID}=require('node:crypto'),mongoose=require('mongoose'),{pdfFixture}=require('../../scripts/pdf-fixture.cjs');
+  const base=process.env.GUARD_APP_ORIGIN,uri=new URL(process.env.GUARD_INTERVIEW_MONGO_URI);
+  assert.ok(['localhost','127.0.0.1'].includes(uri.hostname));assert.equal(uri.pathname,'/collegehubs_demo_interview');
+  const db=await mongoose.createConnection(uri.toString()).asPromise();
+  function client(){const jar=new Map();return{jar,async call(path,{method='GET',body,token,csrf,origin=base}={}){const form=body instanceof FormData;const response=await fetch(base+path,{method,headers:{...(origin?{Origin:origin}:{}),...(body&&!form?{'Content-Type':'application/json'}:{}),...(token?{Authorization:'Bearer '+token}:{}),...(csrf?{'X-CSRF-Token':csrf}:{}),Cookie:[...jar].map(([k,v])=>k+'='+v).join('; ')},...(body?{body:form?body:JSON.stringify(body)}:{})});for(const value of response.headers.getSetCookie()){const [k,v]=value.split(';')[0].split('=');jar.set(k,v);}return{status:response.status,data:await response.json(),headers:response.headers};}};}
+  const owner=client(),peer=client(),foreign=client(),p='/api/interview';
+  async function bootstrap(c,core){const started=await c.call(p+'/auth/start',{method:'POST'});assert.equal(started.status,201);const state=started.data.state,grant=(await c.call('/api/auth/module-grants',{method:'POST',token:core.token,body:{module:'interview',state,returnPath:'/interview'}})).data;const body={module:'interview',state,grant:grant.grant};assert.equal((await c.call(p+'/auth/callback',{method:'POST',body,origin:'https://foreign.invalid'})).status,403);const done=await c.call(p+'/auth/callback',{method:'POST',body});assert.equal(done.status,200,JSON.stringify(done.data));assert.match(done.headers.get('set-cookie'),/Path=\/api\/interview/);assert.match(done.headers.get('set-cookie'),/HttpOnly/);c.jar.set('ch_interview_state',state);assert.equal((await c.call(p+'/auth/callback',{method:'POST',body})).status,409);return(await c.call(p+'/session')).data;}
+  function form(bytes=pdfFixture(),type='application/pdf',name='synthetic.pdf'){const data=new FormData();data.append('file',new Blob([bytes],{type}),name);return data;}
+  try{
+    const username='resume-'+randomUUID().slice(0,8),registered=await owner.call('/api/auth/register',{method:'POST',body:{username,email:username+'@cvr.ac.in',password:'Disposable-resume-81!'}});assert.equal(registered.status,201);const core=registered.data;
+    const peerCore=(await peer.call('/api/auth/login',{method:'POST',body:{email:'peer@cvr.ac.in',password:'Preview-only-32!'}})).data;
+    const foreignCore=(await foreign.call('/api/auth/login',{method:'POST',body:{email:'preview@sky.example.test',password:'Preview-only-32!'}})).data;
+    assert.equal((await owner.call(p+'/resumes',{token:core.token})).status,401);
+    const session=await bootstrap(owner,core),peerSession=await bootstrap(peer,peerCore),foreignSession=await bootstrap(foreign,foreignCore);
+    assert.equal(session.userId,core.user._id);assert.equal(session.hubId,core.user.hubId);assert.equal(session.theme.hubId,core.user.hubId);assert.equal(session.token,undefined);
+    const upload=body=>owner.call(p+'/resumes/upload',{method:'POST',body,csrf:session.csrfToken});
+    assert.equal((await owner.call(p+'/resumes/upload',{method:'POST',body:form(),csrf:'wrong'})).status,403);
+    assert.equal((await upload(form(Buffer.from('not PDF')))).status,400);
+    assert.equal((await upload(form(pdfFixture(),'application/msword','resume.doc'))).status,400);
+    assert.equal((await upload(form(pdfFixture('encrypted',{encrypted:true})))).data.error.code,'PDF_ENCRYPTED');
+    assert.equal((await upload(form(pdfFixture('')))).data.error.code,'PDF_EMPTY');
+    assert.equal((await upload(form(Buffer.from('%PDF-1.4\nbroken\n%%EOF')))).status,400);
+    assert.equal((await upload(form(pdfFixture('oversized',{padding:6*1024*1024})))).status,413);
+    const selectors=form();selectors.append('hubId',foreignCore.user.hubId);assert.equal((await upload(selectors)).status,400);
+    assert.equal((await owner.call(p+'/resumes')).data.items.length,0);
+    const uploaded=await upload(form(pdfFixture(undefined,{padding:70000})));assert.equal(uploaded.status,201,JSON.stringify(uploaded.data));const resume=uploaded.data.resume;
+    assert.equal(resume.storageDriver,'none');assert.equal(resume.fileUrl,null);assert.equal(resume.extractedText,undefined);assert.equal(resume.publicId,undefined);assert.equal(resume.buffer,undefined);
+    const path=p+'/resumes/'+resume.id,read=await owner.call(path);assert.match(read.data.resume.extractedText,/SYNTHETIC RESUME/);assert.equal(read.data.resume.storageDriver,'none');
+    assert.equal((await upload(form(pdfFixture(undefined,{padding:70000})))).data.resume.id,resume.id);
+    for(const [c,s]of [[peer,peerSession],[foreign,foreignSession]]){assert.equal((await c.call(path)).status,404);assert.equal((await c.call(path,{method:'DELETE',csrf:s.csrfToken})).status,404);assert.equal((await c.call(p+'/resumes')).data.items.length,0);}
+    assert.equal((await owner.call(p+'/resumes?hubId='+foreignCore.user.hubId)).status,400);
+    const draftBody={resumeId:resume.id,jobTitle:'Synthetic internship',jobDescription:'Fixture-only JavaScript role',questionTypes:['technical']};
+    assert.equal((await foreign.call(p+'/interviews',{method:'POST',csrf:foreignSession.csrfToken,body:draftBody})).status,404);
+    assert.equal((await peer.call(p+'/interviews',{method:'POST',csrf:peerSession.csrfToken,body:draftBody})).status,404);
+    const draft=await owner.call(p+'/interviews',{method:'POST',csrf:session.csrfToken,body:draftBody});assert.equal(draft.status,201);const draftPath=p+'/interviews/'+draft.data.interview.id;
+    assert.equal((await foreign.call(draftPath)).status,404);assert.equal((await peer.call(draftPath,{method:'DELETE',csrf:peerSession.csrfToken})).status,404);
+    assert.equal((await owner.call(draftPath+'/generate',{method:'POST',csrf:session.csrfToken,body:{}})).status,404);
+    for(const path of ['/auth/login','/admin','/jobs','/users','/sessions','/resumes/chunk-preview', '/resumes/'+resume.id+'/parse'])assert.equal((await owner.call(p+path,{method:'POST',csrf:session.csrfToken,body:{}})).status,404);
+    const stored=await db.collection('resumes').findOne({_id:new mongoose.Types.ObjectId(resume.id)});assert.equal(stored.userId,core.user._id);assert.equal(stored.hubId,core.user.hubId);assert.equal(stored.fileUrl,null);assert.equal(stored.publicId,undefined);assert.ok(!Object.values(stored).some(Buffer.isBuffer));
+    const Session=require('../../services/interview/src/models/Session.model')(db);
+    assert.throws(()=>new Session({userId:core.user._id,hubId:core.user.hubId,interviewId:draft.data.interview.id,extractedText:'Must not be copied'}));
+    const report=await Session.create({userId:core.user._id,hubId:core.user.hubId,interviewId:draft.data.interview.id,status:'completed',report:{summary:'Synthetic retained report',score:60}});
+    assert.equal((await owner.call(path,{method:'DELETE',csrf:session.csrfToken})).status,200);assert.equal((await owner.call(path)).status,404);assert.equal(await db.collection('resumes').countDocuments({_id:stored._id}),0);
+    const retained=(await owner.call(draftPath)).data.interview;assert.equal(retained.resumeId,null);assert.equal(retained.resumeUnavailable,true);assert.equal(retained.extractedText,undefined);
+    assert.equal((await owner.call(p+'/interviews',{method:'POST',csrf:session.csrfToken,body:draftBody})).status,404);
+    assert.equal((await Session.findById(report.id).lean()).report.summary,'Synthetic retained report');
+    const raced=(await upload(form(pdfFixture('SYNTHETIC race-only resume')))).data.resume;
+    const race=await Promise.all([owner.call(p+'/interviews',{method:'POST',csrf:session.csrfToken,body:{...draftBody,resumeId:raced.id}}),owner.call(p+'/resumes/'+raced.id,{method:'DELETE',csrf:session.csrfToken})]);
+    assert.equal(race[1].status,200);assert.ok([201,404].includes(race[0].status));
+    if(race[0].status===201){const fenced=(await owner.call(p+'/interviews/'+race[0].data.interview.id)).data.interview;assert.equal(fenced.resumeId,null);assert.equal(fenced.resumeUnavailable,true);}
+    assert.equal((await owner.call(p+'/resumes/'+raced.id)).status,404);
+    assert.equal((await owner.call('/api/me/aura',{token:core.token})).data.total,0);
+    assert.equal((await owner.call(p+'/logout',{method:'POST',csrf:session.csrfToken})).status,200);assert.equal((await owner.call(p+'/session')).status,401);
+    await db.collection('modulesessions').updateMany({user_id:foreignCore.user._id},{$set:{expires_at:new Date(0)}});assert.equal((await foreign.call(p+'/session')).status,401);
+    // Closing a separate Interview connection changes only its readiness, never Core's.
+    const app=require('../../services/interview/src/app').createApp({connection:db,models:{},config:{origin:base}});
+    const probe=app.listen(0,'127.0.0.1');await new Promise(resolve=>probe.once('listening',resolve));
+    const probeBase='http://127.0.0.1:'+probe.address().port;
+    try{assert.equal((await fetch(probeBase+'/health/ready')).status,200);await db.close();assert.equal((await fetch(probeBase+'/health/ready')).status,503);assert.equal((await fetch(probeBase+'/health/live')).status,200);assert.equal((await fetch(base+'/api/health')).status,200);}finally{await new Promise(resolve=>probe.close(resolve));}
   }finally{await db.close();}
 });

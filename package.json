@@ -21,7 +21,9 @@
     "dev:core": "npm run dev -w @collegehubs/core",
     "dev:arcade": "npm run dev -w @collegehubs/arcade",
     "dev:learn": "npm run dev -w @collegehubs/learn",
-    "build:arcade": "npm run build -w @collegehubs/arcade"
+    "build:arcade": "npm run build -w @collegehubs/arcade",
+    "build:interview": "npm run build -w @collegehubs/interview",
+    "dev:interview": "npm run dev -w @collegehubs/interview"
   },
   "devDependencies": {
     "mongodb-memory-server": "^10.4.1"

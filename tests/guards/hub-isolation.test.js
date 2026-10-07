@@ -1,6 +1,23 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
+test('G1: text-only PDF parsing rejects unsafe inputs and terminates bounded workers', async()=>{
+  const {inspectFile,parsePdf}=require('../../services/interview/src/services/fileStorage');
+  const {pdfFixture}=require('../../scripts/pdf-fixture.cjs');
+  const bytes=pdfFixture();const file={buffer:bytes,size:bytes.length,mimetype:'application/pdf',originalname:'synthetic.pdf'};
+  assert.equal(inspectFile(file).originalName,'synthetic.pdf');
+  for(const changed of [{mimetype:'application/msword'},{originalname:'resume.doc'},{buffer:Buffer.from('not a PDF'),size:9},{size:5*1024*1024+1}])assert.throws(()=>inspectFile({...file,...changed}));
+  const result=await parsePdf(bytes);assert.match(result.text,/SYNTHETIC RESUME/);assert.equal(result.pageCount,1);assert.equal(result.truncated,false);
+  await assert.rejects(parsePdf(pdfFixture('',{})),{code:'PDF_EMPTY'});
+  await assert.rejects(parsePdf(pdfFixture('Encrypted fixture',{encrypted:true})),{code:'PDF_ENCRYPTED'});
+  await assert.rejects(parsePdf(Buffer.from('%PDF-1.4\nbroken\n%%EOF')),{code:'PDF_INVALID'});
+  await assert.rejects(parsePdf(pdfFixture('Too many pages',{pages:21})),{code:'PDF_PAGE_LIMIT'});
+  const long=await parsePdf(pdfFixture('x'.repeat(10000)));assert.equal(long.text.length,8000);assert.equal(long.truncated,true);
+  await assert.rejects(parsePdf(bytes,{timeoutMs:100,workerPath:require('node:path').resolve(__dirname,'../../scripts/pdf-timeout-fixture.cjs')}),{code:'PDF_PARSE_TIMEOUT'});
+  const abort=new AbortController();abort.abort();await assert.rejects(parsePdf(bytes,{signal:abort.signal}),{code:'UPLOAD_CANCELLED'});
+  const activeAbort=new AbortController();const pending=parsePdf(bytes,{workerPath:require('node:path').resolve(__dirname,'../../scripts/pdf-timeout-fixture.cjs'),signal:activeAbort.signal});activeAbort.abort();await assert.rejects(pending,{code:'UPLOAD_CANCELLED'});
+});
+
 test('G1: study rooms hide foreign rooms, problems and participant work over HTTP', async () => {
   assert.ok(process.env.GUARD_APP_ORIGIN, 'Requires disposable integration fixture');
   const base = process.env.GUARD_APP_ORIGIN;

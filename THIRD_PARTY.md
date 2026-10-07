@@ -4,7 +4,7 @@ The imported applications remain in their legacy reference directories with thei
 
 ## CollegeHubs Interview / AI-Interviewer-main
 
-Source location: `legacy/AI-Interviewer-main/`. The original `legacy/AI-Interviewer-main/LICENSE` is retained. Its complete MIT notice follows verbatim:
+Source location: `legacy/AI-Interviewer-main/`. P8.1 adapts its Resume/Interview/Session models, candidate resume upload/list/detail/delete flow and `frontend/src/pages/resume/ResumesPage.jsx` controls into the standalone Interview service and shared web feature. Cloudinary, AI parsing, default-resume hooks, local auth/admin/jobs and duplicate navigation/state are removed from the active flow. The original `legacy/AI-Interviewer-main/LICENSE` is retained. Its complete MIT notice follows verbatim:
 
 ```text
 MIT License

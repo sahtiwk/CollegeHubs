@@ -594,6 +594,8 @@ Goal: reuse PDF → questions → saved answers → evaluation → report in the
 
 ### P8.1. Backend extraction, scoped identity and text-only PDF
 
+**Local status (2026-10-07): PASS.** Independent Interview service/A3 handoff/own Mongo readiness, Core-subject+Hub models and text-only resume API/UI are integrated. PDF-only 5 MiB uploads use a bounded worker, 20 pages/8,000 characters, explicit malformed/encrypted/empty/timeout errors and no original storage/URL. Owned transactional attachment/deletion, report text exclusion, retired-route404 and no retired provider keys are verified. The gateway streams only the bounded upload; the shared lazy feature uses existing login/shell/theme. Guards: 90 passed, zero failures/skips; all workspace builds and isolated Interview production build/parser pass. Manual mobile/two-theme/deep-link/upload/review/delete and Core/Interview outage checks pass. See [P8.1 evidence](docs/p8.1-evidence.md) and [Interview contracts](docs/interview.md). P8.2 remains pending; hosted verification is P11-gated.
+
 **Scope:** lean standalone API and upload/list/delete UI, no admin/jobs/local auth. **Prerequisite:** P3.2 and separate empty Interview DB. **Guards:** G1/G2. **Effort:** 2–3 days.
 
 1. Extract source backend to `services/interview/src/`; adapt `app.js`/`server.js` to A3 bootstrap and own Mongo readiness. Remove active local auth/admin/jobs/Redis/Adzuna/Interview socket startup and unsafe admin seed imports.
