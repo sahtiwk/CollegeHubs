@@ -1,33 +1,35 @@
 # CollegeHubs
 
-One npm monorepo, one React frontend, independently deployable Core, Arcade, Interview and Learn backends.
+One React app, one npm monorepo, four independently deployed backends.
 
-- `apps/web`: shared Vite SPA, Core shell/auth/theme and lazy Learn roadmap preview.
-- `services/core`: Express/MongoDB identity, Hub/feed and durable reward receipt foundation.
-- `services/arcade`: independent MongoDB sessions, three validated ranked games and durable completion delivery.
-- `services/interview`: independent MongoDB sessions, private PDF text, five-question Groq practice and durable report/Aura delivery.
-- `services/learn`: Express/TypeScript/PostgreSQL session API and scoped synthetic graph.
-- `packages/contracts`: shared server credential contracts, no cross-service database access.
-- `legacy`: preserved imported projects/notices; excluded from active builds.
+| Workspace | Released capability |
+|---|---|
+| `apps/web` | Shared Vite frontend, login, college theme and lazy feature routes |
+| `services/core` | College membership, feeds/channels, code/resources, Study Rooms, canonical Aura, college ranking and cached schedules |
+| `services/arcade` | NumberGuess, MathAmplitude and Sorting Complexity with server-validated results |
+| `services/interview` | Private PDF text, five-question Groq practice, saved answers and durable reports |
+| `services/learn` | Seeded DSA/Web roadmaps, readings, quizzes, unlocks and mastery rewards |
+| `packages/contracts` | Shared contracts; no cross-service database access |
+| `legacy` | Source references and notices; excluded from active builds |
 
-Use Node 24.12+ and `npm ci` at the root. Configure workspace `.env` files from their names-only examples, then `npm run dev`. Core needs a MongoDB replica set. Learn is started only when Core's `ENABLE_MODULES` includes `learn`; it needs its own PostgreSQL database and service configuration. The browser uses `/api`; it never connects to another UI application.
+Live demo: https://collegehubs.pages.dev. Pages serves the frontend/gateway; four Render Free APIs own their data in three restricted Atlas databases and one Neon database. Free services sleep and share quotas. This is an intermittent demo, not an always-on production guarantee. See [deployment evidence](docs/p11.1-evidence.md) and [release verification](docs/release-evidence.md).
 
-`npm run build` builds each active workspace. `npm run test:guards` runs G1-G4; full database checks require explicit disposable fixture inputs. See [development setup](docs/development.md), [free deployment](deploy/README.md), [migration record](docs/monorepo-migration.md), and [P3.2 acceptance status](docs/learn-spike.md).
+## Development
 
-CVR's exact `cvr.ac.in` domain is active based on user confirmation. Provision explicitly with `npm run provision:hubs -w @collegehubs/core`; no startup reset runs. Unknown domains remain onboarding-only. The default palette remains plum/cream/peach/sky with Abril Fatface and Archivo.
+Use Node 24.12+ and run `npm ci` from the repository root. Create/configure private workspace `.env` files using [configuration names](docs/development.md), [deployment instructions](deploy/README.md) and the service READMEs. Never commit credentials or give secrets a `VITE_` prefix. Existing local `.env` files should be preserved.
 
-P0?P2 behavior is preserved. Learn currently demonstrates secure sessions and an integrated synthetic roadmap, not complete courses, progress, quizzes or rewards. NumberGuess, MathAmplitude and Sorting Complexity are active in P7.2 with canonical daily rewards. Interview P8.2 integrates private PDF resumes, five frozen questions, saved answers, real Groq feedback and canonical Aura receipts. Local browser acceptance and hosted acceptance are recorded separately; deployment configuration is not proof of deployment.
+Run `npm run dev`; enable only configured modules in Core's `ENABLE_MODULES`. Core, Arcade and Interview need their own Mongo databases with replica-set transactions. Learn needs its own PostgreSQL database and the guarded schema setup. Ordinary startup never resets data. No legacy install or frontend is required.
 
-Historical evidence: [P0.1](docs/p0.1-evidence.md), [P0.2](docs/p0.2-evidence.md), [P1.1](docs/p1.1-evidence.md), [P1.2](docs/p1.2-evidence.md), [P2.1](docs/p2.1-evidence.md), [P2.2](docs/p2.2-evidence.md), [P3.1](docs/p3.1-evidence.md). Historical paths refer to their pre-migration locations. [Third-party notices](THIRD_PARTY.md) remain applicable.
+`npm run build` builds/checks all active workspaces. `npm run test:guards` requires the explicitly configured disposable database fixture for complete G1–G4 coverage; skips are not passes. Follow [demo instructions](docs/demo.md) for safe local acceptance.
 
-P4.1 durable text channels and socket recovery are complete locally. See [verification and API contracts](docs/p4.1-evidence.md). P4.2 code/resources, literal search and immutable answer threads are also complete locally; see [P4.2 evidence](docs/p4.2-evidence.md). Native Aura is active under P6.1 rules.
+## Release limits
 
-P5.1 Study Room lifecycle, private durable drafts, immutable deadlines and atomic closure are complete locally. See [backend contracts](docs/study-rooms.md) and [P5.1 evidence](docs/p5.1-evidence.md). P5.2 is also complete locally: shared-shell solving, comparison, permanent peer reviews and recoverable completion facts. See [P5.2 evidence](docs/p5.2-evidence.md).
+- Exact `cvr.ac.in` membership is enabled. Password registration does not verify mailbox ownership; Google sign-in is not enabled in the hosted slice. No institutional endorsement is implied.
+- Shared Aura is authoritative. External coding-platform bonuses, global rankings, Google Calendar export and other legacy games are not enabled.
+- Interview feedback and Learn assessments are practice heuristics. Core downtime can leave saved results with Aura pending until a due read or operator reconciliation.
+- P10.2 cross-feature progress polish and P10.1 weak-skill interview suggestions remain future work.
+- A shared gateway and shared physical Atlas cluster remain common failure points despite independent backend deployments.
 
-P6.1 canonical native Aura, one shared activity day, and college ranking are complete locally. See [scoring contracts](docs/aura.md) and [P6.1 evidence](docs/p6.1-evidence.md). P6.2 cached Codeforces schedules and scoped sample academic calendars are also complete locally; see [provider setup](docs/providers.md) and [verification](docs/p6.2-evidence.md).
+[Demo guide](docs/demo.md) · [Release evidence](docs/release-evidence.md) · [Rollback](docs/rollback.md) · [Source adaptation record](docs/source-document-updates.md) · [Third-party notices](THIRD_PARTY.md)
 
-P7.1 integrates server-validated NumberGuess in the existing shell. See [Arcade setup and recovery](docs/arcade.md) and [P7.1 evidence](docs/p7.1-evidence.md).
-
-P7.2 completes the three ranked Arcade games and shared catalogue. See [P7.2 evidence](docs/p7.2-evidence.md). Other legacy games remain unavailable.
-
-P8.1 completes independent Interview sessions and private text-only PDF upload/review/delete in the shared shell. See [Interview setup](docs/interview.md) and [P8.1 evidence](docs/p8.1-evidence.md). P8.2 adds the full practice journey; see [P8.2 evidence](docs/p8.2-evidence.md).
+Dated phase evidence under `docs/p*-evidence.md` preserves historical observations; newer release evidence supersedes old deployment/feature status claims without rewriting history.

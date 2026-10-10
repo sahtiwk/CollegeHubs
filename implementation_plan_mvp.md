@@ -48,7 +48,7 @@ Existing `docs/p0.1-evidence.md` through available `docs/p3.1-evidence.md` recor
 | P9.2 | **Local PASS (2026-10-08):** versioned DSA/Web assessments, server grading/unlocks, durable Core facts, 101 passing guards, shared-theme quiz/history and recovery evidence. See `docs/p9.2-evidence.md`. |
 | P10 | Future feature work; execute only the requested sub-phase. |
 | P11.1 | **Complete for the deployed password-login MVP (2026-10-10):** four Free Render APIs, Pages SPA/gateway, hosted module receipts and Core restart recovery; 101 local guards passed. See `docs/p11.1-evidence.md` for scope and limitations. |
-| P11.2 | Next: release demos and honest documentation. |
+| P11.2 | In progress (2026-10-11): release docs/About corrected, 101 guards passed, local four-client recovery and independent module-stop probes; remaining acceptance gates in `docs/release-evidence.md`. |
 
 **P9.2 is implemented and locally verified.** Browser access is restored; current Learn observations are recorded in `docs/p9.2-evidence.md`, while the historical P9.1 checklist retains any unperformed checks. Next feature development is P10.2 before P10.1; the Tier2 hosted release gate is P11.1/P11.2. Preserve migrated source and historical evidence; do not restart P0.
 
@@ -702,6 +702,8 @@ Goal: deploy the currently completed slice on free resources and demonstrate ind
 **Contract/outcome:** independently deployable current tier at zero configured paid spend. **Acceptance:** every released route/API/session/socket works; no secret in bundle; own DB failure readiness503, optional failure leaves Core ready; Core restart recovers room state; service-specific deployment does not require sibling restart. **Risk:** quota/cold-start/shared-cluster failure. **Done:** common definition and H gates, account-specific observations recorded.
 
 ### P11.2. Release demos and honest documentation
+
+**Execution status (2026-10-11): in progress.** Documentation and current build/regression checks are recorded in `docs/release-evidence.md`; exact four-browser C5 and the listed remaining release checks are not yet complete.
 
 **Scope:** Part C manual demos/security/small concurrency and G1–G4 only automation; no broad benchmark suite. **Prerequisite:** P11.1 for hosted claims. **Guards:** all applicable G1–G4. **Effort:** 1–2 days per exit.
 

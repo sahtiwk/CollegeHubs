@@ -1,6 +1,6 @@
 # Free staging deployment
 
-Status: P11.1 in progress. Render sign-in verified on 2026-10-10: Hobby workspace, no card on file, 0/750 free instance hours used, no services yet. No public deployment or URL verified. Local UI acceptance passed; hosted acceptance is still required before release. `cvr.ac.in` is the membership domain; use free `pages.dev` / `onrender.com` hostnames for hosting. See [deployment status and runbook](../docs/deployment.md) and [rollback](../docs/rollback.md).
+Status: P11.1 deployed password-login MVP verified on 2026-10-10: four Render Free APIs, Pages frontend/gateway, Atlas and Neon. See [dated deployment evidence](../docs/p11.1-evidence.md) and [P11.2 release verification](../docs/release-evidence.md). Use free provider hostnames; cvr.ac.in is the membership domain, not an assumed custom hosting domain. The steps below are a setup runbook, not instructions to recreate existing services.
 
 1. Sign into Cloudflare Pages, Render, Atlas and Neon with your own accounts/MFA. Select Free, without paid upgrades. Connect this repository when ready to publish. No friend's deployment or credentials are needed.
 2. Atlas: use a Free cluster with three separate logical databases and three database users, each restricted to its own database (Core, Arcade, Interview). Use TLS and restrict network access to service outbound ranges. Neon: create a Free project and a fresh database named `collegehubs_demo_learn_staging`, with Learn-only credentials. Do not use Render's expiring free PostgreSQL for retained data.

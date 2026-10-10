@@ -1,6 +1,6 @@
 # CollegeHubs Core API
 
-Run `npm install`, copy `.env.example` to `.env`, configure the values below, then run `npm run dev` (or `npm start`). Keep secrets out of source control. The legacy seed command is disabled; ordinary setup never deletes or seeds data.
+Run `npm ci` at the repository root, configure the private `services/core/.env` using the names below, then run `npm run dev:core` from the root. Keep secrets out of source control. The legacy seed command is disabled; ordinary setup never deletes or seeds data.
 
 ## Configuration
 
@@ -13,7 +13,7 @@ Run `npm install`, copy `.env.example` to `.env`, configure the values below, th
 - `CORE_ACCESS_TTL_SECONDS`: integer from 1 to 86400; defaults to 86400 (24 hours).
 - `GOOGLE_CLIENT_ID`: optional for password login; required for Google login, matching the UI's `VITE_GOOGLE_CLIENT_ID`.
 
-Examples contain names only. Configure real origins and secrets locally and in the deployment console.
+Configuration documentation contains names only. Configure real origins and secrets locally and in the deployment console.
 
 ## P0.1 behavior
 

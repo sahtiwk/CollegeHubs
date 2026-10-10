@@ -20,7 +20,10 @@ async function main() {
   const repl = await MongoMemoryReplSet.create({ binary: { version: '7.0.14' }, replSet: { count: 1 } });
   const keys = generateKeyPairSync('rsa', { modulusLength: 2048, publicKeyEncoding: { type: 'spki', format: 'pem' }, privateKeyEncoding: { type: 'pkcs8', format: 'pem' } });
   const origin = 'http://localhost:5182';
-  Object.assign(process.env, { JWT_SECRET: 'p32-local-disposable-core-secret', ALLOWED_ORIGINS: origin + ',http://127.0.0.1:5182', APP_ORIGIN: origin, ENABLE_MODULES: 'learn,arcade,interview', NODE_ENV: 'test',
+  // Optional four isolated browser-storage origins for the manual P11.2 Core rehearsal.
+  // Module handoff remains bound to the primary origin; these do not relax production CORS.
+  const fourBrowsers = process.env.P112_FOUR_BROWSERS === 'true';
+  Object.assign(process.env, { JWT_SECRET: 'p32-local-disposable-core-secret', ALLOWED_ORIGINS: origin + ',http://127.0.0.1:5182' + (fourBrowsers ? ',http://localhost:5187,http://127.0.0.1:5187' : ''), APP_ORIGIN: origin, ENABLE_MODULES: 'learn,arcade,interview', NODE_ENV: 'test',
     CORE_MODULE_PRIVATE_KEY: keys.privateKey, CORE_MODULE_KEY_ID: 'p32-key', CORE_MODULE_PUBLIC_KEYS: JSON.stringify({ 'p32-key': keys.publicKey }), MONGO_URI: repl.getUri('collegehubs_demo_p32') });
   mongoose.set('autoCreate', false).set('autoIndex', false);
   await mongoose.connect(process.env.MONGO_URI);
@@ -34,7 +37,7 @@ async function main() {
   await require('../services/core/services/scheduleService').seedCalendar();
   const second = await models.College.create({ name: 'Sky College · fixture', slug: 'p32-sky', status: 'active', timezone: 'Asia/Kolkata', themeTokens: { ...college.themeTokens, background: '#DFF7FF', surface: '#DFF7FF', surfaceRaised: '#F4ECD6', secondary: '#F4ECD6' }, domains: [{ normalizedDomain: 'sky.example.test', verifiedAt: new Date(), evidenceRef: 'synthetic fixture' }] });
   const secondHub = await provision.ensureHubForCollege(second.id);
-  for (const [username, email, hubId] of [['cvr-preview', 'preview@cvr.ac.in', hub.id], ['cvr-peer', 'peer@cvr.ac.in', hub.id], ['sky-preview', 'preview@sky.example.test', secondHub.id]]) await models.User.create({ username, email, password: 'Preview-only-32!', hubId, membershipStatus: 'active', membershipVersion: 1, onboardingComplete: true });
+  for (const [username, email, hubId] of [['cvr-preview', 'preview@cvr.ac.in', hub.id], ['cvr-peer', 'peer@cvr.ac.in', hub.id], ['sky-preview', 'preview@sky.example.test', secondHub.id], ...(fourBrowsers ? [['sky-peer', 'peer@sky.example.test', secondHub.id]] : [])]) await models.User.create({ username, email, password: 'Preview-only-32!', hubId, membershipStatus: 'active', membershipVersion: 1, onboardingComplete: true });
   const { opaque, digest } = require('../services/core/services/moduleTokenService');
   const serviceKey = 'p32learn.' + opaque(), learnReconcileKey=opaque(); await models.ServiceCredential.create({ service: 'learn', keyId: 'p32learn', keyHash: digest(serviceKey), eventTypes:['learn.quiz_completed','learn.node_mastered'] });
   const arcadeKey = 'p71arcade.' + opaque(), reconcileKey = opaque();
@@ -53,6 +56,7 @@ async function main() {
   let interview = child('services/interview', ['--require', '../../scripts/interview-ai-fixture.cjs', 'src/server.js'], interviewEnv);
 
   child('apps/web', ['../../node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '5182'], { CORE_API_ORIGIN: 'http://127.0.0.1:5183', LEARN_API_ORIGIN: 'http://127.0.0.1:5184', ARCADE_API_ORIGIN: 'http://127.0.0.1:5185', INTERVIEW_API_ORIGIN: 'http://127.0.0.1:5186', VITE_GOOGLE_CLIENT_ID: '', VITE_CORE_SOCKET_ORIGIN: 'http://localhost:5183' });
+  if (fourBrowsers) child('apps/web', ['../../node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '5187', '--strictPort'], { CORE_API_ORIGIN: 'http://127.0.0.1:5183', LEARN_API_ORIGIN: 'http://127.0.0.1:5184', ARCADE_API_ORIGIN: 'http://127.0.0.1:5185', INTERVIEW_API_ORIGIN: 'http://127.0.0.1:5186', VITE_GOOGLE_CLIENT_ID: '', VITE_CORE_SOCKET_ORIGIN: 'http://localhost:5183' });
   let guardRunning = false;
   async function guards() {
     if (guardRunning) { console.log("Guard run already in progress"); return; }
