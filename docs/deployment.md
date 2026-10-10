@@ -1,12 +1,16 @@
 # P11.1 deployment runbook
 
-Status: in progress, no hosted acceptance claimed. P11.2 starts after the checks below pass. P10 features remain separate development work.
+Status: P11.1 complete for the deployed password-login MVP slice (2026-10-10). P11.2 release demos remain next. See [P11.1 evidence](p11.1-evidence.md) for the exact hosted/local boundaries. P10 features remain separate development work.
 
 ## Account observations — 2026-10-10
 
-Render: authenticated in Sathwik's workspace, Hobby plan, no payment card, no services, 0/750 free instance hours used, 0/500 included pipeline minutes used. Render and Cloudflare Pages GitHub connections are verified: both list `sahtiwk/CollegeHubs` and open its deployment configuration. The private-repository lock is not an access error. No further GitHub authorization is needed. Core creation is prepared with Free compute; no service has been submitted. All four provider sign-ins are verified. Neon has an existing CollegeHubs project on Free in Singapore, with one `neondb` owned by `neondb_owner`; the dedicated staging database is not created. Atlas isolation verified on 2026-10-10: the three staging users authenticate, have database-wide readWrite on CoreDatabase1, ArcadeDatabase1 and InterviewDatabase1 respectively, can list/access collections in their own database, and are denied reads from both sibling databases. Verification used read-only probes and server-reported write privileges; actual writes/transactions are still pending. Evidence: ignored `.local/p11-evidence/atlas-access-check.json`. These are observations, not promises about future quotas.
+Render: four Free services are deployed in the existing Hobby workspace. The shared Cloudflare Pages app is live at https://collegehubs.pages.dev. All four direct API readiness probes returned HTTP 200 on 2026-10-10. Gateway readiness also passed: Core uses /api/health; modules use /api/{module}/health/ready. Protected sessions reject anonymous requests with 401; all three module handoff-start endpoints return 201 with Secure, HttpOnly, SameSite=Lax cookies. SPA module deep links return 200. These are smoke checks, not full feature acceptance.
 
-The origin repository is `https://github.com/sahtiwk/CollegeHubs.git`. Remote branch discovery returned no branches during preparation. Publish reviewed source before connecting a deployment branch. Never publish ignored credentials. Current local implementation baseline: `f9b55d3`; record the actual deployed commit separately after deployment.
+Interview's first deployment failed during startup. Its original logging did not preserve the precise error. Commit 79cb958 increases database selection timeout from 3s to 15s and adds sanitized startup-stage diagnostics. Render deployment dep-db54fv8ae00c739b8ubg succeeded, and its public readiness probe passed. The observed recovery is consistent with startup latency; the original exception cannot be proved retrospectively.
+
+Atlas isolation was verified: each staging user can access its own database (CoreDatabase1, ArcadeDatabase1 or InterviewDatabase1), and reads from both sibling databases are denied. Dedicated Neon role collegehubs_learn_staging and database collegehubs_demo_learn_staging were created; schema v2 and the DSA/Web curriculum were provisioned. Core's CVR hub and scoped module credentials were provisioned. Secrets remain in ignored local staging files and the appropriate Render service environments. Cloudflare contains public origins only and is configured to fail closed when its Functions allowance is exhausted.
+
+The origin repository is https://github.com/sahtiwk/CollegeHubs.git; main was pushed. Current application deployment commit: 79cb9585b25ba4bc5ad7cabc6deb7a10db1d62f6. Verified origins and smoke evidence are retained in ignored .local/deployment-origins.json and .local/p11-evidence/hosted-smoke.json. All four Render build-path filters now match render.yaml. Pages watches apps/web/*, packages/contracts/*, package.json and package-lock.json. Account usage, network restrictions, feature flows and restart evidence are recorded in the P11.1 evidence document. Initial account observation was Hobby with no payment card and 0/750 instance hours; it is not a current usage measurement.
 
 ## Deployment order
 
@@ -20,13 +24,13 @@ The origin repository is `https://github.com/sahtiwk/CollegeHubs.git`. Remote br
 8. Set Pages runtime variables `CORE_API_ORIGIN`, `LEARN_API_ORIGIN`, `ARCADE_API_ORIGIN`, `INTERVIEW_API_ORIGIN` to verified service origins. Build with `VITE_CORE_SOCKET_ORIGIN` equal to Core's origin. No service key, database URL, RSA private key or Groq key belongs in Pages or Vite variables. Configure Google sign-in only after both frontend and Core are configured for the hosted origin.
 9. Record assigned origins in ignored `.local/deployment-origins.json`, together with exact deployed commit and provider deployment IDs. Copy `deploy/origins.example.json` only when no record exists. Do not invent URLs or mark status deployed before checking readiness.
 
-## Hosted exit checks — all pending
+## Exit-check evidence
 
-- Every API `/health/ready` passes using its own database; unavailable own database returns 503. An optional module failure leaves Core ready.
-- SPA deep links and assets work; `/api` routes reach the correct independent backend; secure cookies, Origin and CSRF checks work on the actual Pages origin.
-- Sign-in, module bootstrap, Interview PDF upload/real Groq evaluation, Learn assessment and Arcade result deliver rewards exactly once. Verify Linux PDF dependencies on Render.
-- Direct authenticated Socket.IO connects to Core; Core restart recovers rooms. No legacy frontend/runtime traffic is required.
-- Redeploy or stop one module and confirm Core stays available. Record cold-start behavior and ensure expired grants are not replayed.
-- Confirm free plans, actual usage, deploy commit, and no secrets in frontend output. Record evidence before declaring P11.1 complete.
+- Hosted: all four readiness endpoints, gateway routing, protected session boundaries, secure cookies, Origin/CSRF rejection, replay rejection, password login, module handoffs and UI deep links passed.
+- Hosted: synthetic PDF extraction and real Groq generation/evaluation passed. NumberGuess and Learn checkpoint completion produced settled Core receipts; ledger counts were exactly one per tested event.
+- Hosted: authenticated direct WebSocket joined a channel and recovered the acknowledged Study Room draft after a real Core restart. The deadline worker subsequently closed the room and delivered its contribution reward.
+- Hosted: Interview redeployed independently in 54.9 seconds while eight Core readiness samples remained HTTP 200. An interrupted generation recovered after redeployment.
+- Local: the full isolated fixture passed 101 guards with zero skips. Disconnect probes returned 503 for Core/Arcade/Interview. Taking only the disposable Learn database offline returned Learn 503 while its siblings stayed 200; the database was restored afterward. Hosted databases were not deliberately disabled.
+- Provider configuration: Free plans retained; Render reported $0 accrued/projected charges. Atlas now permits the two Render Oregon outbound ranges and the current development /32 only. Cloudflare fail-closed configuration was verified without deliberately exhausting quota.
 
 See [rollback](rollback.md) before redeploying a version with active user data. P11.2 records the release demos after these prerequisites are satisfied.

@@ -1,6 +1,6 @@
 # Staging rollback
 
-Status: procedure prepared; no hosted deployment or rollback has been performed. There is currently no verified previous hosted artifact.
+Status: deployed artifacts and restart/redeploy recovery verified on 2026-10-10. A rollback itself has not been executed. Interview has two successful deployments of commit 79cb958; retain dep-db54fv8ae00c739b8ubg as the prior compatible artifact. Its initial cd1d5c1 deployment failed and is not a rollback target. Pages production 611dc87b-4081-4bdd-9584-00e1771c0f98 uses 79cb958. The initial Pages artifact lacked final environment configuration and is not a verified functional rollback target.
 
 Before each release, record each service's commit, deployment ID, configuration names (never secret values), database/schema version, seed version, and active immutable reward rules in the ignored deployment record. Retain the previous compatible commit and provider deployment. Confirm the provider's current free dashboard supports the intended operation; do not assume paid shell access.
 

@@ -46,7 +46,9 @@ Existing `docs/p0.1-evidence.md` through available `docs/p3.1-evidence.md` recor
 | P8.1-P8.2 | **Local PASS:** independent Interview resume and practice/report journeys; real Groq Free and canonical receipt evidence. See `docs/p8.1-evidence.md` and `docs/p8.2-evidence.md`. |
 | P9.1 | **Implemented; automated/API checks PASS (2026-10-07), browser acceptance pending.** Scoped SQL/API extraction, integrated learner pages and fresh-schema proof. Browser tool policy verification prevented visual checks. See `docs/p9.1-evidence.md`. |
 | P9.2 | **Local PASS (2026-10-08):** versioned DSA/Web assessments, server grading/unlocks, durable Core facts, 101 passing guards, shared-theme quiz/history and recovery evidence. See `docs/p9.2-evidence.md`. |
-| P10-P11 | Future; execute only the requested sub-phase. |
+| P10 | Future feature work; execute only the requested sub-phase. |
+| P11.1 | **Complete for the deployed password-login MVP (2026-10-10):** four Free Render APIs, Pages SPA/gateway, hosted module receipts and Core restart recovery; 101 local guards passed. See `docs/p11.1-evidence.md` for scope and limitations. |
+| P11.2 | Next: release demos and honest documentation. |
 
 **P9.2 is implemented and locally verified.** Browser access is restored; current Learn observations are recorded in `docs/p9.2-evidence.md`, while the historical P9.1 checklist retains any unperformed checks. Next feature development is P10.2 before P10.1; the Tier2 hosted release gate is P11.1/P11.2. Preserve migrated source and historical evidence; do not restart P0.
 
@@ -685,6 +687,8 @@ Goal: richer integrated views after the actual modules work. Entry: participatin
 Goal: deploy the currently completed slice on free resources and demonstrate independent backend operation. Run at Tier 1 exit and for each Tier 2 release, not after optional P10. Read H and Part C. Human: account OAuth/MFA/repository access, secure key entry, free-plan/budget verification and demo review. Safe stop: rollback a compatible artifact or disable a feature while retaining data. Trace: all applicable requirements.
 
 ### P11.1. Free deployment, configuration and readiness
+
+**Execution status (2026-10-10): complete for the password-login MVP slice.** Evidence: `docs/p11.1-evidence.md`. Google OAuth is not enabled or claimed; P11.2 broader release demos remain separate.
 
 **Scope:** one SPA/gateway plus released independent APIs/DBs; no paid services or CI platform. **Prerequisite:** local acceptance for current slice and account cost gate. **Guards:** G1/G2 regression; G4 when rooms exist. **Effort:** 1–2 days per exit plus account delays.
 
