@@ -26,3 +26,7 @@ Reuse existing Core RSA signing configuration and each module's pinned Core publ
 Local service `.env` files have generated matching read keys. The disposable fixture uses its own throwaway keys and ports. Hosted Render activation requires these six private key settings (three on Core and one per module) and three Core API origins; keep credentials out of the frontend and Git. This phase's local verification is not evidence of hosted activation.
 
 Safe stop: remove a Core read key to disable its widget reads, or roll back the optional progress UI. No migration or data rollback is required. Existing module flows, login, Aura and shared streak remain authoritative.
+
+## Hosted follow-up — 2026-10-11
+
+Read credentials are now saved in Render and the P10.1/P10.2 release is live. Hosted counts, topic import, replay rejection and real Groq generation passed. See [hosted evidence](p10-hosted-evidence.md); earlier local-only rollout notes above describe the pre-deployment state.

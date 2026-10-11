@@ -33,7 +33,7 @@ export default function AboutPage() {
       <h2>About this free demo</h2>
       <p>Services may sleep between visits. Startup can take time; if a request fails, reconnect or retry. A saved result may show Aura pending until delivery recovers. Availability is subject to free hosting and AI quotas.</p>
       <p>Password registration checks the exact cvr.ac.in email domain but does not verify mailbox ownership. Google sign-in is not enabled in this deployment. College branding does not imply official college endorsement.</p>
-      <p>Save Study drafts and Interview answers before leaving. Recovery covers acknowledged saves, not unsent text. Progress summaries across modules and weak-skill interview suggestions remain planned.</p>
+      <p>Save Study drafts and Interview answers before leaving. Recovery covers acknowledged saves, not unsent text. Progress summaries may be temporarily unavailable while services wake up. Learn-based Interview topics are optional practice suggestions, not a calibrated assessment.</p>
     </aside>
     <h2>Source acknowledgements</h2>
     <p>Built from SocialStream, Digital Arcade, AI Interviewer and MargaAI source integrations. Original SocialStream credits include Shaik Safiullah Sahil Hussain and Anugu Samhith Reddy; AI Interviewer credits Aftab Alam and Contributors. Source notices and adaptation records are retained in the repository. Linked readings retain their publishers’ attribution.</p>

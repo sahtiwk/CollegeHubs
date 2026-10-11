@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-11T05:29:58.555Z",
+  "progress": {
+    "schemaVersion": 1,
+    "asOf": "2026-10-11T05:30:13.268Z",
+    "modules": {
+      "arcade": {
+        "status": "ok",
+        "asOf": "2026-10-11T05:30:12.820Z",
+        "completedGames": 1,
+        "wins": 1,
+        "pending": 0
+      },
+      "interview": {
+        "status": "ok",
+        "asOf": "2026-10-11T05:30:13.123Z",
+        "completedInterviews": 2,
+        "pending": 0
+      },
+      "learn": {
+        "status": "ok",
+        "asOf": "2026-10-11T05:30:13.255Z",
+        "enrollments": 1,
+        "completedNodes": 1,
+        "completedQuizzes": 2,
+        "pending": 0
+      }
+    }
+  },
+  "topicLabels": [
+    "Iteration & traversal"
+  ],
+  "questions": [
+    "Can you explain how you would implement a simple for-loop to iterate over an array of numbers and calculate their sum in JavaScript?",
+    "What is the difference between a for-loop and a forEach method when traversing an array, and when might you choose one over the other?",
+    "How would you use the map function to transform an array of objects into an array of a specific property, such as extracting all user IDs?",
+    "Describe a scenario where you would need to use a while-loop instead of a for-loop for iterating over data. Provide a brief code example.",
+    "In the context of React, how would you iterate over a list of items to render them as components, and what key property is essential for each item?"
+  ],
+  "replayRejected": true
+}

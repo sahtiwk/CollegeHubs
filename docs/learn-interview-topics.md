@@ -24,3 +24,7 @@ The actual AI generation call includes saved labels/versions in its bounded JSON
 No new provider account or API key is needed beyond existing Groq and P10.2 read configuration. Core must enable Learn and Interview; missing Learn read credentials disable suggestions without disabling ordinary Interview creation. All environments still need the existing public-key and service-credential bindings. New collection indexes are created by the existing Core startup path.
 
 Local implementation and provider evidence do not imply hosted activation. P10.2 and P10.1 commits must be rolled out with the new Render read settings and verified before live suggestions are claimed. Safe stop: remove the optional picker or disable the Learn read configuration; leave ordinary Interview paths and existing saved work intact. Generated questions remain immutable.
+
+## Hosted follow-up — 2026-10-11
+
+Read credentials are now saved in Render and the P10.1/P10.2 release is live. Hosted counts, topic import, replay rejection and real Groq generation passed. See [hosted evidence](p10-hosted-evidence.md); earlier local-only rollout notes above describe the pre-deployment state.

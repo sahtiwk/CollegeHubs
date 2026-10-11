@@ -50,7 +50,7 @@ Existing `docs/p0.1-evidence.md` through available `docs/p3.1-evidence.md` recor
 | P11.1 | **Complete for the deployed password-login MVP (2026-10-10):** four Free Render APIs, Pages SPA/gateway, hosted module receipts and Core restart recovery; 101 local guards passed. See `docs/p11.1-evidence.md` for scope and limitations. |
 | P11.2 | **Complete for the password-login MVP (2026-10-11):** release docs/About live, 101 guards passed, four isolated browser sessions/two rooms recovered and closed once; scoped evidence and limits in `docs/release-evidence.md`. |
 
-**P9.2 is implemented and locally verified.** Browser access is restored; current Learn observations are recorded in `docs/p9.2-evidence.md`, while the historical P9.1 checklist retains any unperformed checks. P10.2 is now implemented and locally verified; see `docs/p10.2-evidence.md`. Its new hosted read credentials are not activated yet. P10.1 is also implemented and locally verified; next is the hosted rollout and acceptance for both P10 phases; P11.1/P11.2 retain their existing scoped hosted evidence. Preserve migrated source and historical evidence; do not restart P0.
+**P9.2 is implemented and locally verified.** Browser access is restored; current Learn observations are recorded in `docs/p9.2-evidence.md`, while the historical P9.1 checklist retains any unperformed checks. P10.2 and P10.1 are implemented and verified locally and on the free hosted deployment, with scoped read credentials activated. See `docs/p10-hosted-evidence.md` for the hosted counts, one-use topic import and real Groq result; P11.1/P11.2 retain their existing scoped hosted evidence. Preserve migrated source and historical evidence; do not restart P0.
 
 ## Tier map
 
@@ -662,7 +662,7 @@ Goal: richer integrated views after the actual modules work. Entry: participatin
 
 ### P10.2. Progress beside Aura and deeper visual parity — Tier 3a
 
-**Execution status (2026-10-11): implemented and locally verified.** See `docs/p10.2-evidence.md` and `docs/module-progress.md`. Hosted activation of the new read credentials remains a separate rollout step; no new hosted acceptance is claimed.
+**Execution status (2026-10-11): implemented and locally verified.** See `docs/p10.2-evidence.md` and `docs/module-progress.md`. Hosted read credentials and all three progress summaries are verified; see `docs/p10-hosted-evidence.md`.
 
 **Scope:** owned summary widgets, shared streak display and graph/chart polish; basic integration is already required. **Prerequisite:** P6.2 and participating P7/P8/P9 releases. **Guards:** G1/G2/G3. **Effort:** 1–2 days.
 
@@ -675,7 +675,7 @@ Goal: richer integrated views after the actual modules work. Entry: participatin
 
 ### P10.1. Opt-in Learn topics for Interview — Tier 3b
 
-**Execution status (2026-10-11): implemented and locally verified after explicit user activation.** 108 guards pass; real Groq topic influence and browser selection/import verified. See `docs/p10.1-evidence.md`. Hosted rollout of P10.2/P10.1 and their read credentials remains pending.
+**Execution status (2026-10-11): implemented and locally verified after explicit user activation.** 108 guards pass; real Groq topic influence and browser selection/import verified. See `docs/p10.1-evidence.md`. Hosted rollout, owned topic import, replay rejection and real Groq generation are verified; see `docs/p10-hosted-evidence.md`.
 
 **Scope:** simple recent assessed-node suggestions, at most five chosen topics; no calibrated prediction. **Prerequisite:** P10.2/P9.2/P8.2 and explicit stretch activation. **Guards:** G1/G2. **Effort:** 1–2 days.
 
