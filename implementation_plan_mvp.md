@@ -48,7 +48,7 @@ Existing `docs/p0.1-evidence.md` through available `docs/p3.1-evidence.md` recor
 | P9.2 | **Local PASS (2026-10-08):** versioned DSA/Web assessments, server grading/unlocks, durable Core facts, 101 passing guards, shared-theme quiz/history and recovery evidence. See `docs/p9.2-evidence.md`. |
 | P10 | Future feature work; execute only the requested sub-phase. |
 | P11.1 | **Complete for the deployed password-login MVP (2026-10-10):** four Free Render APIs, Pages SPA/gateway, hosted module receipts and Core restart recovery; 101 local guards passed. See `docs/p11.1-evidence.md` for scope and limitations. |
-| P11.2 | In progress (2026-10-11): release docs/About corrected, 101 guards passed, local four-client recovery and independent module-stop probes; remaining acceptance gates in `docs/release-evidence.md`. |
+| P11.2 | **Complete for the password-login MVP (2026-10-11):** release docs/About live, 101 guards passed, four isolated browser sessions/two rooms recovered and closed once; scoped evidence and limits in `docs/release-evidence.md`. |
 
 **P9.2 is implemented and locally verified.** Browser access is restored; current Learn observations are recorded in `docs/p9.2-evidence.md`, while the historical P9.1 checklist retains any unperformed checks. Next feature development is P10.2 before P10.1; the Tier2 hosted release gate is P11.1/P11.2. Preserve migrated source and historical evidence; do not restart P0.
 
@@ -703,7 +703,7 @@ Goal: deploy the currently completed slice on free resources and demonstrate ind
 
 ### P11.2. Release demos and honest documentation
 
-**Execution status (2026-10-11): in progress.** Documentation and current build/regression checks are recorded in `docs/release-evidence.md`; exact four-browser C5 and the listed remaining release checks are not yet complete.
+**Execution status (2026-10-11): complete for the password-login MVP release package.** See `docs/release-evidence.md` for the six-demo traceability, local four-browser/two-room closure, hosted versus local scope, 101 passing guards, publication and explicitly excluded/deferred claims. Optional P10 work remains separate.
 
 **Scope:** Part C manual demos/security/small concurrency and G1–G4 only automation; no broad benchmark suite. **Prerequisite:** P11.1 for hosted claims. **Guards:** all applicable G1–G4. **Effort:** 1–2 days per exit.
 
