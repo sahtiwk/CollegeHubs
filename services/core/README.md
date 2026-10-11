@@ -85,3 +85,7 @@ Four new models are indexed before listening and included in guarded disposable 
 P4.2 adds typed channel messages, scoped literal search, question threads and immutable answer acceptance. Native contribution facts are committed with domain writes; no live scoring is enabled. See [P4.2 contracts and transaction seam](../../docs/p4.2-evidence.md).
 
 P5.1 adds `/api/study-rooms`, the `study:*` socket handlers, Hub-local problem snapshots and revisioned private solutions. DB-time write fences serialize saves against atomic deadline closure. Startup and one-second scans recover due work. Set `STUDY_ROOMS_ENABLED=false` to stop only new room creation. P5.2 now supplies the Study Room UI, participant-only immutable reviews and stable pending completion facts. Due/startup/owned reads reconcile facts without enabling live Aura scoring. See [contracts, limits and recovery](../../docs/study-rooms.md).
+
+## Optional progress summaries (P10.2)
+
+See [the read contract and private configuration](../../docs/module-progress.md). Configure each module API origin and its separate read key on Core. Missing read configuration leaves optional dashboard progress unavailable; it does not disable ordinary module use.

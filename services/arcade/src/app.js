@@ -20,6 +20,7 @@ function createApp({connection,models,config,fetcher=fetch}){
     }catch(error){next(error);}
   });
   app.use('/api/arcade',require('./auth/sessionRoutes').sessionRoutes(config,store));
+  app.get('/api/arcade/integration/summary', require('./routes/summary')(models.GameSession, config));
   app.use('/api/arcade/integration',require('./routes/integration').integrationRoutes(models.GameSession,events,config));
   app.use('/api/arcade',require('./routes/gameSessions').gameRoutes(store,games,events));
   app.use((_req,res)=>res.status(404).json({error:{code:'ARCADE_ROUTE_NOT_FOUND',retryable:false}}));

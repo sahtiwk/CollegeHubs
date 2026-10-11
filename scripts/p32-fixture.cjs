@@ -45,14 +45,15 @@ async function main() {
   const arcadeUri = repl.getUri('collegehubs_demo_arcade');
   const interviewUri = repl.getUri('collegehubs_demo_interview'), interviewKey = 'p81interview.' + opaque(), interviewReconcileKey = opaque();
   await models.ServiceCredential.create({ service: 'interview', keyId: 'p81interview', keyHash: digest(interviewKey), eventTypes: ['interview.completed'] });
+  for (const [name, port] of [['learn',5184],['arcade',5185],['interview',5186]]) { process.env[name.toUpperCase()+'_READ_KEY'] = opaque(); process.env[name.toUpperCase()+'_API_ORIGIN'] = 'http://127.0.0.1:'+port; }
   const children = [];
-  function child(cwd, args, env) { const childEnv = { ...process.env, ...env }; if (cwd === 'services/interview') for (const key of ['JWT_SECRET','MONGO_URI','CORE_MODULE_PRIVATE_KEY','DATABASE_URL','REDIS_URL','CLOUDINARY_URL','CLOUDINARY_CLOUD_NAME','CLOUDINARY_API_KEY','CLOUDINARY_API_SECRET','OPENAI_API_KEY','GROQ_API_KEY','ADZUNA_APP_ID','ADZUNA_API_KEY']) delete childEnv[key]; const proc = spawn(process.execPath, args, { cwd: resolve(root, cwd), env: childEnv, stdio: ['ignore', 'inherit', 'inherit'] }); children.push(proc); return proc; }
+  function child(cwd, args, env) { const childEnv = { ...process.env, ...env }; if (cwd !== 'services/core') for (const name of ['LEARN_READ_KEY','ARCADE_READ_KEY','INTERVIEW_READ_KEY']) delete childEnv[name]; if (cwd === 'services/interview') for (const key of ['JWT_SECRET','MONGO_URI','CORE_MODULE_PRIVATE_KEY','DATABASE_URL','REDIS_URL','CLOUDINARY_URL','CLOUDINARY_CLOUD_NAME','CLOUDINARY_API_KEY','CLOUDINARY_API_SECRET','OPENAI_API_KEY','GROQ_API_KEY','ADZUNA_APP_ID','ADZUNA_API_KEY']) delete childEnv[key]; const proc = spawn(process.execPath, args, { cwd: resolve(root, cwd), env: childEnv, stdio: ['ignore', 'inherit', 'inherit'] }); children.push(proc); return proc; }
   let core = child('services/core', ['index.js'], { PORT: '5183' });
-  const learnEnv = { PORT: '5184', DATABASE_URL: url.toString(), CORE_PUBLIC_KEY: keys.publicKey, CORE_KEY_ID: 'p32-key', CORE_TOKEN_ISSUER: 'collegehubs-core', CORE_TOKEN_AUDIENCE: 'collegehubs-learn', CORE_API_BASE_URL: 'http://127.0.0.1:5183', CORE_SERVICE_KEY: serviceKey, LEARN_RECONCILE_KEY:learnReconcileKey, GEMINI_API_KEY:'',YOUTUBE_API_KEY:'',LEARN_RESOURCE_LOOKUP_ENABLED:'false' };
+  const learnEnv = { MODULE_READ_KEY: process.env.LEARN_READ_KEY, PORT: '5184', DATABASE_URL: url.toString(), CORE_PUBLIC_KEY: keys.publicKey, CORE_KEY_ID: 'p32-key', CORE_TOKEN_ISSUER: 'collegehubs-core', CORE_TOKEN_AUDIENCE: 'collegehubs-learn', CORE_API_BASE_URL: 'http://127.0.0.1:5183', CORE_SERVICE_KEY: serviceKey, LEARN_RECONCILE_KEY:learnReconcileKey, GEMINI_API_KEY:'',YOUTUBE_API_KEY:'',LEARN_RESOURCE_LOOKUP_ENABLED:'false' };
   let learn = child('services/learn', ['dist/server.js'], learnEnv);
-  const arcadeEnv = { PORT: '5185', ARCADE_MONGO_URI: arcadeUri, CORE_PUBLIC_KEY: keys.publicKey, CORE_KEY_ID: 'p32-key', CORE_TOKEN_ISSUER: 'collegehubs-core', CORE_TOKEN_AUDIENCE: 'collegehubs-arcade', CORE_API_BASE_URL: 'http://127.0.0.1:5183', CORE_SERVICE_KEY: arcadeKey, ARCADE_RECONCILE_KEY: reconcileKey };
+  const arcadeEnv = { MODULE_READ_KEY: process.env.ARCADE_READ_KEY, PORT: '5185', ARCADE_MONGO_URI: arcadeUri, CORE_PUBLIC_KEY: keys.publicKey, CORE_KEY_ID: 'p32-key', CORE_TOKEN_ISSUER: 'collegehubs-core', CORE_TOKEN_AUDIENCE: 'collegehubs-arcade', CORE_API_BASE_URL: 'http://127.0.0.1:5183', CORE_SERVICE_KEY: arcadeKey, ARCADE_RECONCILE_KEY: reconcileKey };
   let arcade = child('services/arcade', ['src/server.js'], arcadeEnv);
-  const interviewEnv = { PORT: '5186', INTERVIEW_MONGO_URI: interviewUri, CORE_PUBLIC_KEY: keys.publicKey, CORE_KEY_ID: 'p32-key', CORE_TOKEN_ISSUER: 'collegehubs-core', CORE_TOKEN_AUDIENCE: 'collegehubs-interview', CORE_API_BASE_URL: 'http://127.0.0.1:5183', CORE_SERVICE_KEY: interviewKey, INTERVIEW_RECONCILE_KEY: interviewReconcileKey };
+  const interviewEnv = { MODULE_READ_KEY: process.env.INTERVIEW_READ_KEY, PORT: '5186', INTERVIEW_MONGO_URI: interviewUri, CORE_PUBLIC_KEY: keys.publicKey, CORE_KEY_ID: 'p32-key', CORE_TOKEN_ISSUER: 'collegehubs-core', CORE_TOKEN_AUDIENCE: 'collegehubs-interview', CORE_API_BASE_URL: 'http://127.0.0.1:5183', CORE_SERVICE_KEY: interviewKey, INTERVIEW_RECONCILE_KEY: interviewReconcileKey };
   let interview = child('services/interview', ['--require', '../../scripts/interview-ai-fixture.cjs', 'src/server.js'], interviewEnv);
 
   child('apps/web', ['../../node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '5182'], { CORE_API_ORIGIN: 'http://127.0.0.1:5183', LEARN_API_ORIGIN: 'http://127.0.0.1:5184', ARCADE_API_ORIGIN: 'http://127.0.0.1:5185', INTERVIEW_API_ORIGIN: 'http://127.0.0.1:5186', VITE_GOOGLE_CLIENT_ID: '', VITE_CORE_SOCKET_ORIGIN: 'http://localhost:5183' });
@@ -61,6 +62,16 @@ async function main() {
   async function guards() {
     if (guardRunning) { console.log("Guard run already in progress"); return; }
     guardRunning = true;
+    try {
+      for (const port of [5183,5184,5185,5186]) {
+        const deadline = Date.now() + 15000;
+        for (;;) {
+          try { if ((await fetch('http://127.0.0.1:' + port + '/health/ready', { signal: AbortSignal.timeout(2000) })).ok) break; } catch {}
+          if (Date.now() >= deadline) throw new Error('Fixture service is not ready: ' + port);
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
+    } catch (error) { guardRunning = false; throw error; }
     mkdirSync(resolve(root, '.local'), { recursive: true });
     const log = createWriteStream(resolve(root, '.local/p32-guards.tap'));
     const proc = spawn(process.execPath, ['--test', '--test-reporter=tap', 'tests/guards/hub-isolation.test.js', 'tests/guards/module-grants.test.js', 'tests/guards/aura-events.test.js', 'tests/guards/study-room.test.js', 'tests/guards/schedules.test.js'], { cwd: root, env: { ...process.env, GUARD_LEARN_SERVICE_KEY:serviceKey, GUARD_LEARN_RECONCILE_KEY:learnReconcileKey, GUARD_INTERVIEW_MONGO_URI: interviewUri, GUARD_INTERVIEW_SERVICE_KEY: interviewKey, GUARD_INTERVIEW_RECONCILE_KEY: interviewReconcileKey, GUARD_MONGO_URI: repl.getUri(), GUARD_ARCADE_MONGO_URI: arcadeUri, GUARD_ARCADE_SERVICE_KEY: arcadeKey, GUARD_ARCADE_RECONCILE_KEY: reconcileKey, GUARD_CORE_SIGNING_SECRET: process.env.JWT_SECRET, GUARD_APP_ORIGIN: origin, GUARD_LEARN_DATABASE_URL: url.toString() }, stdio: ['ignore', 'pipe', 'pipe'] });

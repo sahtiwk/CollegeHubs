@@ -21,6 +21,7 @@ function createApp({ connection, models, config, fetcher = fetch, ai = require('
     } catch (error) { next(error); }
   });
   app.use('/api/interview', require('./auth/sessionRoutes').sessionRoutes(config, store));
+  app.get('/api/interview/integration/summary', require('./routes/summary')(models.Session, config));
   app.use('/api/interview/integration', require('./routes/integration.routes').integrationRoutes(models.Session, events, config));
   app.use('/api/interview', require('./routes').routes(connection, models, store, practice, ai));
   app.use((_req, res) => res.status(404).json({ error: { code: 'INTERVIEW_ROUTE_NOT_FOUND', retryable: false } }));

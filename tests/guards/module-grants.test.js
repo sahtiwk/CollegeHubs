@@ -1,5 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const integrationReadSigningKey = process.env.CORE_MODULE_PRIVATE_KEY;
 
 test('G2: SPA coordinator deduplicates bootstrap and discards account-switch/logout/expired results', async () => {
   const { createSessionCoordinator } = await import('../../apps/web/src/auth/moduleSessionState.js');
@@ -653,4 +654,101 @@ test('G2: P9.1 Learn readiness rejects a missing schema marker and redacts SQL f
   const app=createApp({config:{origin:'http://localhost:5173',secure:false},pool:{query:async()=>{if(fail)throw Error('private SQL connection details');return {rows:[]};}},store:{}});
   const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));
   try{for(const error of [false,true]){fail=error;const r=await fetch('http://127.0.0.1:'+server.address().port+'/health/ready');assert.equal(r.status,503);assert.doesNotMatch(await r.text(),/private SQL/);}}finally{await new Promise(r=>server.close(r));}
+});
+
+test('G2: summary delegation requires its read credential, exact audience/scope and short lifetime', () => {
+  const crypto = require('node:crypto');
+  const { verifyReadToken, authorizeRead } = require('../../packages/contracts/module-read.cjs');
+  const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+  const jwt = require('jsonwebtoken'), now = Math.floor(Date.now()/1000);
+  const claims = { iss: 'core', aud: 'collegehubs-learn', sub: 'a'.repeat(24), hubId: 'b'.repeat(24), membershipVersion: 1, scope: ['module:learn:summary:read'], iat: now, nbf: now, exp: now+30, jti: crypto.randomUUID() };
+  const sign = c => jwt.sign(c, privateKey, { algorithm: 'RS256', keyid: 'test' });
+  const config = { issuer: 'core', publicKeys: { test: publicKey.export({ type:'spki', format:'pem' }) }, readKey: crypto.randomBytes(32).toString('base64url') };
+  const options = { ...config, module: 'learn' };
+  assert.equal(verifyReadToken(sign(claims), options).sub, claims.sub);
+  for (const patch of [{aud:'collegehubs-arcade'}, {scope:['module:learn']}, {exp:now+31}, {exp:now}, {sub:'invalid'}, {hubId:'invalid'}, {username:'extra'}]) assert.throws(() => verifyReadToken(sign({...claims,...patch}), options));
+  const req = { query:{}, get: key => ({Authorization:'Bearer '+config.readKey, 'X-Module-Read':sign(claims)})[key] };
+  assert.equal(authorizeRead(req, config, 'learn').hubId, claims.hubId);
+  assert.throws(() => authorizeRead(req, {...config,readKey:'wrong'}, 'learn'));
+  assert.throws(() => authorizeRead({...req,query:{hubId:claims.hubId}},config,'learn'));
+  assert.throws(() => authorizeRead({...req,get:key=>key==='Origin'?'https://app.example':req.get(key)},config,'learn'));
+});
+
+test('G2: optional progress reads bound concurrency, cache ownership and timeout without blanking results', async () => {
+  const { createModuleReader } = require('../../services/core/services/moduleReadService');
+  const crypto = require('node:crypto'), { privateKey } = crypto.generateKeyPairSync('rsa', {modulusLength:2048});
+  const config = { enabled:['learn','arcade','interview'], privateKey, kid:'test', issuer:'core' };
+  const env = Object.fromEntries(config.enabled.flatMap(name => [[name.toUpperCase()+'_API_ORIGIN','https://'+name+'.example'],[name.toUpperCase()+'_READ_KEY',crypto.randomBytes(32).toString('base64url')]]));
+  let calls=0, active=0, peak=0;
+  const fetcher = async url => { calls++; active++; peak=Math.max(peak,active); await new Promise(r=>setTimeout(r,10)); active--; const name=new URL(url).hostname.split('.')[0]; const counts=require('../../packages/contracts/module-read.cjs').countFields[name]; return new Response(JSON.stringify({status:'ok',asOf:new Date().toISOString(),...Object.fromEntries(counts.map(k=>[k,1]))})); };
+  const reader=createModuleReader(config,{env,fetcher});
+  const owner={userId:'a'.repeat(24),hubId:'b'.repeat(24),membershipVersion:1};
+  const results=await Promise.all([reader.summary(owner),reader.summary(owner)]);
+  assert.ok(peak<=2); assert.equal(calls,3); assert.equal(results[0].modules.learn.completedNodes,1);
+  await reader.summary(owner); assert.equal(calls,3);
+  await reader.summary({...owner,userId:'c'.repeat(24)}); assert.equal(calls,6);
+  await reader.summary({...owner,hubId:'d'.repeat(24)}); assert.equal(calls,9);
+  await reader.summary({...owner,membershipVersion:2}); assert.equal(calls,12);
+  const slow=createModuleReader(config,{env,fetcher:(_url,{signal})=>new Promise((_r,reject)=>signal.addEventListener('abort',()=>reject(signal.reason),{once:true}))});
+  const start=Date.now(), unavailable=await slow.summary(owner);
+  assert.ok(Date.now()-start<1100); assert.ok(Object.values(unavailable.modules).every(row=>row.status==='unavailable' && row.asOf===null));
+});
+
+test('G2: deployed-style summary routes scope Mongo/SQL counts and never disclose resource contents', { skip: !process.env.GUARD_APP_ORIGIN }, async () => {
+  const { MongoClient } = require('mongoose').mongo, crypto = require('node:crypto'), jwt = require('jsonwebtoken');
+  const owner = { sub: crypto.randomBytes(12).toString('hex'), hubId: crypto.randomBytes(12).toString('hex') };
+  const foreign = crypto.randomBytes(12).toString('hex');
+  for (const [name, port, uri, collection] of [['arcade',5185,process.env.GUARD_ARCADE_MONGO_URI,'gamesessions'],['interview',5186,process.env.GUARD_INTERVIEW_MONGO_URI,'sessions'],['learn',5184,null,null]]) {
+    let client, sql;
+    try {
+      if (name === 'learn') {
+        const dbUrl = new URL(process.env.GUARD_LEARN_DATABASE_URL); assert.ok(['localhost','127.0.0.1'].includes(dbUrl.hostname)); assert.match(dbUrl.pathname,/^\/collegehubs_demo_learn_/);
+        sql = new (require('pg').Pool)({connectionString:dbUrl.toString()});
+        for (const hubId of [owner.hubId,foreign]) await sql.query("INSERT INTO learning_path(hub_id,domain,version) VALUES($1,'dsa','summary-v1')",[hubId]);
+        for (const [hubId,userId] of [[owner.hubId,owner.sub],[owner.hubId,foreign],[foreign,owner.sub]]) {
+          await sql.query('INSERT INTO learner(hub_id,user_id) VALUES($1,$2)',[hubId,userId]);
+          await sql.query("INSERT INTO enrollment(hub_id,user_id,domain,version) VALUES($1,$2,'dsa','summary-v1')",[hubId,userId]);
+        }
+      }
+      if(uri) {
+        assert.ok(new URL(uri).pathname.startsWith('/collegehubs_demo_'));
+        client=await new MongoClient(uri).connect();
+        await client.db().collection(collection).insertMany([
+          {userId:owner.sub,hubId:owner.hubId,status:name==='arcade'?'won':'completed',deliveryStatus:'pending',answers:['PRIVATE']},
+          {userId:foreign,hubId:owner.hubId,status:name==='arcade'?'won':'completed',deliveryStatus:'pending'},
+          {userId:owner.sub,hubId:foreign,status:name==='arcade'?'won':'completed',deliveryStatus:'pending'}
+        ]);
+      }
+      const now=Math.floor(Date.now()/1000), token=jwt.sign({...owner,iss:'collegehubs-core',aud:'collegehubs-'+name,membershipVersion:1,scope:['module:'+name+':summary:read'],iat:now,nbf:now,exp:now+30,jti:crypto.randomUUID()},integrationReadSigningKey,{algorithm:'RS256',keyid:'p32-key'});
+      const endpoint='http://127.0.0.1:'+port+'/api/'+name+'/integration/summary';
+      const headers={Authorization:'Bearer '+process.env[name.toUpperCase()+'_READ_KEY'],'X-Module-Read':token};
+      const response=await fetch(endpoint,{headers}); assert.equal(response.status,200);
+      const data=await response.json(); assert.equal(data.status,'ok'); assert.equal(data.pending,name==='learn'?0:1);
+      if(name==='learn') assert.equal(data.enrollments,1);
+      assert.deepEqual(Object.keys(data).sort(),['status','asOf',...require('../../packages/contracts/module-read.cjs').countFields[name]].sort());
+      assert.equal((await fetch(endpoint,{headers:{...headers,Authorization:'Bearer wrong'}})).status,401);
+      assert.ok((await fetch(endpoint+'?userId='+foreign,{headers})).status>=400);
+      assert.equal((await fetch(endpoint,{headers:{...headers,Origin:process.env.GUARD_APP_ORIGIN}})).status,401);
+    } finally {
+      if(client){await client.db().collection(collection).deleteMany({$or:[{userId:owner.sub},{userId:foreign}]});await client.close();}
+      if(sql){for(const table of ['enrollment','learner','learning_path']) await sql.query('DELETE FROM '+table+' WHERE hub_id=ANY($1::text[])',[[owner.hubId,foreign]]);await sql.end();}
+    }
+  }
+  const login=await fetch(process.env.GUARD_APP_ORIGIN+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'preview@cvr.ac.in',password:'Preview-only-32!'})});
+  assert.equal(login.status,200); const {token}=await login.json();
+  const response=await fetch(process.env.GUARD_APP_ORIGIN+'/api/me/module-progress',{headers:{Authorization:'Bearer '+token}});
+  assert.equal(response.status,200);const data=await response.json();assert.equal(data.schemaVersion,1);assert.equal(Object.keys(data.modules).length,3);
+  assert.equal((await fetch(process.env.GUARD_APP_ORIGIN+'/api/me/module-progress?hubId='+foreign,{headers:{Authorization:'Bearer '+token}})).status,400);
+});
+
+test('G2: summary failures keep dated snapshots, expire old counts and cool down across users', async () => {
+  const { createModuleReader }=require('../../services/core/services/moduleReadService');
+  const crypto=require('node:crypto'),{privateKey}=crypto.generateKeyPairSync('rsa',{modulusLength:2048});
+  let now=Date.now(), calls=0, fail=false;
+  const reader=createModuleReader({enabled:['learn'],privateKey,kid:'test',issuer:'core'},{env:{LEARN_API_ORIGIN:'https://learn.example',LEARN_READ_KEY:crypto.randomBytes(32).toString('base64url')},clock:()=>now,fetcher:async()=>{calls++;if(fail)throw Error('sleeping');return new Response(JSON.stringify({status:'ok',asOf:new Date(now).toISOString(),enrollments:2,completedNodes:3,completedQuizzes:4,pending:1}));}});
+  const owner={userId:'a'.repeat(24),hubId:'b'.repeat(24),membershipVersion:1};
+  const first=await reader.summary(owner);assert.equal(first.modules.learn.status,'ok');
+  now+=61000;fail=true;const stale=await reader.summary(owner);assert.equal(stale.modules.learn.status,'stale');assert.equal(stale.modules.learn.asOf,first.modules.learn.asOf);
+  await reader.summary({...owner,userId:'c'.repeat(24)});assert.equal(calls,2);
+  now+=300000;const expired=await reader.summary(owner);assert.deepEqual(expired.modules.learn,{status:'unavailable',asOf:null});
 });

@@ -59,6 +59,7 @@ function createApp({ connection = mongoose.connection, auraRules = null } = {}) 
   app.use('/api/aura', require('./routes/auraEventRoutes').auraEventRoutes({ rules: auraRules }));
 
   app.use('/api', require('./routes/auraRoutes'));
+  app.use('/api', require('./routes/moduleProgressRoutes')(modules));
   app.use('/api', require('./routes/calendarRoutes'));
   app.use('/api/me', require('./routes/meRoutes'));
   app.use('/api/hubs', require('./routes/hubRoutes'));

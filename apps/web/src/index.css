@@ -259,3 +259,18 @@ select { display: block; width: 100%; min-height: 44px; padding: 10px; margin-to
 .arcade-complexity input { display: inline; width: 24px; min-height: 24px; margin: 0; accent-color: var(--accent); }
 .arcade-trace summary { min-height: 44px; padding: 12px 0; cursor: pointer; }
 @media (max-width: 480px) { .arcade-guess { flex-direction: column; align-items: stretch; } .arcade-game .section-heading { flex-wrap: wrap; gap: 12px; } }
+
+/* Shared Hub tokens also own optional progress and chart surfaces. */
+.dashboard-progress{display:grid;gap:1.25rem;margin-bottom:1.5rem;align-items:start}
+.module-progress{min-width:0}
+.module-progress-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.module-status-card{min-width:0;background:var(--surface-raised);border:1px solid var(--border);border-radius:14px;padding:1rem}
+.module-status-card .section-heading{flex-wrap:wrap;gap:.5rem;margin:0}
+.module-status-card dl{display:grid;gap:.8rem;margin:0}
+.module-status-card dt{color:var(--text-muted);font-size:.85rem}
+.module-status-card dd{margin:0;color:var(--accent);font-size:1.7rem;font-weight:700}
+.module-status-card a{margin-top:auto}
+.module-status-card small{overflow-wrap:anywhere}
+.module-progress>.section-heading{flex-wrap:wrap;gap:.75rem}
+@media(min-width:1280px){.dashboard-progress{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)}.dashboard-progress .aura-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-progress .aura-card .section-heading{flex-wrap:wrap;gap:.75rem}}
+@media(max-width:680px){.module-progress-grid{grid-template-columns:1fr}}

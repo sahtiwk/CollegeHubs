@@ -12,7 +12,7 @@ function configuration(env = process.env) {
   const key = (env.CORE_PUBLIC_KEY || '').replace(/\\n/g, '\n');
   const parsed = require('node:crypto').createPublicKey(key);
   if (!key.startsWith('-----BEGIN PUBLIC KEY-----') || parsed.asymmetricKeyType !== 'rsa' || parsed.asymmetricKeyDetails.modulusLength < 2048) throw fail(503, 'ARCADE_CONFIGURATION');
-  return { secure: origin.protocol === 'https:', origin: origin.origin, core: core.origin, issuer: env.CORE_TOKEN_ISSUER, publicKeys: { [env.CORE_KEY_ID]: key }, serviceKey: env.CORE_SERVICE_KEY };
+  return { secure: origin.protocol === 'https:', origin: origin.origin, core: core.origin, issuer: env.CORE_TOKEN_ISSUER, publicKeys: { [env.CORE_KEY_ID]: key }, readKey: env.MODULE_READ_KEY, serviceKey: env.CORE_SERVICE_KEY };
 }
 function validateExchange(result, config) {
   const principal = verifyModuleToken(result?.token, { module: 'arcade', issuer: config.issuer, publicKeys: config.publicKeys });

@@ -50,7 +50,7 @@ Existing `docs/p0.1-evidence.md` through available `docs/p3.1-evidence.md` recor
 | P11.1 | **Complete for the deployed password-login MVP (2026-10-10):** four Free Render APIs, Pages SPA/gateway, hosted module receipts and Core restart recovery; 101 local guards passed. See `docs/p11.1-evidence.md` for scope and limitations. |
 | P11.2 | **Complete for the password-login MVP (2026-10-11):** release docs/About live, 101 guards passed, four isolated browser sessions/two rooms recovered and closed once; scoped evidence and limits in `docs/release-evidence.md`. |
 
-**P9.2 is implemented and locally verified.** Browser access is restored; current Learn observations are recorded in `docs/p9.2-evidence.md`, while the historical P9.1 checklist retains any unperformed checks. Next feature development is P10.2 before P10.1; the Tier2 hosted release gate is P11.1/P11.2. Preserve migrated source and historical evidence; do not restart P0.
+**P9.2 is implemented and locally verified.** Browser access is restored; current Learn observations are recorded in `docs/p9.2-evidence.md`, while the historical P9.1 checklist retains any unperformed checks. P10.2 is now implemented and locally verified; see `docs/p10.2-evidence.md`. Its new hosted read credentials are not activated yet. Next optional feature development is P10.1; P11.1/P11.2 retain their existing scoped hosted evidence. Preserve migrated source and historical evidence; do not restart P0.
 
 ## Tier map
 
@@ -661,6 +661,8 @@ Goal: preserve graph/resources and server-assessed DSA/Web journeys, using the u
 Goal: richer integrated views after the actual modules work. Entry: participating Tier 2 releases. Read A3/A5–A8/H4. Human: review contrast/progress labels and disclosed weak-skill heuristic. Safe stop: remove an optional widget without disabling ordinary features. Trace: dashboard/cross-feature presentation. **Execute P10.2 before P10.1**, preserving historical IDs.
 
 ### P10.2. Progress beside Aura and deeper visual parity — Tier 3a
+
+**Execution status (2026-10-11): implemented and locally verified.** See `docs/p10.2-evidence.md` and `docs/module-progress.md`. Hosted activation of the new read credentials remains a separate rollout step; no new hosted acceptance is claimed.
 
 **Scope:** owned summary widgets, shared streak display and graph/chart polish; basic integration is already required. **Prerequisite:** P6.2 and participating P7/P8/P9 releases. **Guards:** G1/G2/G3. **Effort:** 1–2 days.
 

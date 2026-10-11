@@ -60,3 +60,10 @@
 .learn-list li span { display: block; padding: .6rem 0; font-size: .9rem; color: var(--text-muted); }
 @media (max-width: 520px) { .learn-roadmap { padding: 1rem; } .learn-heading { padding-top: .25rem; } .learn-node { width: 100%; } }
 @media (prefers-reduced-motion: reduce) { .learn-node { transition: none; } }
+.learn-node.completed{border-color:var(--success);border-left-width:4px}
+.learn-node.unlocked{border-color:var(--accent)}
+.learn-node.locked{border-style:dashed}
+.learn-page progress::-webkit-progress-bar{background:var(--surface-raised);border-radius:8px}
+.learn-page progress::-webkit-progress-value{background:var(--accent);border-radius:8px}
+.learn-page progress::-moz-progress-bar{background:var(--accent);border-radius:8px}
+@media(prefers-reduced-motion:reduce){.learn-node{transition:none}.learn-node:hover{transform:none}}

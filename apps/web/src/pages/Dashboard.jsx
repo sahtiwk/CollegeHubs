@@ -5,6 +5,7 @@ import { useHubTheme } from '../theme/HubThemeProvider';
 import api from '../api';
 import Feed from '../components/Feed';
 import AuraCard from '../components/AuraCard';
+import LearnProgressCard from '../components/LearnProgressCard';
 import AcademicCalendar from '../components/AcademicCalendar';
 import RightSidebar from '../components/RightSidebar';
 import OnboardingModal from '../components/OnboardingModal';
@@ -28,7 +29,7 @@ export default function Dashboard() {
         <p className="hero-copy">Your corner of {hub?.name || 'campus'}. Share a breakthrough, ask a question, or show what you are building.</p></div>
       <div className="hero-art" aria-hidden="true"><span>&#10038;</span><small>LEARN / BUILD / BELONG</small></div>
     </section>
-    <AuraCard />
+    <div className="dashboard-progress"><AuraCard /><LearnProgressCard /></div>
     <div className="feed-layout">
       <section aria-label="College feed"><div className="section-heading"><h2>On your campus</h2><span className="pill">College feed</span></div><Feed /></section>
       <aside className="channel-card"><p className="eyebrow">Find your people</p><h2>Subject spaces</h2><p className="muted">Your college's channels. Join a subject conversation.</p>
