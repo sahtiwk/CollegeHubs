@@ -17,3 +17,9 @@
 .interview-questions{padding-left:1.5rem;display:grid;gap:1rem}
 .interview-page [aria-current=step]{outline:2px solid var(--accent);outline-offset:2px}
 @media(max-width:540px){.interview-page .section-heading{align-items:flex-start;gap:.75rem;flex-wrap:wrap}.interview-page .interview-actions button{flex:1 1 auto}.interview-page .card{min-width:0}.interview-page h2{overflow-wrap:anywhere}}
+
+.learn-topic-suggestions{padding:1rem;border:1px solid var(--border);border-radius:14px;background:var(--surface-raised)}
+.learn-topic-suggestions fieldset{display:grid;gap:.8rem}
+.learn-topic-suggestions .interview-check{display:flex;gap:.6rem;align-items:flex-start}
+.learn-topic-suggestions input[type=checkbox]{width:auto;accent-color:var(--accent)}
+.learn-topic-suggestions small{color:var(--text-muted)}

@@ -2,7 +2,7 @@ const { Router } = require('express');
 const { fail } = require('./errors');
 const { wrap, cookie } = require('./auth/sessionRoutes');
 const idPattern = /^[a-f0-9]{24}$/;
-function routes(connection, models, store, practice, ai) {
+function routes(connection, models, store, practice, ai, importRecommendation) {
   const router = Router();
   const authenticated = (req, res, next) => Promise.resolve().then(async () => { req.identity = await store.get(cookie(req, 'session')); req.scope = { userId: req.identity.user_id, hubId: req.identity.hub_id }; if (!['GET', 'HEAD'].includes(req.method)) store.mutation(req.identity, req.get('Origin'), req.get('X-CSRF-Token')); }).then(() => next(), next);
   const owned = async (model, req, session, selection = '') => { if (!idPattern.test(req.params.id || '')) throw fail(404, 'NOT_FOUND'); const row = await model.findOne({ ...req.scope, _id: req.params.id }).select(selection).session(session || null); if (!row) throw fail(404, 'NOT_FOUND'); return row; };
@@ -16,6 +16,7 @@ function routes(connection, models, store, practice, ai) {
   router.post('/interviews', authenticated, wrap(async (req,res) => res.status(201).json({ interview: await practice.create(req.identity,req.body) })));
   router.get('/interviews/:id', authenticated, wrap(async (req,res) => res.json({ interview: await practice.readInterview(req.identity,req.params.id) })));
   router.delete('/interviews/:id', authenticated, wrap(async (req,res) => res.json(await practice.removeInterview(req.identity,req.params.id))));
+  router.post('/interviews/:id/learn-topics', authenticated, wrap(async (req,res) => res.json(await importRecommendation(req.identity,req.params.id,req.body))));
   router.post('/interviews/:id/generate', authenticated, wrap(async (req,res) => { const interview = await practice.generate(req.identity,req.params.id,req.body); res.status(interview.status === 'generating' ? 202 : 200).json({interview}); }));
   router.get('/sessions', authenticated, wrap(async (req,res) => res.json(await practice.history(req.identity))));
   router.post('/sessions', authenticated, wrap(async (req,res) => res.status(201).json({session:await practice.start(req.identity,req.body)})));

@@ -52,7 +52,7 @@ async function exchangeGrant(credential, body, config) {
   const now = new Date();
   const filter = { module: credential.service, grantHash: digest(body.grant), stateHash: digest(body.state), consumedAt: null, expiresAt: { $gt: now } };
   const grant = await ModuleGrant.findOne(filter);
-  if (!grant) throw failure(409, 'GRANT_INVALID', 'Grant is expired, consumed, or invalid. Start a new handoff.');
+  if (!grant || grant.kind === 'recommendation') throw failure(409, 'GRANT_INVALID', 'Grant is expired, consumed, or invalid. Start a new handoff.');
   const context = await requireHubAccess({ sub: String(grant.userId) }, String(grant.hubId));
   if (context.membershipVersion !== grant.membershipVersion) throw failure(403, 'MEMBERSHIP_CHANGED', 'Membership changed. Start a new handoff.');
   const user = await User.findById(grant.userId);

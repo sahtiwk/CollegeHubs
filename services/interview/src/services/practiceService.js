@@ -16,7 +16,7 @@ function createPracticeService(connection, models, ai, events) {
     const row = await Model.findOne({ ...scope(identity), _id: id }).session(session);
     if (!row) throw fail(404, 'NOT_FOUND'); return row;
   }
-  const interviewDto = row => ({ id: String(row._id), jobTitle: row.jobTitle, jobDescription: row.jobDescription, company: row.company || '', experienceLevel: row.experienceLevel || 'entry', questionTypes: row.questionTypes, resumeId: row.resumeId ? String(row.resumeId) : null, resumeUnavailable: row.resumeUnavailable, questionCount: 5, questions: publicQuestions(row.questions), status: row.status, lastError: row.lastError, retryAt: row.retryAt, leaseUntil: row.generationLeaseUntil, createdAt: row.createdAt });
+  const interviewDto = row => ({ id: String(row._id), learnTopics: (row.learnTopics || []).map(t=>({nodeId:t.nodeId,label:t.label,version:t.version,reason:t.reason,asOf:t.asOf})), jobTitle: row.jobTitle, jobDescription: row.jobDescription, company: row.company || '', experienceLevel: row.experienceLevel || 'entry', questionTypes: row.questionTypes, resumeId: row.resumeId ? String(row.resumeId) : null, resumeUnavailable: row.resumeUnavailable, questionCount: 5, questions: publicQuestions(row.questions), status: row.status, lastError: row.lastError, retryAt: row.retryAt, leaseUntil: row.generationLeaseUntil, createdAt: row.createdAt });
   const sessionDto = (row, at) => ({ id: String(row._id), interviewId: String(row.interviewId), jobTitle: row.jobTitle, questions: publicQuestions(row.questions), answers: row.answers.map(a => ({ questionId: a.questionId, answer: a.answer, skipped: a.skipped, revision: a.revision, savedAt: a.savedAt })), status: row.status, report: row.report, createdAt: row.createdAt, completedAt: row.completedAt || null, serverNow: at, elapsedSeconds: row.serverDurationSeconds ?? Math.max(0, Math.floor((+at - +row.createdAt) / 1000)), leaseUntil: row.evaluationLeaseUntil, retryAt: row.retryAt, lastError: row.lastError, deliveryStatus: row.deliveryStatus, receipt: row.receipt });
   async function recover(Model, identity, id, kind, at) {
     const generating = kind === 'generation', prefix = generating ? 'generation' : 'evaluation';
@@ -68,6 +68,7 @@ function createPracticeService(connection, models, ai, events) {
     let resumeText;
     row = await transaction(async session => {
       const fresh = await owned(Interview, identity, id, session);
+      if (+fresh.topicLeaseUntil > +at) throw fail(409, 'TOPICS_LOCKED', 'Topic import is in progress. Retry shortly.');
       if (fresh.questions.length || fresh.status === 'generating' && +fresh.generationLeaseUntil > +at) return fresh;
       if (+fresh.retryAt > +at) { const error = fail(429, 'AI_COOLDOWN'); error.retryAfter = Math.ceil((+fresh.retryAt - +at)/1000); throw error; }
       const resume = fresh.resumeId && await Resume.findOneAndUpdate({ ...scope(identity), _id: fresh.resumeId }, { $inc: { referenceVersion: 1 } }, { session }).select('+extractedText');
@@ -79,7 +80,7 @@ function createPracticeService(connection, models, ai, events) {
     let failure;
     try {
       const categoryOrder = Array.from({ length: 5 }, (_, i) => row.questionTypes[i % row.questionTypes.length]);
-      const output = await ai.generate({ jobTitle: row.jobTitle, jobDescription: row.jobDescription, experienceLevel: row.experienceLevel || 'entry', categoryOrder, resumeText });
+      const output = await ai.generate({ jobTitle: row.jobTitle, jobDescription: row.jobDescription, experienceLevel: row.experienceLevel || 'entry', categoryOrder, resumeText, learnTopics: (row.learnTopics || []).map(t=>({label:t.label,version:t.version})) });
       resumeText = null; const questions = validateQuestions(output, row.questionTypes);
       await transaction(async session => {
         const finishedAt = await now(), fresh = await owned(Interview, identity, id, session);

@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken');
 const { randomUUID } = require('node:crypto');
 const { countFields } = require('@collegehubs/contracts/module-read.cjs');
+const budget = require('./optionalReadBudget');
 const unavailable = () => ({ status: 'unavailable', asOf: null });
 function createModuleReader(config, { env = process.env, fetcher = fetch, clock = Date.now } = {}) {
   const cache = new Map(), pending = new Map(), cooldown = new Map();
-  let active = 0;
   const targets = {};
   for (const name of Object.keys(countFields)) {
     try {
@@ -24,8 +24,7 @@ function createModuleReader(config, { env = process.env, fetcher = fetch, clock 
     if (!targets[name] || (cooldown.get(name) || 0) > clock() || pending.size >= 500) return cachedResult(previous);
     const work = (async () => {
       // No queue of network requests: each aggregate has just two sequential workers.
-      if (active >= 2 || deadline <= clock()) return cachedResult(previous);
-      active++;
+      if (deadline <= clock() || !budget.acquire()) return cachedResult(previous);
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), Math.max(1, deadline - clock()));
       try {
@@ -50,7 +49,7 @@ function createModuleReader(config, { env = process.env, fetcher = fetch, clock 
         const value = cachedResult(previous);
         return value.status === 'ok' ? { ...value, status: 'stale' } : value;
       } finally {
-        clearTimeout(timer); active--;
+        clearTimeout(timer); budget.release();
         while (cache.size > 500) cache.delete(cache.keys().next().value);
       }
     })();

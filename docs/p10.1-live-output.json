@@ -1,0 +1,39 @@
+{
+  "checkedAt": "2026-10-11T05:06:14.193Z",
+  "provider": "Groq",
+  "model": "openai/gpt-oss-20b",
+  "synthetic": true,
+  "selectedTopics": [
+    {
+      "label": "Graph traversal",
+      "version": "p101-synthetic-v1"
+    }
+  ],
+  "questions": [
+    {
+      "questionText": "Can you explain how a breadth-first search algorithm works on a simple graph and what its time complexity is?",
+      "category": "technical",
+      "difficulty": "easy"
+    },
+    {
+      "questionText": "What is the difference between depth-first search and breadth-first search when traversing a graph?",
+      "category": "technical",
+      "difficulty": "easy"
+    },
+    {
+      "questionText": "How would you detect a cycle in an undirected graph using a traversal algorithm?",
+      "category": "technical",
+      "difficulty": "easy"
+    },
+    {
+      "questionText": "If you have a graph represented as an adjacency list, how would you iterate over all neighbors of a given node?",
+      "category": "technical",
+      "difficulty": "easy"
+    },
+    {
+      "questionText": "What data structure would you use to keep track of nodes that need to be visited next in a breadth-first search?",
+      "category": "technical",
+      "difficulty": "easy"
+    }
+  ]
+}

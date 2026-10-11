@@ -1,4 +1,5 @@
 import express from 'express';
+import { weakSkills } from './routes/weakSkills.ts';
 import { summary } from './routes/summary.ts';
 import type { ErrorRequestHandler } from 'express';
 import type { LearnConfig, SessionStore } from './auth/sessionService.ts';
@@ -23,6 +24,7 @@ export function createApp({ config, pool, store }: { config: LearnConfig; pool: 
     finally { clearTimeout(timeout); }
   });
   app.use(express.json({ limit: '16kb' }));
+  app.get('/api/learn/integration/weak-skills', weakSkills(pool, config));
   app.get('/api/learn/integration/summary', summary(pool, config));
   app.use('/api/learn/integration', integrationRoutes(pool,config));
   app.use('/api/learn', sessionRoutes(config, store));

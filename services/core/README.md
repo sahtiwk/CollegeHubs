@@ -89,3 +89,7 @@ P5.1 adds `/api/study-rooms`, the `study:*` socket handlers, Hub-local problem s
 ## Optional progress summaries (P10.2)
 
 See [the read contract and private configuration](../../docs/module-progress.md). Configure each module API origin and its separate read key on Core. Missing read configuration leaves optional dashboard progress unavailable; it does not disable ordinary module use.
+
+## Optional Learn practice topics (P10.1)
+
+See [Learn-to-Interview topics](../../docs/learn-interview-topics.md) for the heuristic, one-use import, existing configuration requirements and safe stop. This is locally verified; hosted activation remains pending.

@@ -2,10 +2,10 @@
 const { createPublicKey, verify } = require('node:crypto');
 const audiences = { arcade: 'collegehubs-arcade', interview: 'collegehubs-interview', learn: 'collegehubs-learn' };
 const fields = ['iss', 'aud', 'sub', 'hubId', 'scope', 'iat', 'nbf', 'exp', 'jti', 'membershipVersion'];
-function verifyReadToken(token, { module: name, issuer, publicKeys, now = Math.floor(Date.now() / 1000) }) {
+function verifyReadToken(token, { module: name, issuer, publicKeys, purpose = 'summary', now = Math.floor(Date.now() / 1000) }) {
   const invalid = () => { throw new Error('Invalid or expired module credential'); };
   try {
-    if (!Object.hasOwn(audiences, name) || typeof issuer !== 'string' || !issuer || typeof token !== 'string' || token.length > 8192) return invalid();
+    if (!['summary','weak-skills'].includes(purpose) || purpose === 'weak-skills' && name !== 'learn' || !Object.hasOwn(audiences, name) || typeof issuer !== 'string' || !issuer || typeof token !== 'string' || token.length > 8192) return invalid();
     const parts = token.split('.');
     if (parts.length !== 3 || parts.some(part => !/^[a-zA-Z0-9_-]+$/.test(part))) return invalid();
     const header = JSON.parse(Buffer.from(parts[0], 'base64url'));
@@ -17,7 +17,7 @@ function verifyReadToken(token, { module: name, issuer, publicKeys, now = Math.f
     const c = JSON.parse(Buffer.from(parts[1], 'base64url'));
     if (!c || Object.keys(c).length !== fields.length || fields.some(field => !Object.hasOwn(c, field)) ||
         c.iss !== issuer || c.aud !== audiences[name] ||
-        !Array.isArray(c.scope) || c.scope.length !== 1 || c.scope[0] !== 'module:' + name + ':summary:read' ||
+        !Array.isArray(c.scope) || c.scope.length !== 1 || c.scope[0] !== 'module:' + name + ':' + purpose + ':read' ||
         typeof c.sub !== 'string' || !/^[a-f0-9]{24}$/.test(c.sub) || typeof c.hubId !== 'string' || !/^[a-f0-9]{24}$/.test(c.hubId) ||
         typeof c.jti !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(c.jti) ||
         !Number.isSafeInteger(c.membershipVersion) || c.membershipVersion < 0 ||
@@ -27,13 +27,13 @@ function verifyReadToken(token, { module: name, issuer, publicKeys, now = Math.f
   } catch { return invalid(); }
 }
 const countFields = Object.freeze({ learn: ['enrollments', 'completedNodes', 'completedQuizzes', 'pending'], arcade: ['completedGames', 'wins', 'pending'], interview: ['completedInterviews', 'pending'] });
-function authorizeRead(req, config, name) {
+function authorizeRead(req, config, name, purpose = 'summary') {
   const { timingSafeEqual } = require('node:crypto');
   const deny = () => { throw Object.assign(new Error('Read delegation required'), { status: 401, code: 'READ_DELEGATION_REQUIRED' }); };
   const supplied = req.get('Authorization');
   if (req.get('Origin') || req.get('Cookie') || Object.keys(req.query).length || !/^[a-zA-Z0-9_-]{43}$/.test(config.readKey || '') || typeof supplied !== 'string') return deny();
   const expected = Buffer.from('Bearer ' + config.readKey), actual = Buffer.from(supplied);
   if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) return deny();
-  try { return verifyReadToken(req.get('X-Module-Read'), { ...config, module: name }); } catch { return deny(); }
+  try { return verifyReadToken(req.get('X-Module-Read'), { ...config, module: name, purpose }); } catch { return deny(); }
 }
 module.exports = { verifyReadToken, authorizeRead, countFields };

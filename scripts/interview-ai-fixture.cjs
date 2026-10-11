@@ -12,6 +12,6 @@ global.fetch = async (url, options) => {
   if (text.includes('[fixture:malformed]')) return new Response('{broken', { headers: { 'Content-Type': 'application/json' } });
   await new Promise(resolve => setTimeout(resolve, 150));
   const data = JSON.parse(text.slice('BEGIN_UNTRUSTED_DATA\n'.length, -'\nEND_UNTRUSTED_DATA'.length));
-  const output = data.categoryOrder ? { questions: data.categoryOrder.map((category, i) => ({ questionText: `Synthetic practice ${i+1}: explain ${['arrays','functions','promises','objects','tests'][i]} with an example.`, category, difficulty: 'medium', expectedKeywords: ['example','tradeoff'] })) } : { summary: 'Synthetic fixture feedback; not a live AI report.', answers: data.answers.map(a => ({ questionId: a.questionId, score: 8, feedback: 'Synthetic feedback: include a concrete example and tradeoff.' })) };
+  const output = data.categoryOrder ? { questions: data.categoryOrder.map((category, i) => ({ questionText: `Synthetic practice ${i+1}: explain ${data.learnTopics?.length ? data.learnTopics[i % data.learnTopics.length].label : ['arrays','functions','promises','objects','tests'][i]} with an example.`, category, difficulty: 'medium', expectedKeywords: ['example','tradeoff'] })) } : { summary: 'Synthetic fixture feedback; not a live AI report.', answers: data.answers.map(a => ({ questionId: a.questionId, score: 8, feedback: 'Synthetic feedback: include a concrete example and tradeoff.' })) };
   return Response.json({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(output) } }] });
 };

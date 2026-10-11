@@ -9,3 +9,7 @@ Run `npm ci` at repository root, configure ignored `services/interview/.env`, th
 ## Optional progress summaries (P10.2)
 
 See [the read contract and private configuration](../../docs/module-progress.md). Set `MODULE_READ_KEY` to the matching Core read credential; existing Core public-key verification remains required. Missing read configuration leaves optional dashboard progress unavailable; it does not disable ordinary module use.
+
+## Optional Learn practice topics (P10.1)
+
+See [Learn-to-Interview topics](../../docs/learn-interview-topics.md) for the heuristic, one-use import, existing configuration requirements and safe stop. This is locally verified; hosted activation remains pending.

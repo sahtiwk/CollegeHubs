@@ -50,7 +50,7 @@ Existing `docs/p0.1-evidence.md` through available `docs/p3.1-evidence.md` recor
 | P11.1 | **Complete for the deployed password-login MVP (2026-10-10):** four Free Render APIs, Pages SPA/gateway, hosted module receipts and Core restart recovery; 101 local guards passed. See `docs/p11.1-evidence.md` for scope and limitations. |
 | P11.2 | **Complete for the password-login MVP (2026-10-11):** release docs/About live, 101 guards passed, four isolated browser sessions/two rooms recovered and closed once; scoped evidence and limits in `docs/release-evidence.md`. |
 
-**P9.2 is implemented and locally verified.** Browser access is restored; current Learn observations are recorded in `docs/p9.2-evidence.md`, while the historical P9.1 checklist retains any unperformed checks. P10.2 is now implemented and locally verified; see `docs/p10.2-evidence.md`. Its new hosted read credentials are not activated yet. Next optional feature development is P10.1; P11.1/P11.2 retain their existing scoped hosted evidence. Preserve migrated source and historical evidence; do not restart P0.
+**P9.2 is implemented and locally verified.** Browser access is restored; current Learn observations are recorded in `docs/p9.2-evidence.md`, while the historical P9.1 checklist retains any unperformed checks. P10.2 is now implemented and locally verified; see `docs/p10.2-evidence.md`. Its new hosted read credentials are not activated yet. P10.1 is also implemented and locally verified; next is the hosted rollout and acceptance for both P10 phases; P11.1/P11.2 retain their existing scoped hosted evidence. Preserve migrated source and historical evidence; do not restart P0.
 
 ## Tier map
 
@@ -674,6 +674,8 @@ Goal: richer integrated views after the actual modules work. Entry: participatin
 **Contract/outcome:** `/api/me/module-progress` returns schemaVersion/asOf and per-module `{status,asOf,...counts}`; status ok/stale/unavailable. **Acceptance:** one shared day across sources, no foreign summaries, stopped module cannot blank dashboard/chat/rooms/Aura, two themes/mobile/keyboard readable. **Risk:** cold starts exceed summary deadlines by design. **Done:** common definition with truthful missing-widget behavior.
 
 ### P10.1. Opt-in Learn topics for Interview — Tier 3b
+
+**Execution status (2026-10-11): implemented and locally verified after explicit user activation.** 108 guards pass; real Groq topic influence and browser selection/import verified. See `docs/p10.1-evidence.md`. Hosted rollout of P10.2/P10.1 and their read credentials remains pending.
 
 **Scope:** simple recent assessed-node suggestions, at most five chosen topics; no calibrated prediction. **Prerequisite:** P10.2/P9.2/P8.2 and explicit stretch activation. **Guards:** G1/G2. **Effort:** 1–2 days.
 

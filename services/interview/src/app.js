@@ -23,7 +23,7 @@ function createApp({ connection, models, config, fetcher = fetch, ai = require('
   app.use('/api/interview', require('./auth/sessionRoutes').sessionRoutes(config, store));
   app.get('/api/interview/integration/summary', require('./routes/summary')(models.Session, config));
   app.use('/api/interview/integration', require('./routes/integration.routes').integrationRoutes(models.Session, events, config));
-  app.use('/api/interview', require('./routes').routes(connection, models, store, practice, ai));
+  app.use('/api/interview', require('./routes').routes(connection, models, store, practice, ai, require('./services/recommendationImport')(models.Interview, config, fetcher)));
   app.use((_req, res) => res.status(404).json({ error: { code: 'INTERVIEW_ROUTE_NOT_FOUND', retryable: false } }));
   app.use((error, _req, res, _next) => { const status = error.type === 'entity.too.large' ? 413 : error.type === 'entity.parse.failed' ? 400 : error.status || 503; if(error.retryAfter)res.set('Retry-After',String(error.retryAfter)); res.status(status).json({ error: { code: error.type === 'entity.too.large' ? 'BODY_TOO_LARGE' : error.type === 'entity.parse.failed' ? 'INVALID_JSON' : error.status ? error.code : 'INTERVIEW_UNAVAILABLE', retryable: [429, 503].includes(status) } }); });
   return app;
