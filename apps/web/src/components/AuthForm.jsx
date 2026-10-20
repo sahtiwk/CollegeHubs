@@ -34,6 +34,7 @@ export default function AuthForm({ register = false }) {
       {googleEnabled && <div className={busy ? 'google-signin busy' : 'google-signin'} inert={busy ? '' : undefined}>
         <GoogleLogin onSuccess={({ credential }) => authenticate('/google/auth', { credential })} onError={() => setError('Google sign-in failed. Please retry.')} /></div>}
       <p>{register ? 'Already part of the community?' : 'New around here?'} <Link to={(register ? '/login' : '/register') + (params.get('returnTo') ? '?returnTo='+encodeURIComponent(params.get('returnTo')) : '')}>{register ? 'Sign in' : 'Create an account'}</Link></p>
+      <p className="muted"><a href="/privacy.html">How CollegeHubs uses your information</a></p>
     </div></section>
   </main>;
 }
