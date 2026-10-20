@@ -31,7 +31,7 @@ test('TP6.2: owned bindings, evidence, snapshots and transactional bonus replace
     await t.test('pending link never awards; unknown score/owner input is rejected; review needs current challenge',async()=>{
       await assert.rejects(service.link(ctx,{provider:'codeforces',handle:'tourist',rating:999}),{status:400});
       await service.link(ctx,{provider:'codeforces',handle:'tourist'});let calls=0;assert.equal((await service.refresh(ctx,{load:async()=>{calls++;}})).status,'deferred');assert.equal(calls,0);assert.equal((await m.AuraBalance.findOne({userId:user.id})).total,50);
-      const row=await account();await assert.rejects(service.review({accountId:row.id,bindingVersion:row.bindingVersion,reviewer:'fixture-operator'},{load:async()=>({handle:'tourist',organization:'wrong'})}),{code:'OWNERSHIP_NOT_PROVEN'});
+      const row=await account();assert.ok(row.challenge.length<=30,'Codeforces organization accepts at most 30 characters');assert.match(row.challenge,/^ch-[A-Za-z0-9_-]{22}$/);await assert.rejects(service.review({accountId:row.id,bindingVersion:row.bindingVersion,reviewer:'fixture-operator'},{load:async()=>({handle:'tourist',organization:'wrong'})}),{code:'OWNERSHIP_NOT_PROVEN'});
       await due();await service.review({accountId:row.id,bindingVersion:row.bindingVersion,reviewer:'fixture-operator'},{load:async()=>({handle:'tourist',organization:row.challenge,rating:100})});
       assert.equal((await account()).verified,true);assert.equal((await account()).challenge,null);assert.match((await account()).proofHash,/^[a-f0-9]{64}$/);
       assert.equal((await service.read(peerCtx)).items.length,0);

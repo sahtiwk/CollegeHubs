@@ -27,7 +27,7 @@ async function link(context,input){
     if(row&&+row.updatedAt>Date.now()-60000)throw fail(429,'LINK_COOLDOWN','Wait a minute before changing the handle or challenge');
     if(!row)row=new Account({userId:context.userId,hubId:context.hubId,provider:input.provider,bindingVersion:0,appliedBonus:0});
     await delta(row,0,session);
-    Object.assign(row,{handle:name,bindingVersion:row.bindingVersion+1,membershipVersion:context.membershipVersion,status:'pending',verified:false,challenge:'ch-'+randomBytes(24).toString('hex'),challengeExpiresAt:new Date(Date.now()+24*3600000),reviewedAt:null,reviewer:null,proofHash:null,leaseId:null,leaseUntil:new Date(0),nextAttemptAt:new Date(0),lastError:null});
+    Object.assign(row,{handle:name,bindingVersion:row.bindingVersion+1,membershipVersion:context.membershipVersion,status:'pending',verified:false,challenge:'ch-'+randomBytes(16).toString('base64url'),challengeExpiresAt:new Date(Date.now()+24*3600000),reviewedAt:null,reviewer:null,proofHash:null,leaseId:null,leaseUntil:new Date(0),nextAttemptAt:new Date(0),lastError:null});
     await row.save({session});return {status:'pending',bindingVersion:row.bindingVersion};
   });
 }
