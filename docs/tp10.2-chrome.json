@@ -1,0 +1,753 @@
+{
+  "browser": "chrome",
+  "checks": [
+    "optional checklist persistence and identity isolation",
+    "profile and drawer keyboard focus",
+    "skip link",
+    "200% text reflow",
+    "two Hub identities",
+    "optional-read failure isolation",
+    "reduced-motion route audit",
+    "render-error boundary and route recovery"
+  ],
+  "routes": [
+    {
+      "path": "/",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 4437
+    },
+    {
+      "path": "/",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 4437
+    },
+    {
+      "path": "/",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 4437
+    },
+    {
+      "path": "/login",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 362
+    },
+    {
+      "path": "/login",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 362
+    },
+    {
+      "path": "/login",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 362
+    },
+    {
+      "path": "/register",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 383
+    },
+    {
+      "path": "/register",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 383
+    },
+    {
+      "path": "/register",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 383
+    },
+    {
+      "path": "/about",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 3458
+    },
+    {
+      "path": "/about",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 3458
+    },
+    {
+      "path": "/about",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 3458
+    },
+    {
+      "path": "/verify-email",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 164
+    },
+    {
+      "path": "/verify-email",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 164
+    },
+    {
+      "path": "/verify-email",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 164
+    },
+    {
+      "path": "/missing-page",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 122
+    },
+    {
+      "path": "/missing-page",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 122
+    },
+    {
+      "path": "/missing-page",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 122
+    },
+    {
+      "path": "/dashboard",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 3840
+    },
+    {
+      "path": "/dashboard",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 3840
+    },
+    {
+      "path": "/dashboard",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 3840
+    },
+    {
+      "path": "/progress",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 3042
+    },
+    {
+      "path": "/progress",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 3042
+    },
+    {
+      "path": "/progress",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 3042
+    },
+    {
+      "path": "/leaderboard",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 288
+    },
+    {
+      "path": "/leaderboard",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 288
+    },
+    {
+      "path": "/leaderboard",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 288
+    },
+    {
+      "path": "/contests",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 1194
+    },
+    {
+      "path": "/contests",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 1194
+    },
+    {
+      "path": "/contests",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 1194
+    },
+    {
+      "path": "/channels/6ad7123398c9b95fef4f4d26",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 1097
+    },
+    {
+      "path": "/channels/6ad7123398c9b95fef4f4d26",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 1097
+    },
+    {
+      "path": "/channels/6ad7123398c9b95fef4f4d26",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 1097
+    },
+    {
+      "path": "/channels/6ad7123398c9b95fef4f4d26/study",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 387
+    },
+    {
+      "path": "/channels/6ad7123398c9b95fef4f4d26/study",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 387
+    },
+    {
+      "path": "/channels/6ad7123398c9b95fef4f4d26/study",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 387
+    },
+    {
+      "path": "/study-rooms/aaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 62
+    },
+    {
+      "path": "/study-rooms/aaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 62
+    },
+    {
+      "path": "/study-rooms/aaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 62
+    },
+    {
+      "path": "/learn",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 324
+    },
+    {
+      "path": "/learn",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 324
+    },
+    {
+      "path": "/learn",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 324
+    },
+    {
+      "path": "/learn/onboarding",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 1125
+    },
+    {
+      "path": "/learn/onboarding",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 1125
+    },
+    {
+      "path": "/learn/onboarding",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 1125
+    },
+    {
+      "path": "/learn/preferences",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 464
+    },
+    {
+      "path": "/learn/preferences",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 464
+    },
+    {
+      "path": "/learn/preferences",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 464
+    },
+    {
+      "path": "/learn/history",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 220
+    },
+    {
+      "path": "/learn/history",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 220
+    },
+    {
+      "path": "/learn/history",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 220
+    },
+    {
+      "path": "/learn/nodes/00000000-0000-4000-8000-000000000001",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 129
+    },
+    {
+      "path": "/learn/nodes/00000000-0000-4000-8000-000000000001",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 129
+    },
+    {
+      "path": "/learn/nodes/00000000-0000-4000-8000-000000000001",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 129
+    },
+    {
+      "path": "/learn/quiz/00000000-0000-4000-8000-000000000001",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 252
+    },
+    {
+      "path": "/learn/quiz/00000000-0000-4000-8000-000000000001",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 252
+    },
+    {
+      "path": "/learn/quiz/00000000-0000-4000-8000-000000000001",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 252
+    },
+    {
+      "path": "/learn/missing",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 111
+    },
+    {
+      "path": "/learn/missing",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 111
+    },
+    {
+      "path": "/learn/missing",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 111
+    },
+    {
+      "path": "/arcade",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 1180
+    },
+    {
+      "path": "/arcade",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 1180
+    },
+    {
+      "path": "/arcade",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 1180
+    },
+    {
+      "path": "/arcade/daily",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 392
+    },
+    {
+      "path": "/arcade/daily",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 392
+    },
+    {
+      "path": "/arcade/daily",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 392
+    },
+    {
+      "path": "/arcade/numberguess",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 303
+    },
+    {
+      "path": "/arcade/numberguess",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 303
+    },
+    {
+      "path": "/arcade/numberguess",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 303
+    },
+    {
+      "path": "/arcade/mathamplitude",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 374
+    },
+    {
+      "path": "/arcade/mathamplitude",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 374
+    },
+    {
+      "path": "/arcade/mathamplitude",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 374
+    },
+    {
+      "path": "/arcade/sorting",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 440
+    },
+    {
+      "path": "/arcade/sorting",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 440
+    },
+    {
+      "path": "/arcade/sorting",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 440
+    },
+    {
+      "path": "/arcade/spotbug",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 366
+    },
+    {
+      "path": "/arcade/spotbug",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 366
+    },
+    {
+      "path": "/arcade/spotbug",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 366
+    },
+    {
+      "path": "/arcade/missing",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 62
+    },
+    {
+      "path": "/arcade/missing",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 62
+    },
+    {
+      "path": "/arcade/missing",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 62
+    },
+    {
+      "path": "/interview",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 733
+    },
+    {
+      "path": "/interview",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 733
+    },
+    {
+      "path": "/interview",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 733
+    },
+    {
+      "path": "/interview/new",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 180
+    },
+    {
+      "path": "/interview/new",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 180
+    },
+    {
+      "path": "/interview/new",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 180
+    },
+    {
+      "path": "/interview/history",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 659
+    },
+    {
+      "path": "/interview/history",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 659
+    },
+    {
+      "path": "/interview/history",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 659
+    },
+    {
+      "path": "/interview/interviews/aaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 106
+    },
+    {
+      "path": "/interview/interviews/aaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 106
+    },
+    {
+      "path": "/interview/interviews/aaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 106
+    },
+    {
+      "path": "/interview/sessions/aaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 229
+    },
+    {
+      "path": "/interview/sessions/aaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 229
+    },
+    {
+      "path": "/interview/sessions/aaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 229
+    },
+    {
+      "path": "/interview/results/aaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 118
+    },
+    {
+      "path": "/interview/results/aaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 118
+    },
+    {
+      "path": "/interview/results/aaaaaaaaaaaaaaaaaaaaaaaa",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 118
+    },
+    {
+      "path": "/interview/missing",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 71
+    },
+    {
+      "path": "/interview/missing",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 71
+    },
+    {
+      "path": "/interview/missing",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 71
+    },
+    {
+      "path": "/verify-email",
+      "width": 360,
+      "overflow": false,
+      "main": true,
+      "text": 1167
+    },
+    {
+      "path": "/verify-email",
+      "width": 768,
+      "overflow": false,
+      "main": true,
+      "text": 1167
+    },
+    {
+      "path": "/verify-email",
+      "width": 1280,
+      "overflow": false,
+      "main": true,
+      "text": 1167
+    }
+  ],
+  "failures": [],
+  "participants": 0,
+  "routeAuditReused": true
+}

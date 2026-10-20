@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.js",
+    "membership:cutover": "node scripts/membershipCutover.js",
+    "migrate": "node scripts/migrate.js",
     "start": "node index.js",
     "seed": "node seed.js",
     "seed:calendar": "node scripts/seedCalendar.js",

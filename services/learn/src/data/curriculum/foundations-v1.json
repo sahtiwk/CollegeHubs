@@ -1,0 +1,255 @@
+{
+  "version": "foundations-v1",
+  "license": "CC0-1.0",
+  "provenance": "Original CollegeHubs outlines and questions; external documentation linked, not reproduced. Four legacy topics retain equivalent concepts and original questions.",
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Codex static content and answer review",
+    "reviewedAt": "2026-10-20",
+    "notes": "Original bounded practice; checked unique answers, scenario consistency and prerequisites. Not independent human certification or calibrated assessment."
+  },
+  "domains": [
+    {
+      "id": "dsa",
+      "label": "Data structures & algorithms",
+      "description": "Collections, traversal and algorithm cost."
+    },
+    {
+      "id": "web",
+      "label": "Web development",
+      "description": "Structure, style and browser requests."
+    },
+    {
+      "id": "ml",
+      "label": "Machine learning",
+      "description": "Data, training and honest evaluation."
+    },
+    {
+      "id": "backend",
+      "label": "Backend development",
+      "description": "Requests, validation and durable data."
+    },
+    {
+      "id": "devops",
+      "label": "DevOps",
+      "description": "Version control, automated checks and containers."
+    }
+  ],
+  "nodes": [
+    {
+      "slug": "arrays",
+      "domain": "dsa",
+      "label": "Arrays & indexed collections",
+      "prerequisites": [],
+      "resourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Indexed_collections",
+      "wikipediaTitle": "Array data structure",
+      "canonicalId": "f44e1395-c7c9-4dbb-8290-6563fb514344",
+      "required": true,
+      "description": "Understand arrays & indexed collections through reading and practice.",
+      "resourceTitle": "Arrays & indexed collections",
+      "resourceSummary": "Read the guide, trace an example and explain its result in your own words."
+    },
+    {
+      "slug": "iteration",
+      "domain": "dsa",
+      "label": "Iteration & traversal",
+      "prerequisites": [
+        "arrays"
+      ],
+      "resourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Loops_and_iteration",
+      "wikipediaTitle": "Iteration",
+      "canonicalId": "7ae403c2-b540-41c1-8e91-e6433cb54e75",
+      "required": true,
+      "description": "Understand iteration & traversal through reading and practice.",
+      "resourceTitle": "Iteration & traversal",
+      "resourceSummary": "Read the guide, trace an example and explain its result in your own words."
+    },
+    {
+      "slug": "html",
+      "domain": "web",
+      "label": "HTML foundations",
+      "prerequisites": [],
+      "resourceUrl": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Basic_HTML_syntax",
+      "wikipediaTitle": "HTML",
+      "canonicalId": "fb61b17a-af8e-4f51-8c7a-3699c069171d",
+      "required": true,
+      "description": "Understand html foundations through reading and practice.",
+      "resourceTitle": "HTML foundations",
+      "resourceSummary": "Read the guide, trace an example and explain its result in your own words."
+    },
+    {
+      "slug": "css",
+      "domain": "web",
+      "label": "CSS foundations",
+      "prerequisites": [
+        "html"
+      ],
+      "resourceUrl": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/What_is_CSS",
+      "wikipediaTitle": "CSS",
+      "canonicalId": "ad3ea9a9-6e6e-41a0-8c20-cecd23a27e46",
+      "required": true,
+      "description": "Understand css foundations through reading and practice.",
+      "resourceTitle": "CSS foundations",
+      "resourceSummary": "Read the guide, trace an example and explain its result in your own words."
+    },
+    {
+      "slug": "complexity",
+      "domain": "dsa",
+      "label": "Algorithm cost",
+      "prerequisites": [
+        "iteration"
+      ],
+      "resourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Loops_and_iteration",
+      "wikipediaTitle": "Algorithm cost",
+      "canonicalId": "6ac9f02f-49b4-447c-8ba9-b0af1c7750f4",
+      "required": true,
+      "description": "Build a practical foundation in algorithm cost.",
+      "resourceTitle": "Algorithm cost",
+      "resourceSummary": "Read the linked documentation and relate its concepts to a small example before the checkpoint."
+    },
+    {
+      "slug": "http",
+      "domain": "web",
+      "label": "Browser requests and responses",
+      "prerequisites": [
+        "css"
+      ],
+      "resourceUrl": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview",
+      "wikipediaTitle": "Browser requests and responses",
+      "canonicalId": "77ef7a2c-c4b1-463c-8c12-a23cadc4d5fb",
+      "required": true,
+      "description": "Build a practical foundation in browser requests and responses.",
+      "resourceTitle": "Browser requests and responses",
+      "resourceSummary": "Read the linked documentation and relate its concepts to a small example before the checkpoint."
+    },
+    {
+      "slug": "data",
+      "domain": "ml",
+      "label": "Features, targets and samples",
+      "prerequisites": [],
+      "resourceUrl": "https://scikit-learn.org/stable/getting_started.html",
+      "wikipediaTitle": "Features, targets and samples",
+      "canonicalId": "80d83551-9867-48cd-8c13-2abb9858f35e",
+      "required": true,
+      "description": "Build a practical foundation in features, targets and samples.",
+      "resourceTitle": "Features, targets and samples",
+      "resourceSummary": "Read the linked documentation and relate its concepts to a small example before the checkpoint."
+    },
+    {
+      "slug": "training",
+      "domain": "ml",
+      "label": "Training and held-out data",
+      "prerequisites": [
+        "data"
+      ],
+      "resourceUrl": "https://scikit-learn.org/stable/common_pitfalls.html",
+      "wikipediaTitle": "Training and held-out data",
+      "canonicalId": "2de2a56b-5dec-47d3-8715-c87483ddf00e",
+      "required": true,
+      "description": "Build a practical foundation in training and held-out data.",
+      "resourceTitle": "Training and held-out data",
+      "resourceSummary": "Read the linked documentation and relate its concepts to a small example before the checkpoint."
+    },
+    {
+      "slug": "evaluation",
+      "domain": "ml",
+      "label": "Evaluation and error analysis",
+      "prerequisites": [
+        "training"
+      ],
+      "resourceUrl": "https://scikit-learn.org/stable/modules/model_evaluation.html",
+      "wikipediaTitle": "Evaluation and error analysis",
+      "canonicalId": "8bb4445c-dbe1-4c71-8ef0-57bcc1df2fa8",
+      "required": true,
+      "description": "Build a practical foundation in evaluation and error analysis.",
+      "resourceTitle": "Evaluation and error analysis",
+      "resourceSummary": "Read the linked documentation and relate its concepts to a small example before the checkpoint."
+    },
+    {
+      "slug": "requests",
+      "domain": "backend",
+      "label": "Request handling and routes",
+      "prerequisites": [],
+      "resourceUrl": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Server-side/First_steps/Client-Server_overview",
+      "wikipediaTitle": "Request handling and routes",
+      "canonicalId": "6d3cb51e-9e46-4786-8ac1-a4931caa0493",
+      "required": true,
+      "description": "Build a practical foundation in request handling and routes.",
+      "resourceTitle": "Request handling and routes",
+      "resourceSummary": "Read the linked documentation and relate its concepts to a small example before the checkpoint."
+    },
+    {
+      "slug": "validation",
+      "domain": "backend",
+      "label": "Validation and trust boundaries",
+      "prerequisites": [
+        "requests"
+      ],
+      "resourceUrl": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Server-side/First_steps/Website_security",
+      "wikipediaTitle": "Validation and trust boundaries",
+      "canonicalId": "0c0273a0-ec20-41d1-84d4-1af48ec15067",
+      "required": true,
+      "description": "Build a practical foundation in validation and trust boundaries.",
+      "resourceTitle": "Validation and trust boundaries",
+      "resourceSummary": "Read the linked documentation and relate its concepts to a small example before the checkpoint."
+    },
+    {
+      "slug": "persistence",
+      "domain": "backend",
+      "label": "Durable data and transactions",
+      "prerequisites": [
+        "validation"
+      ],
+      "resourceUrl": "https://www.postgresql.org/docs/current/tutorial-transactions.html",
+      "wikipediaTitle": "Durable data and transactions",
+      "canonicalId": "92e48f32-82ed-4abc-89da-2d28d637ea1d",
+      "required": true,
+      "description": "Build a practical foundation in durable data and transactions.",
+      "resourceTitle": "Durable data and transactions",
+      "resourceSummary": "Read the linked documentation and relate its concepts to a small example before the checkpoint."
+    },
+    {
+      "slug": "git",
+      "domain": "devops",
+      "label": "Version control foundations",
+      "prerequisites": [],
+      "resourceUrl": "https://git-scm.com/docs/gittutorial",
+      "wikipediaTitle": "Version control foundations",
+      "canonicalId": "5e05462e-fe3c-43a3-87ca-6ac11ba7ed85",
+      "required": true,
+      "description": "Build a practical foundation in version control foundations.",
+      "resourceTitle": "Version control foundations",
+      "resourceSummary": "Read the linked documentation and relate its concepts to a small example before the checkpoint."
+    },
+    {
+      "slug": "ci",
+      "domain": "devops",
+      "label": "Continuous integration checks",
+      "prerequisites": [
+        "git"
+      ],
+      "resourceUrl": "https://docs.github.com/en/actions/get-started/understand-github-actions",
+      "wikipediaTitle": "Continuous integration checks",
+      "canonicalId": "eea14d6e-c2f4-4835-82c5-1bc6c33ebd43",
+      "required": true,
+      "description": "Build a practical foundation in continuous integration checks.",
+      "resourceTitle": "Continuous integration checks",
+      "resourceSummary": "Read the linked documentation and relate its concepts to a small example before the checkpoint."
+    },
+    {
+      "slug": "containers",
+      "domain": "devops",
+      "label": "Containers and environments",
+      "prerequisites": [
+        "ci"
+      ],
+      "resourceUrl": "https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/",
+      "wikipediaTitle": "Containers and environments",
+      "canonicalId": "e9f148b9-db22-4c0e-82df-91a9af4e21a0",
+      "required": true,
+      "description": "Build a practical foundation in containers and environments.",
+      "resourceTitle": "Containers and environments",
+      "resourceSummary": "Read the linked documentation and relate its concepts to a small example before the checkpoint."
+    }
+  ]
+}

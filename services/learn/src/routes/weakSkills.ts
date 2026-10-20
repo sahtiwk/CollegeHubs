@@ -10,7 +10,7 @@ export const weakSkills = (pool: Database, config: LearnConfig) => async (req: R
     await client.query('BEGIN READ ONLY');
     await client.query("SET LOCAL statement_timeout = '500ms'");
     // Select the latest final assessment BEFORE filtering its grade. Resets and inactive paths are excluded.
-    const { rows } = await client.query(`SELECT n.id AS "nodeId", n.label, n.version,
+    const { rows } = await client.query(`SELECT n.id AS "nodeId", n.label, n.version, n.domain,
       'Last assessed ratio below 0.6' AS reason, a.finalized_at AS "asOf"
       FROM learner_node_state s
       JOIN enrollment e ON e.hub_id=s.hub_id AND e.user_id=s.user_id AND e.domain=s.domain AND e.version=s.version AND e.active

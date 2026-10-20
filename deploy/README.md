@@ -1,5 +1,9 @@
 # Free staging deployment
 
+For the current transition release, use [TP11.1 evidence](../docs/tp11.1-evidence.md) and [retained restore procedure](../docs/transition-restore.md). `npm run release:manifest` records local source/build hashes; `npm run release:smoke` checks existing assigned origins anonymously. Neither deploys. Review account plans, retained snapshots and an immutable approved artifact before rollout.
+
+Existing credentials are preserved. New staging bundles include `arcade.daily_completed`, `learn.path_completed` and distinct read keys; older credentials require an explicit scope/configuration review rather than regeneration. `sync: false` settings preserve operator control but do not validate existing provider settings.
+
 Status: P11.1 deployed password-login MVP verified on 2026-10-10: four Render Free APIs, Pages frontend/gateway, Atlas and Neon. See [dated deployment evidence](../docs/p11.1-evidence.md) and [P11.2 release verification](../docs/release-evidence.md). Use free provider hostnames; cvr.ac.in is the membership domain, not an assumed custom hosting domain. The steps below are a setup runbook, not instructions to recreate existing services.
 
 1. Sign into Cloudflare Pages, Render, Atlas and Neon with your own accounts/MFA. Select Free, without paid upgrades. Connect this repository when ready to publish. No friend's deployment or credentials are needed.

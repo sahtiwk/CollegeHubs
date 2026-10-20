@@ -536,11 +536,11 @@ function patch(model, name, fn) { const original = model[name]; restores.push(()
 test.beforeEach(() => {
   restores = [];
   users = [
-    { _id: id(1), username: 'alice', email: 'alice@a.example.test', hubId: id(10), membershipStatus: 'active', membershipVersion: 1, college: 'A' },
-    { _id: id(2), username: 'bob', email: 'bob@b.example.test', hubId: id(20), membershipStatus: 'active', membershipVersion: 1, college: 'B' },
+    { _id: id(1), username: 'alice', email: 'alice@a.example.test', hubId: id(10), membershipStatus: 'active', membershipVerified: true, verificationMethod: 'email', emailVerificationMethod: 'email', emailVerifiedAt: new Date(), membershipVersion: 1, college: 'A' },
+    { _id: id(2), username: 'bob', email: 'bob@b.example.test', hubId: id(20), membershipStatus: 'active', membershipVerified: true, verificationMethod: 'email', emailVerificationMethod: 'email', emailVerifiedAt: new Date(), membershipVersion: 1, college: 'B' },
     { _id: id(3), username: 'unknown', email: 'unknown@example.test', hubId: null, membershipStatus: 'unassigned', membershipVersion: 0 },
     { _id: id(4), username: 'legacy', email: 'legacy@example.test', college: 'A' },
-    { _id: id(5), username: 'peer', email: 'peer@a.example.test', hubId: id(10), membershipStatus: 'active', membershipVersion: 1 },
+    { _id: id(5), username: 'peer', email: 'peer@a.example.test', hubId: id(10), membershipStatus: 'active', membershipVerified: true, verificationMethod: 'email', emailVerificationMethod: 'email', emailVerifiedAt: new Date(), membershipVersion: 1 },
   ];
   hubs = [{ _id: id(10), hubId: id(10), collegeId: id(100), status: 'active' }, { _id: id(20), hubId: id(20), collegeId: id(200), status: 'active' }];
   users.forEach(user => { user.auraPoints = 0; });

@@ -26,7 +26,7 @@ function verifyReadToken(token, { module: name, issuer, publicKeys, purpose = 's
     return Object.freeze({ ...c, scope: Object.freeze([...c.scope]) });
   } catch { return invalid(); }
 }
-const countFields = Object.freeze({ learn: ['enrollments', 'completedNodes', 'completedQuizzes', 'pending'], arcade: ['completedGames', 'wins', 'pending'], interview: ['completedInterviews', 'pending'] });
+const countFields = Object.freeze({ learn: ['enrollments', 'completedNodes', 'completedQuizzes', 'pending','requiredNodes','optionalNodes','completedPaths'], arcade: ['completedGames', 'wins', 'pending'], interview: ['completedInterviews', 'pending'] });
 function authorizeRead(req, config, name, purpose = 'summary') {
   const { timingSafeEqual } = require('node:crypto');
   const deny = () => { throw Object.assign(new Error('Read delegation required'), { status: 401, code: 'READ_DELEGATION_REQUIRED' }); };
@@ -36,4 +36,31 @@ function authorizeRead(req, config, name, purpose = 'summary') {
   if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) return deny();
   try { return verifyReadToken(req.get('X-Module-Read'), { ...config, module: name, purpose }); } catch { return deny(); }
 }
-module.exports = { verifyReadToken, authorizeRead, countFields };
+const summaryVersion = 2;
+const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
+const mongoId = /^[a-f0-9]{24}$/;
+const domains = ['dsa','web','ml','backend','devops'];
+function validNext(name, value) {
+  if (value === null) return true;
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const keys=Object.keys(value).sort().join(',');
+  if(name==='learn')return keys==='id,kind'&&['node','quiz'].includes(value.kind)&&uuid.test(value.id);
+  if(name==='interview')return keys==='id,kind'&&['session','report'].includes(value.kind)&&mongoId.test(value.id);
+  return name==='arcade'&&keys==='gameId,id,kind'&&value.kind==='game'&&mongoId.test(value.id)&&['numberguess','mathamplitude','sorting','spotbug'].includes(value.gameId);
+}
+function validateSummary(name,data,now=Date.now()){
+  if(!data||data.status!=='ok'||typeof data.asOf!=='string'||!Number.isFinite(Date.parse(data.asOf))||Math.abs(now-Date.parse(data.asOf))>30000)throw Error('Invalid summary');
+  const v2=data.schemaVersion===summaryVersion;
+  const fields=!v2&&name==='learn'&&!['requiredNodes','optionalNodes','completedPaths'].some(k=>Object.hasOwn(data,k))?countFields.learn.slice(0,4):countFields[name];
+  const extra=v2?['status','asOf','schemaVersion','next',...(name==='learn'?['paths']:[])]:['status','asOf'];
+  if(!fields||Object.keys(data).sort().join(',')!==[...fields,...extra].sort().join(',')||fields.some(k=>!Number.isSafeInteger(data[k])||data[k]<0))throw Error('Invalid summary');
+  if(v2){
+    if(!validNext(name,data.next))throw Error('Invalid continuation');
+    if(name==='learn'){
+      if(!Array.isArray(data.paths)||data.paths.length>5||new Set(data.paths.map(p=>p?.domain)).size!==data.paths.length)throw Error('Invalid paths');
+      for(const p of data.paths)if(!p||Object.keys(p).sort().join(',')!=='completed,domain,required,version'||!domains.includes(p.domain)||!['demo-v1','foundations-v1'].includes(p.version)||!Number.isSafeInteger(p.required)||p.required<1||!Number.isSafeInteger(p.completed)||p.completed<0||p.completed>p.required)throw Error('Invalid path');
+    }
+  }
+  return data;
+}
+module.exports = { verifyReadToken, authorizeRead, countFields, summaryVersion, validateSummary, validNext };

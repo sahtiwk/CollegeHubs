@@ -1,0 +1,31 @@
+/* Campus editorial, semantic token version 2. One tested light theme. */
+:root {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  --font-editorial: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --canvas: #F6F5EE; --panel: #FFFFFF; --panel-subtle: #EDEEE5;
+  --ink: #20241E; --ink-muted: #50594B; --line: #737B6C;
+  --primary: #2447D8; --primary-hover: #1935AF; --on-primary: #FFFFFF;
+  --focus: #2447D8; --focus-on-dark: #DCE4FF;
+  --positive: #166534; --positive-surface: #F0FDF4;
+  --caution: #854D0E; --caution-surface: #FFFBEB;
+  --negative: #B91C1C; --negative-surface: #FEF2F2;
+  --info: #1E40AF; --info-surface: #EFF6FF;
+  --hero-surface: #111827; --hero-ink: #FFFFFF; --hero-muted: #CBD5E1;
+  --hub-accent: #310A31; --hub-on-accent: #FFFFFF; --hub-secondary: #FFD3B6;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
+  --radius-control: 5px; --radius-card: 8px; --radius-pill: 999px;
+  --duration-control: 150ms; --duration-panel: 220ms; --duration-enter: 320ms;
+  --ease-out: cubic-bezier(.2,.8,.2,1); --reading-width: 70ch;
+  /* Compatibility bridge for existing feature CSS until its own redesign phase. */
+  --background: var(--canvas); --surface: var(--panel); --surface-raised: var(--panel-subtle);
+  --text: var(--ink); --text-muted: var(--ink-muted); --border: var(--line);
+  --accent: var(--primary); --secondary: var(--panel-subtle);
+  --success: var(--positive); --warning: var(--caution); --error: var(--negative);
+}
+@media (prefers-reduced-motion: reduce) {
+  :root { --duration-control: 0ms; --duration-panel: 0ms; --duration-enter: 0ms; }
+}
+[data-motion="off"] { --duration-control: 0ms; --duration-panel: 0ms; --duration-enter: 0ms; }
+[data-motion="off"] *, [data-motion="off"] *::before, [data-motion="off"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

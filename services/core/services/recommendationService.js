@@ -28,9 +28,15 @@ function createRecommendationService(read){
     const session=await ModuleGrant.findOne({module:'interview',userId:body.userId,hubId:body.hubId,membershipVersion:body.membershipVersion,accessJti:body.accessJti,accessExpiresAt:{$gt:at},consumedAt:{$ne:null}});
     if(!session || session.kind==='recommendation')throw failure(401,'INTERVIEW_SESSION_REQUIRED','A current Interview session is required.');
     const filter={kind:'recommendation',module:'interview',recommendationHash:digest(body.recommendationRef),userId:body.userId,hubId:body.hubId,membershipVersion:body.membershipVersion,consumedAt:null,expiresAt:{$gt:at}};
-    const row=await ModuleGrant.findOneAndUpdate(filter,{$set:{consumedAt:at}},{new:true});
+    const candidate=await ModuleGrant.findOne(filter);
+    if(!candidate)throw failure(409,'RECOMMENDATION_INVALID','Recommendation expired or already used. Select topics again.');
+    const currentTopics=(await read(owner)).items;
+    if(candidate.topics.some(t=>!currentTopics.some(c=>c.nodeId===t.nodeId&&c.version===t.version&&c.label===t.label&&Date.parse(c.asOf)===+t.asOf)))throw failure(409,'RECOMMENDATION_INVALID','Your learning path or assessment changed. Refresh topic suggestions.');
+    const currentOwner=await requireHubAccess({sub:body.userId},body.hubId);
+    if(currentOwner.membershipVersion!==body.membershipVersion||!await ModuleGrant.exists({_id:session._id,accessExpiresAt:{$gt:new Date()}}))throw failure(401,'INTERVIEW_SESSION_REQUIRED','Reconnect Interview and select topics again.');
+    const row=await ModuleGrant.findOneAndUpdate({...filter,expiresAt:{$gt:new Date()}},{$set:{consumedAt:at}},{new:true});
     if(!row)throw failure(409,'RECOMMENDATION_INVALID','Recommendation expired or already used. Select topics again.');
-    return {topics:validateTopics(row.topics.map(t=>({nodeId:t.nodeId,label:t.label,version:t.version,reason:t.reason,asOf:t.asOf.toISOString()})))};
+    return {topics:validateTopics(row.topics.map(t=>({...(t.domain?{domain:t.domain}:{}),nodeId:t.nodeId,label:t.label,version:t.version,reason:t.reason,asOf:t.asOf.toISOString()})))};
   }
   return {suggestions,issue,consume};
 }

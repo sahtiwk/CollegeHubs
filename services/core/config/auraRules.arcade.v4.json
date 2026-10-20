@@ -1,0 +1,24 @@
+{
+  "version": "arcade-v4-daily-v1",
+  "timezone": "Asia/Kolkata",
+  "timezonePolicyVersion": 1,
+  "types": {
+    "arcade.game_completed": {
+      "weight": 5,
+      "countCap": 4,
+      "sourceCap": 30
+    },
+    "arcade.daily_completed": {
+      "weight": 15,
+      "countCap": 1,
+      "sourceCap": 30
+    }
+  },
+  "games": {
+    "numberguess": "numberguess-v1",
+    "mathamplitude": "mathamplitude-v1",
+    "sorting": "sorting-v1",
+    "spotbug": "spotbug-v1"
+  },
+  "dailyRulesVersion": "daily-v1"
+}

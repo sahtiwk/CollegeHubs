@@ -1,23 +1,24 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import channelContract from '@collegehubs/contracts/channel.cjs';
-
-const keywords = new Set('const let var function return if else for while class new import export from async await throw try catch true false null undefined def in not and or None True False lambda with as pass break continue public private static void int string String boolean double include SELECT FROM WHERE JOIN ON INSERT INTO VALUES UPDATE SET'.split(' '));
-// A bounded lexical highlighter: only text nodes and allowlisted span classes.
-// No HTML generation, auto-detection, eval, dynamic grammar imports, or pasted markup.
-export function codeTokens(source, language) {
-  if (!channelContract.languages.includes(language) || language === 'plaintext') return [source];
-  const pattern = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/|#[^\n]*|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`|\b\d+(?:\.\d+)?\b|\b[A-Za-z_$][\w$]*\b)/g;
-  const parts = []; let offset = 0;
-  for (const match of source.matchAll(pattern)) {
-    parts.push(source.slice(offset, match.index));
-    const value = match[0];
-    const kind = /^(\/\/|\/\*|#)/.test(value) ? 'comment' : /^["'`]/.test(value) ? 'string' : /^\d/.test(value) ? 'number' : keywords.has(value) ? 'keyword' : null;
-    parts.push(kind ? { value, kind } : value); offset = match.index + value.length;
-  }
-  parts.push(source.slice(offset)); return parts;
-}
+import { safeTokens } from '../code/safeTokens';
+function render(nodes) { return nodes.map((node,index) => typeof node === 'string' ? node : <span key={index} className={'syntax-' + node.kind}>{render(node.children)}</span>); }
 export default function CodeBlock({ text, language }) {
-  return <div className="code-block"><div className="code-caption">{channelContract.languages.includes(language) ? language : 'plaintext'} &middot; saved code</div>
-    <pre tabIndex={0} aria-label={`${language || 'Plain text'} code; scroll horizontally for long lines`}><code>{codeTokens(text, language).map((part, index) => typeof part === 'string' ? part : <span key={index} className={'syntax-' + part.kind}>{part.value}</span>)}</code></pre>
-  </div>;
+ const source = typeof text === 'string' ? text : '';
+ const known = channelContract.languages.includes(language) ? language : 'plaintext';
+ const [result, setResult] = useState(null), [copied, setCopied] = useState('');
+ useEffect(() => {
+  setResult(null); setCopied('');
+  if (known === 'plaintext' || new TextEncoder().encode(source).length > 32768) return;
+  let worker, timer, stopped = false;
+  const stop = () => { stopped = true; clearTimeout(timer); worker?.terminate(); };
+  try {
+   worker = new Worker(new URL('../code/highlight.worker.js', import.meta.url), { type: 'module' });
+   timer = setTimeout(stop, 3000);
+   worker.onmessage = ({data}) => { if (stopped) return; try { if (!data.failed) setResult({ source, known, tokens: safeTokens(data.html, source) }); } catch { /* Literal text stays visible. */ } stop(); };
+   worker.onerror = stop; worker.postMessage({ text: source, language: known });
+  } catch { stop(); }
+  return stop;
+ }, [source, known]);
+ async function copy() { try { await navigator.clipboard.writeText(source); setCopied('Copied exactly.'); } catch { setCopied('Select the code to copy it.'); } }
+ return <div className="code-block"><div className="code-caption"><span>{known} · saved source</span><button onClick={copy}>Copy code</button></div><pre tabIndex={0} aria-label={`${known} code; scroll horizontally for long lines`}><code>{result?.source === source && result.known === known ? render(result.tokens) : source}</code></pre><span className="code-copy-status" role="status">{copied}</span></div>;
 }

@@ -13,6 +13,8 @@ export function learningRoutes(pool: Database, store: SessionStore) {
   r.get('/profile/preferences', wrap(c.profile)); r.put('/profile/preferences', wrap(c.preferences));
   r.post('/onboarding/profile', wrap(c.onboardingProfile)); r.post('/onboarding', wrap(c.onboard));
   r.post('/learner/intake', wrap(c.intake)); r.post('/learner/init-graph', wrap(c.initialize));
+  r.post('/profile/path/upgrade',wrap(c.upgrade));
+  r.post('/remediation/review',wrap(c.reviewRemediation));
   r.get('/nodes/:id', wrap(c.node)); r.post('/recommendation', wrap(c.recommend));
   r.post('/tutor/fast', wrap(c.tutor)); r.delete('/profile/path', wrap(c.reset));
   return r;

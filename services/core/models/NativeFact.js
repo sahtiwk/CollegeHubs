@@ -13,4 +13,5 @@ const schema = new mongoose.Schema({
   receipt: { type: Object, default: null },
 }, { timestamps: true, strict: 'throw' });
 schema.index({ hubId: 1, userId: 1, occurredAt: -1 });
+schema.index({ hubId: 1, userId: 1, type: 1, occurredAt: 1 });
 module.exports = mongoose.model('NativeFact', schema);

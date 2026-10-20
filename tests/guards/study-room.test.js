@@ -23,12 +23,48 @@ test('G4: durable rooms, deadline fences, privacy and recovery', async t => {
     const hub = await require('../../services/core/services/hubProvisioning').ensureHubForCollege(college.id);
     const channel = await m.Channel.findOne({ hubId: hub.id });
     const users = [];
-    for (let i = 0; i < 10; i++) users.push(await m.User.create({ username: 'study-' + i, email: i + '@study.example.test', googleSubject: 'synthetic-' + i, hubId: hub.id, membershipStatus: 'active', membershipVersion: 1 }));
+    for (let i = 0; i < 10; i++) users.push(await m.User.create({ username: 'study-' + i, email: i + '@study.example.test', googleSubject: 'synthetic-' + i, hubId: hub.id, membershipStatus: 'active', membershipVerified: true, verificationMethod: 'email', emailVerificationMethod: 'email', emailVerifiedAt: new Date(), membershipVersion: 1 }));
     const auth = require('../../services/core/config/auth');
     const claims = users.map(user => auth.verifyToken(auth.generateToken(user)));
     const problem = (await study.problems(claims[0])).items[0];
     const create = () => study.create(claims[0], { channelId: channel.id, problemId: problem._id, durationMinutes: 5, clientRoomId: randomUUID() });
     const active = async () => { const room = await create(); await study.join(claims[1], room.room._id, {}); return study.start(claims[0], room.room._id, {}); };
+    await t.test('host-only waiting cancellation is replayable, retained and awards nothing', async () => {
+      const { room } = await study.create(claims[8], { channelId: channel.id, problemId: problem._id, durationMinutes: 5, clientRoomId: randomUUID() }), id = room._id;
+      await study.join(claims[9], id, {});
+      await assert.rejects(study.cancel(claims[9], id, {}), { status: 403 });
+      await assert.rejects(study.cancel(claims[2], id, {}), { status: 404 });
+      await assert.rejects(study.cancel(claims[8], id, { status: 'review' }), { status: 400 });
+      const first = await study.cancel(claims[8], id, {});
+      const retry = await study.cancel(claims[8], id, {});
+      assert.equal(first.room.status, 'cancelled');
+      assert.equal(retry.room.version, first.room.version);
+      assert.equal(retry.room.closedAt, first.room.closedAt);
+      assert.equal(first.room.startAt, null); assert.equal(first.room.endAt, null);
+      await assert.rejects(study.start(claims[8], id, {}), { status: 409 });
+      await assert.rejects(study.join(claims[2], id, {}), { status: 409 });
+      await assert.rejects(study.save(claims[8], id, { expectedRevision: 0, revision: 1, source: 'x', language: 'javascript' }), { status: 409 });
+      await assert.rejects(study.submissions(claims[9], id), { status: 409 });
+      assert.equal(await study.closeDue(id), null);
+      assert.equal((await study.snapshot(claims[9], id)).room.status, 'cancelled');
+      const rows = await m.StudySolution.find({roomId:id});
+      assert.equal(rows.length, 2);
+      assert.ok(rows.every(row => !row.sealedAt && !row.awardEventId && row.awardStatus === 'ineligible'));
+      assert.equal(await m.NativeFact.countDocuments({ sourceId: { $in: rows.map(row => row.id) } }), 0);
+    });
+    await t.test('start versus cancel has exactly one winner and cannot change a running room', async () => {
+      const { room } = await study.create(claims[8], { channelId: channel.id, problemId: problem._id, durationMinutes: 5, clientRoomId: randomUUID() }), id = room._id;
+      await study.join(claims[9], id, {});
+      const results = await Promise.allSettled([study.start(claims[8], id, {}), study.cancel(claims[8], id, {})]);
+      assert.equal(results.filter(row => row.status === 'fulfilled').length, 1);
+      assert.equal(results.find(row => row.status === 'rejected').reason.status, 409);
+      const final = await study.snapshot(claims[8], id);
+      assert.equal(final.room.version, 3);
+      if (final.room.status === 'active') {
+        await assert.rejects(study.cancel(claims[8], id, {}), { status: 409 });
+        assert.ok(final.room.endAt); assert.equal(final.room.closedAt, null);
+      } else { assert.equal(final.room.status, 'cancelled'); assert.equal(final.room.endAt, null); }
+    });
     await t.test('waiting-only joins, host start, immutable deadline and creation replay', async () => {
       const body = { channelId: channel.id, problemId: problem._id, durationMinutes: 5, clientRoomId: randomUUID() };
       const [one, two] = await Promise.all([study.create(claims[0], body), study.create(claims[0], body)]);
@@ -97,7 +133,7 @@ test('G4: durable rooms, deadline fences, privacy and recovery', async t => {
       assert.equal((await m.StudyRoom.findById(room._id)).participantIds.length, 8);
       const foreignCollege = await m.College.create({ name: 'Other', slug: 'other-study', status: 'active', timezone: 'Asia/Kolkata', domains: [{ normalizedDomain: 'other-study.example.test', verifiedAt: new Date(), evidenceRef: 'synthetic' }] });
       const foreignHub = await require('../../services/core/services/hubProvisioning').ensureHubForCollege(foreignCollege.id);
-      const foreignUser = await m.User.create({ username: 'foreign-study', email: 'foreign@other-study.example.test', googleSubject: 'foreign-study', hubId: foreignHub.id, membershipStatus: 'active', membershipVersion: 1 });
+      const foreignUser = await m.User.create({ username: 'foreign-study', email: 'foreign@other-study.example.test', googleSubject: 'foreign-study', hubId: foreignHub.id, membershipStatus: 'active', membershipVerified: true, verificationMethod: 'email', emailVerificationMethod: 'email', emailVerifiedAt: new Date(), membershipVersion: 1 });
       const foreign = auth.verifyToken(auth.generateToken(foreignUser));
       for (const method of ['snapshot', 'join', 'start', 'submissions']) await assert.rejects(study[method](foreign, room._id, {}), { status: 404 });
       const own = await active();
@@ -187,6 +223,8 @@ test('G4: durable rooms, deadline fences, privacy and recovery', async t => {
       try {
         let base = await launch();
         hostSocket = await socket(base, users[0]); peerSocket = await socket(base, users[1]); outsider = await socket(base, users[2]);
+        assert.equal((await ack(peerSocket, 'study:cancel', { roomId: id })).error.code, 'STUDY_HOST_REQUIRED');
+        assert.equal((await ack(hostSocket, 'study:cancel', { roomId: id })).error.code, 'STUDY_ALREADY_STARTED');
         foreignSocket = await socket(base, await m.User.findOne({ username: 'foreign-study' }));
         assert.equal((await ack(foreignSocket, 'study:join', { roomId: id })).error.code, 'STUDY_NOT_FOUND');
         foreignSocket.close();

@@ -8,7 +8,7 @@ const ModuleGrant = require('../models/ModuleGrant');
 const User = require('../models/User');
 const Hub = require('../models/Hub');
 const College = require('../models/College');
-const TYPES = Object.freeze({ 'arcade.game_completed': 'arcade', 'interview.completed': 'interview', 'learn.quiz_completed': 'learn', 'learn.node_mastered': 'learn' });
+const TYPES = Object.freeze({ 'arcade.game_completed': 'arcade', 'arcade.daily_completed': 'arcade', 'interview.completed': 'interview', 'learn.quiz_completed': 'learn', 'learn.node_mastered': 'learn', 'learn.path_completed': 'learn' });
 const DAY = 86400000;
 const invalid = () => failure(400, 'INVALID_EVENT', 'Invalid or unsupported event facts');
 const text = value => typeof value === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$/.test(value);
@@ -25,19 +25,24 @@ function validateEvent(body, now = new Date()) {
       ![body.userId, body.hubId].every(value => typeof value === 'string' && /^[a-f0-9]{24}$/.test(value)) ||
       typeof body.occurredAt !== 'string' || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(body.occurredAt)) throw invalid();
   const occurred = new Date(body.occurredAt);
-  if (!Number.isFinite(+occurred) || occurred.toISOString() !== body.occurredAt || occurred > now || +occurred < +now - 30 * DAY) throw invalid();
+  if (!Number.isFinite(+occurred) || occurred.toISOString() !== body.occurredAt || occurred > now) throw invalid();
+  if (+occurred < +now - 30 * DAY) throw failure(400, 'EVENT_REPLAY_EXPIRED', 'Original event is outside the delivery window; operator review required');
   const m = body.metadata;
   const extra = { 'arcade.game_completed': ['gameId', 'rulesVersion', 'outcome', 'serverDurationSeconds'],
     'interview.completed': ['rawScore', 'answeredCount', 'questionCount', 'serverDurationSeconds', 'rubricVersion'],
     'learn.quiz_completed': ['nodeId', 'mode', 'attemptId', 'passed', 'correctCount', 'itemCount', 'curriculumVersion'],
-    'learn.node_mastered': ['nodeId', 'curriculumVersion', 'masteryMethod'] };
+    'learn.node_mastered': ['nodeId', 'curriculumVersion', 'masteryMethod'],
+    'arcade.daily_completed': ['challengeId','challengeDay','rulesVersion','outcome','serverDurationSeconds'],
+    'learn.path_completed': ['pathId','curriculumVersion','completedNodeCount','requiredNodeCount'] };
   if (!exact(m, ['sourceId', 'accessJti', 'domainVersion', ...extra[body.type]]) || !text(m.sourceId) || !text(m.domainVersion) ||
       typeof m.accessJti !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(m.accessJti)) throw invalid();
-  if (body.source === 'arcade' && (!['numberguess', 'mathamplitude', 'sorting'].includes(m.gameId) || !text(m.rulesVersion) ||
+  if (body.type === 'arcade.game_completed' && (!['numberguess', 'mathamplitude', 'sorting', 'spotbug'].includes(m.gameId) || !text(m.rulesVersion) ||
       !['success', 'failed', 'casual'].includes(m.outcome) || !integer(m.serverDurationSeconds, 0, 86400))) throw invalid();
   if (body.source === 'interview' && (!integer(m.rawScore, 0, 100) || m.questionCount !== 5 || !integer(m.answeredCount, 0, 5) ||
       !integer(m.serverDurationSeconds, 0, 86400) || !text(m.rubricVersion))) throw invalid();
-  if (body.source === 'learn' && (!text(m.nodeId) || !text(m.curriculumVersion))) throw invalid();
+  if (body.source === 'learn' && ((!text(m.nodeId) && body.type !== 'learn.path_completed') || !text(m.curriculumVersion))) throw invalid();
+  if (body.type === 'arcade.daily_completed' && (!text(m.challengeId) || !text(m.rulesVersion) || m.domainVersion !== 'v1' || m.challengeDay !== require('@collegehubs/contracts/day-policy.cjs').dayKey(occurred) || !['success','failed'].includes(m.outcome) || !integer(m.serverDurationSeconds,0,86400))) throw invalid();
+  if (body.type === 'learn.path_completed' && (!require('@collegehubs/contracts/learn-curricula.json').domains.some(d=>m.pathId==='foundations:'+d.id) || m.curriculumVersion!=='foundations-v1' || m.sourceId!==m.pathId+':'+m.curriculumVersion || m.domainVersion !== 'v1' || m.requiredNodeCount!==3 || m.completedNodeCount !== m.requiredNodeCount)) throw invalid();
   if (body.type === 'learn.quiz_completed' && (!['checkpoint', 'test-out'].includes(m.mode) || !text(m.attemptId) || m.sourceId !== m.attemptId ||
       m.itemCount !== (m.mode === 'checkpoint' ? 5 : 10) || !integer(m.correctCount, 0, m.itemCount) || typeof m.passed !== 'boolean' ||
       m.passed !== (m.correctCount / m.itemCount >= (m.mode === 'checkpoint' ? 0.6 : 0.8)))) throw invalid();
@@ -62,6 +67,9 @@ function receipt(row) {
 }
 function businessKey(event) {
   const m = event.metadata;
+  if (event.type === 'arcade.daily_completed') return digest(canonicalJson([event.userId,event.type,m.challengeId,m.challengeDay]));
+  if (event.type === 'learn.path_completed') return digest(canonicalJson([event.userId,event.type,m.pathId,m.curriculumVersion]));
+  if (event.source === 'learn' && m.curriculumVersion === 'foundations-v1') return digest(canonicalJson([event.userId,event.type,m.nodeId,...(event.type==='learn.quiz_completed'?[m.mode]:[])]));
   const fact = event.type === 'learn.node_mastered' ? [m.nodeId, m.curriculumVersion]
     : event.source === 'arcade' ? [m.sourceId, m.rulesVersion] : [m.sourceId];
   return digest(canonicalJson([event.hubId, event.userId, event.type, ...fact]));
@@ -81,7 +89,7 @@ function createAuraEventService({ rules = null } = {}) {
   if (rules) {
     rules = JSON.parse(JSON.stringify(rules));
     if (!text(rules.version) || !rules.version.startsWith('fixture-') || !integer(rules.timezonePolicyVersion, 1, 1000) || !rules.types || !Object.keys(rules.types).length) throw new Error('P2 requires explicitly injected fixture rules');
-    new Intl.DateTimeFormat('en', { timeZone: rules.timezone });
+    require('@collegehubs/contracts/day-policy.cjs').assertPolicy(rules);
     for (const [type, rule] of Object.entries(rules.types)) if (!Object.hasOwn(TYPES, type) ||
         !integer(rule.weight, 0, 100) || !integer(rule.countCap, 1, 100) || !integer(rule.sourceCap, 0, 100)) throw new Error('Invalid Aura rule');
     for (const source of Object.values(TYPES)) if (new Set(Object.entries(rules.types).filter(([type]) => TYPES[type] === source).map(([, rule]) => rule.sourceCap)).size > 1) throw new Error('Inconsistent source cap');
@@ -92,26 +100,29 @@ function createAuraEventService({ rules = null } = {}) {
     if (credential.service !== event.source || !credential.eventTypes?.includes(event.type)) throw failure(403, 'EVENT_SCOPE_FORBIDDEN', 'Service cannot submit this event type');
     let activeRules = rules;
     if (!activeRules && event.source === 'arcade') {
-      const stored = await require('../models/AuraRuleSet').findOne({ version: { $in: ['arcade-numberguess-v1', 'arcade-three-games-v1'] }, activatedAt: { $lte: new Date(event.occurredAt) } }).sort({ activatedAt: -1, version: -1 }).lean();
-      if (stored && stored.rules.games?.[event.metadata.gameId] === event.metadata.rulesVersion && event.metadata.domainVersion === 'v1') activeRules = stored.rules;
+      const stored = await require('../models/AuraRuleSet').findOne({ version: { $in: ['arcade-numberguess-v1', 'arcade-three-games-v1', 'arcade-v3-four-games-v1', 'arcade-v4-daily-v1'] }, activatedAt: { $lte: new Date(event.occurredAt) } }).sort({ activatedAt: -1, version: -1 }).lean();
+      const daily = require('@collegehubs/contracts/arcade-daily.cjs').definition(event.occurredAt);
+      const supported = event.type === 'arcade.daily_completed' ? stored?.rules.dailyRulesVersion === event.metadata.rulesVersion && daily.challengeId === event.metadata.challengeId : stored?.rules.games?.[event.metadata.gameId] === event.metadata.rulesVersion;
+      if (stored && supported && event.metadata.domainVersion === 'v1') activeRules = stored.rules;
     }
     if (!activeRules && event.source === 'interview') {
       const stored = await require('../models/AuraRuleSet').findOne({ version: 'interview-five-v1', activatedAt: { $lte: new Date(event.occurredAt) } }).lean();
       if (stored && event.metadata.rubricVersion === stored.rules.rubricVersion && event.metadata.domainVersion === 'v1') activeRules = stored.rules;
     }
     if (!activeRules && event.source === 'learn') {
-      const stored = await require('../models/AuraRuleSet').findOne({ version: 'learn-demo-v1', activatedAt: { $lte: new Date(event.occurredAt) } }).lean();
-      if (stored && event.metadata.curriculumVersion === stored.rules.curriculumVersion && event.metadata.domainVersion === 'v1') activeRules = stored.rules;
+      const stored = await require('../models/AuraRuleSet').findOne({ version: event.type==='learn.path_completed'?'learn-foundations-paths-v1':event.metadata.curriculumVersion === 'foundations-v1' ? 'learn-foundations-v1' : 'learn-demo-v1', activatedAt: { $lte: new Date(event.occurredAt) } }).lean();
+      if (stored && event.metadata.curriculumVersion === stored.rules.curriculumVersion && event.metadata.domainVersion === 'v1' && (event.type==='learn.path_completed'||event.metadata.curriculumVersion !== 'foundations-v1' || require('@collegehubs/contracts/learn-curricula.json').equivalence.some(n=>n.canonicalId===event.metadata.nodeId))) activeRules = stored.rules;
     }
     if (!activeRules || !activeRules.types[event.type]) throw failure(503, 'AURA_RULES_INACTIVE', 'Aura scoring is not activated yet; retain the pending result');
     const rule = activeRules.types[event.type], hash = digest(canonicalJson(event)), key = businessKey(event);
-    const dayKey = new Intl.DateTimeFormat('en-CA', { timeZone: activeRules.timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(event.occurredAt));
+    require('@collegehubs/contracts/day-policy.cjs').assertPolicy(activeRules);
+    const dayKey = require('@collegehubs/contracts/day-policy.cjs').dayKey(event.occurredAt);
     return transaction(async session => {
       await validatePrincipal(credential, event, session);
       const previous = await AuraEvent.findOne({ eventId: event.eventId }).session(session);
       if (previous) {
         if (previous.payloadHash !== hash) throw failure(409, 'EVENT_ID_CONFLICT', 'Event ID already has different facts');
-        const original = previous.canonical ? previous : await AuraEvent.findOne({ eventId: previous.originalEventId, hubId: event.hubId, userId: event.userId }).session(session);
+        const original = previous.canonical ? previous : await AuraEvent.findOne({ eventId: previous.originalEventId, userId: event.userId }).session(session);
         return { status: 200, body: { status: 'duplicate', receipt: receipt(original) } };
       }
       const original = await AuraEvent.findOne({ businessKey: key, canonical: true }).session(session);
@@ -130,7 +141,7 @@ function createAuraEventService({ rules = null } = {}) {
         : event.source === 'interview' ? m.answeredCount >= 3 && m.serverDurationSeconds >= 60
         : event.type === 'learn.quiz_completed' ? m.passed : true;
       const nodeMode = digest(canonicalJson([m.nodeId, m.mode]));
-      const used = event.source === 'arcade' ? counter.gameIds.includes(m.gameId)
+      const used = event.type === 'arcade.game_completed' ? counter.gameIds.includes(m.gameId)
         : event.type === 'learn.quiz_completed' ? counter.nodeModeKeys.includes(nodeMode) : false;
       const count = counter.typeCounts.get(typeKey) || 0, total = counter.sourceTotals.get(event.source) || 0;
       const budget = Math.max(0, rule.sourceCap - total);
@@ -141,7 +152,7 @@ function createAuraEventService({ rules = null } = {}) {
         // Count only the first qualifying semantic/day fact; zero cap receipts are terminal.
         if (!used) counter.typeCounts.set(typeKey, Math.min(rule.countCap, count + 1));
         counter.sourceTotals.set(event.source, total + awardedAura);
-        if (event.source === 'arcade' && !used) counter.gameIds.push(m.gameId);
+        if (event.type === 'arcade.game_completed' && !used) counter.gameIds.push(m.gameId);
         if (event.type === 'learn.quiz_completed' && !used && count < rule.countCap) counter.nodeModeKeys.push(nodeMode);
         await DailyActivity.updateOne(day, { $setOnInsert: { hubId: event.hubId, ...day }, $min: { firstOccurredAt: base.occurredAt }, $addToSet: { qualifyingSources: event.source } }, { upsert: true, session });
       }
@@ -167,4 +178,4 @@ function createAuraEventService({ rules = null } = {}) {
   }
   return { ingest, replaceExternalBonus };
 }
-module.exports = { createAuraEventService, validateEvent, canonicalJson, validatePrincipal };
+module.exports = { createAuraEventService, validateEvent, canonicalJson, validatePrincipal, businessKey };

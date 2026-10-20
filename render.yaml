@@ -39,6 +39,23 @@ services:
         sync: false
       - key: CORE_MODULE_PUBLIC_KEYS
         sync: false
+      # Preserve existing settings; activate only after migration/account review.
+      - key: CORE_SESSION_ENABLED
+        sync: false
+      - key: VERIFICATION_MAIL_MODE
+        sync: false
+      - key: LEARN_API_ORIGIN
+        sync: false
+      - key: ARCADE_API_ORIGIN
+        sync: false
+      - key: INTERVIEW_API_ORIGIN
+        sync: false
+      - key: LEARN_READ_KEY
+        sync: false
+      - key: ARCADE_READ_KEY
+        sync: false
+      - key: INTERVIEW_READ_KEY
+        sync: false
   - type: web
     name: collegehubs-learn
     runtime: node
@@ -76,6 +93,8 @@ services:
       - key: CORE_SERVICE_KEY
         sync: false
       - key: LEARN_RECONCILE_KEY
+        sync: false
+      - key: MODULE_READ_KEY
         sync: false
       - key: LEARN_RESOURCE_LOOKUP_ENABLED
         value: "false"
@@ -117,6 +136,8 @@ services:
       - key: CORE_SERVICE_KEY
         sync: false
       - key: ARCADE_RECONCILE_KEY
+        sync: false
+      - key: MODULE_READ_KEY
         sync: false
   - type: web
     name: collegehubs-interview
@@ -163,6 +184,10 @@ services:
       - key: GROQ_FREE_CONFIRMED
         sync: false
       - key: INTERVIEW_AI_ENABLED
-        value: "true"
+        sync: false
+      - key: INTERVIEW_AI_PROVIDER
+        sync: false
+      - key: MODULE_READ_KEY
+        sync: false
       - key: INTERVIEW_RECONCILE_KEY
         sync: false

@@ -2,7 +2,7 @@ const { createHash } = require('node:crypto');
 const mongoose = require('mongoose');
 const NativeFact = require('../models/NativeFact');
 const hash = value => createHash('sha256').update(value).digest('hex');
-const day = date => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+const { dayKey: day } = require('@collegehubs/contracts/day-policy.cjs');
 async function transaction(work) {
   // First-insert semantic-key races retry the whole domain transaction.
   for (let attempt = 0; attempt < 5; attempt++) {

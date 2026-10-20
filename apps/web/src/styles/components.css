@@ -1,0 +1,28 @@
+.ui-button { min-height: 44px; border-radius: var(--radius-control); transition: background var(--duration-control) var(--ease-out); }
+.ui-button--primary, button.primary { color: var(--on-primary); background: var(--primary); border-color: var(--primary); }
+.ui-button--primary:hover, button.primary:hover { background: var(--primary-hover); filter: none; }
+.ui-button--secondary { background: var(--panel); color: var(--ink); }
+.ui-button--secondary:hover { background: var(--panel-subtle); }
+.ui-button--quiet { background: transparent; border-color: transparent; color: var(--primary); }
+.ui-button--quiet:hover { background: var(--panel-subtle); }
+.ui-button:disabled { opacity: 1; color: var(--ink-muted); background: var(--panel-subtle); border-color: var(--line); cursor: not-allowed; }
+.ui-card { min-width: 0; padding: var(--space-6); border: 1px solid var(--line); border-radius: var(--radius-card); background: var(--panel); }
+.ui-status { padding: var(--space-3) var(--space-4); border: 1px solid currentColor; border-radius: var(--radius-control); line-height: 1.6; }
+.ui-status--success { color: var(--positive); background: var(--positive-surface); }
+.ui-status--warning { color: var(--caution); background: var(--caution-surface); }
+.ui-status--error { color: var(--negative); background: var(--negative-surface); }
+.ui-status--info { color: var(--info); background: var(--info-surface); }
+.ui-field { display: grid; gap: var(--space-2); }
+.ui-field input { margin: 0; min-height: 44px; }
+.ui-field p { font-size: .875rem; }
+.ui-field [aria-invalid="true"] { border: 2px solid var(--negative); }
+.ui-empty { display: grid; align-content: start; justify-items: start; gap: var(--space-4); padding: var(--space-8); border: 1px dashed var(--line); border-radius: var(--radius-card); }
+.hub-name { border-left: 4px solid var(--hub-accent); }
+.brand-dot { display: inline-block; width: .35em; height: .35em; border-radius: 50%; background: var(--hub-accent); font-size: 0; min-width: 8px; min-height: 8px; margin-left: 4px; outline: 1px solid var(--ink); }
+.hub-badge { background: var(--hub-accent); color: var(--hub-on-accent); padding: 8px 12px; border-radius: var(--radius-pill); font-size: .8rem; font-weight: 600; }
+.sidebar-content nav a.active { color: var(--on-primary); }
+.hero-surface :focus-visible { outline-color: var(--focus-on-dark); }
+.hero-surface .ui-button { border-color: var(--focus-on-dark); }
+.shader-backdrop { position: absolute; inset: 0; overflow: hidden; pointer-events: none; background: radial-gradient(ellipse at 85% 15%, #43348D 0, transparent 58%), radial-gradient(ellipse at 85% 100%, #145B63 0, transparent 55%), #111827; }
+.shader-backdrop canvas { display: block; position: absolute; right: 0; bottom: 0; opacity: .65; }
+.shader-backdrop::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg,#111827 0%,#111827E8 45%,#11182766 100%); }

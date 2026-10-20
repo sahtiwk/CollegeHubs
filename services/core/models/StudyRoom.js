@@ -9,7 +9,7 @@ const schema = new mongoose.Schema({
   problem: { type: Object, required: true, immutable: true },
   durationMinutes: { type: Number, required: true, min: 5, max: 60, immutable: true },
   participantIds: { type: [id], validate: value => value.length >= 1 && value.length <= 8 && new Set(value.map(String)).size === value.length },
-  status: { type: String, enum: ['waiting', 'active', 'review'], default: 'waiting' },
+  status: { type: String, enum: ['waiting', 'active', 'review', 'cancelled'], default: 'waiting' },
   version: { type: Number, default: 1 },
   fence: { type: Number, default: 0 },
   startAt: { type: Date, default: null }, endAt: { type: Date, default: null },

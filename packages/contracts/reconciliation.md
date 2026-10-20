@@ -1,65 +1,62 @@
-# P2.2 event delivery and reconciliation
+# Reward delivery and reconciliation (TP5.2)
 
-Core owns Aura. Modules own immutable domain results and send facts, never rewards. This package has no database dependency. The P2.2 Core endpoint and transaction skeleton exist; normal startup has **no active scoring rules**. Only explicit server-side `createApp({auraRules})` / `createAuraEventService({rules})` fixture injection accepts a `fixture-*` version. There is no environment/browser activation switch. P6 activates versioned production rules and native events; P7/P8/P9 implement the actual module adapters. Existing Core UI totals are not switched to this fixture ledger.
+Core owns Aura; modules freeze server-validated facts with their domain result. Existing native, three-game Arcade, Interview and Learn demo rules remain released. Daily and path contracts are consumer-ready but **inactive until TP7/TP8 producer acceptance**. `auraRules.future.v1.json` proposes +15 daily replacement / +30 path. It is not a startup rule: activation rejects its release marker and normal ingestion selects only released versions.
 
 ## Authenticated ingestion
 
-`POST /api/aura/events`, JSON at most 64 KiB, `Authorization: Bearer <keyId>.<secret>`. Use HTTPS outside a local fixture. Origin/Sec-Fetch-Site browser requests and Core login JWTs are rejected. Credentials must be active, system-scoped, and explicitly allow the event type in `ServiceCredential.eventTypes`; their service must match `source`. Provisioning still grants no event scopes by default. No module can read/write Core collections.
+`POST /api/aura/events` accepts JSON up to 64 KiB with a dedicated `Bearer <keyId>.<secret>` credential. Browser origins and student tokens cannot submit facts. Provisioning grants no scopes by default; each allowed type must match the credential's service. See [module-events.schema.json](module-events.schema.json).
 
-See [module-events.schema.json](module-events.schema.json). All fields are required and unknown fields are rejected, including awardedAura, code, answer text, and resume text. Times use canonical UTC milliseconds. IDs are strings. Numeric facts are bounded integers. Structural validation alone does not authenticate or prove a game/quiz result: the module must validate it on its own server before freezing it.
+Core checks the consumed grant's module/JTI/user/Hub and membership version, current active membership/Hub/college, and retained binding. Original occurrence must fall within the consumed/access-expiry interval. Delivery must be within 30 days of occurrence **and** grant retention. Never replace the JTI, occurrence time or event ID to extend this window.
 
-Core checks the retained consumed grant's module/JTI/user/Hub, current active user/Hub/college, and membership version. Completion must occur at or after consumption and strictly before access expiry. Delivery may occur after access expiry but within 30 days of occurrence **and** the binding's retention. A result cannot change accessJti, occurrence time or facts to extend this window; outside it, retain for manual review. Expired access never becomes valid again for module APIs.
+Every metadata object has sourceId, accessJti and domainVersion. New required facts:
 
-Supported facts: `arcade.game_completed` (gameId numberguess/mathamplitude/sorting, rulesVersion, outcome success/failed/casual, integer serverDurationSeconds 0-86400); `interview.completed` (integer rawScore 0-100, answeredCount 0-5, questionCount 5, duration 0-86400, rubricVersion); `learn.quiz_completed` (nodeId, mode checkpoint/test-out, attemptId equal sourceId, boolean passed consistent with 3/5 or 8/10 threshold, correctCount/itemCount, curriculumVersion); `learn.node_mastered` (nodeId, curriculumVersion, masteryMethod checkpoint/test-out, sourceId=nodeId:curriculumVersion). Every metadata object also carries sourceId, accessJti, and domainVersion. Deferred daily-challenge/path/native events are not accepted on this module endpoint.
+| Type (inactive) | Additional facts | Canonical identity |
+| --- | --- | --- |
+| arcade.daily_completed | challengeId, challengeDay, rulesVersion, outcome, serverDurationSeconds | user/type/challenge/day, across Hubs |
+| learn.path_completed | pathId, curriculumVersion, completedNodeCount, requiredNodeCount | user/type/path/curriculum, across Hubs |
 
-## Stable identities and receipts
+Daily challengeDay equals the India day of occurrence; outcome is success/failed and duration is 0–86400 seconds. Path counts are equal integers from 1 to 10000. Both require domainVersion v1. IDs are bounded ASCII tokens; unknown fields and client-provided rewards are rejected. Modules must prove completion before sealing facts.
 
-Create the event once with the domain result, for example `interview:<sessionId>:completed:v1`, `arcade:<sessionId>:completed:v1`, `learn:<attemptId>:quiz:v1`, or `learn:<nodeId>:<curriculumVersion>:mastered:v1`. Use immutable server IDs; long composites can use a SHA-256 hex digest. Maximum 160 characters, ASCII letters/digits/underscore/dot/colon/hyphen, first character alphanumeric. New report versions, retries, score reads, re-enrollment and manual retries must not generate new IDs. Do not regrade on delivery retry.
+Historical game/interview/quiz/mastery identities and hashes are unchanged. No historical rekeying is needed; new types have no old rows. Existing keys include Hub/user/type plus session/rules for Arcade, session for Interview, attempt for quiz and node/curriculum for mastery. New transport IDs for the same business fact create zero-award aliases returning the original receipt. Alias replay can resolve the original user receipt in an earlier Hub. Future adapters must handle that legitimate canonical Hub/ID while preserving current request ownership checks. Present adapters retain their existing receipt bounds.
 
-Core canonicalizes object-key order before SHA-256 hashing, preserving all facts. Unique eventId detects transport retries. Independent business keys bind Hub/user/type to session+rules for Arcade, session for Interview, attempt for quiz, node+curriculum version for mastery. A changed mastery method or report version cannot farm a business fact.
+## Receipts and policy
 
-- First commit: **201** `{status:"accepted",receipt}`.
-- Identical retry: **200** `{status:"duplicate",receipt}` with the original receipt.
-- Same ID, different valid payload: **409 EVENT_ID_CONFLICT**; no write.
-- New ID, same business fact: **200 duplicate** with the original receipt. Core stores a zero-award alias and its hash so that later changes to that alias also conflict. Alias rows never increase the ledger sum, day or counters.
-- Invalid facts **400**, oversized body **413**, credential **401**, source/type/principal **403**. Rules inactive or DB unavailable **503**, quota **429** with Retry-After. All errors are `{error:{code,message,retryable}}`. In-memory quota: 120 attempts/minute/credential, bounded to 10,000 buckets; single Core process only.
+First commit returns 201 accepted. Exact retry or semantic duplicate returns 200 duplicate with the original receipt. Same event ID with changed facts returns 409 EVENT_ID_CONFLICT. Invalid facts return 400; expired replay returns 400 EVENT_REPLAY_EXPIRED; credential errors 401; scope/binding/membership 403; oversized bodies 413. Inactive rules/database failure return 503 and quota returns 429.
 
-Receipt: `{eventId,userId,hubId,awardedAura,weightVersion,reason,dayKey,timezonePolicyVersion,occurredAt,receivedAt}`. A receipt awarding **zero is final**, including ineligible/capped activity. Never retry it hoping for a later day's points. Receipt eventId may be the canonical ID for a semantic duplicate. Validate the receipt's subject/Hub and structure before acknowledging locally.
+Receipt fields: eventId, userId, hubId, awardedAura, weightVersion, reason, dayKey, timezonePolicyVersion, occurredAt, receivedAt. Zero-award receipts are final. Core atomically writes receipt/alias, user-day counters, balance and qualifying activity. Aliases add no points or activity. Daily rewards share the existing Arcade source cap of 30; path rewards share Learn's 100 cap.
 
-Within one Mongo transaction Core stores receipt/alias, serializes the user-day counter, updates the balance, and upserts the single qualifying daily activity. Unique indexes exist before HTTP startup. `total = engagement + externalBonus`; aliases award zero. Failed/ineligible facts do not create qualifying activity. Qualifying facts still count as activity when capped. Shared date is the fixture rule timezone Asia/Kolkata, policy version 1, derived from trusted occurrence time, not receipt time. Source and type caps share the day across deliveries; a partial final award uses the remaining source budget. Timezone changes require a separately designed cutover in P6, not per-request configuration. Production external bonuses remain disabled; the internal fixture replacement seam only changes externalBonus and total, never engagement.
+`day-policy.cjs` is shared by native facts, native/module scoring and streaks: Asia/Kolkata, policy 1, original occurrence time. Unsupported timezone/version changes are rejected, including loaded rule configurations. A different timezone requires a reviewed cutover. Old weights and receipts remain unchanged.
 
-## Durable pending row (module implementation contract)
+## Pending, settled and operator review
 
-In the **same module database transaction** that freezes the successful result, freeze its event payload and persist:
+Payload and pending row are frozen with the domain result. HTTP happens after commit. Adapters use a 15-second delivery lease, four-second HTTP timeout, 16 KiB reply limit and conditional acknowledgement. Lost acknowledgements retry the exact payload, with backoff from 30 seconds to one hour. Reads trigger bounded recovery without regrading.
 
-```text
-event: {
-  eventId, payload,
-  status: pending | delivered | attention,
-  receipt: null | Core receipt,
-  attempts: integer,
-  lastAttemptAt: null | UTC timestamp,
-  nextAttemptAt: null | UTC timestamp,
-  lastErrorCode: null | bounded safe code,
-  deliveryRevision: integer
-}
+Statuses are pending, settled and attention (none before an Arcade/Interview event exists). Malformed/ambiguous success, network errors, 429 and 503 stay pending. A well-formed 400/401/403/409/413 rejection becomes attention with a bounded error code. Locally expired payloads become attention without HTTP. This preserves the result, payload and timestamp and stops automatic retries. Result pages explicitly show “needs operator review”.
+
+Operators inspect Arcade/Interview `deliveryStatus: attention` and `lastDeliveryError`, or Learn `learn_event.status = 'attention'` and `last_error_code`. Existing service-only pending lists still list pending work only. After credential repair, an operator may deliberately requeue an unchanged still-valid payload; no public requeue endpoint is provided. Expired results remain retained for review. Do not forge replacement facts or bypass grant retention. Learn's frozen payload and settled-row triggers remain intact.
+
+## Bounded Core coordinator
+
+The coordinator runs at startup and every 60 seconds while awake. It posts `{}` to existing `/api/<module>/integration/reconcile` routes; each module attempts at most three due results using its own delivery leases. Core never reads module databases. Public gateways and student sessions cannot invoke these routes.
+
+Configure **Core** with ENABLE_MODULES, each MODULE_API_ORIGIN and MODULE_RECONCILE_KEY (43-character base64url), matching the dedicated key on the module. Keys are separate from outgoing Aura credentials and summary-read keys. Origins must be root HTTPS URLs; development permits loopback HTTP. Missing/invalid configuration skips the target.
+
+One persisted ReconciliationLease per module contains its atomic 30-second lease, next attempt, failure count and safe result. Parallel processes and operator runs share leases. Each tick has at most three concurrent calls, six seconds per call including reading, no redirects and a 2 KiB reply limit. Success requires an integer attempted count 0–3. Success schedules 60 seconds later; failure backs off 60 seconds to one hour. Expired leases recover after process death. No secrets/payloads are logged. Calls run independently of chat/rooms. Sleeping hosts have no delivery SLA.
+
+Operator command (uses Core server config and honors leases/backoff):
+
+```powershell
+node services/core/scripts/reconcileRewards.js --database=YOUR_CORE_DATABASE
 ```
 
-Do not make an HTTP call inside the domain transaction. After commit, await one bounded POST (2 seconds including reading the response), with at most one immediate retry for a timeout/network/503 failure. 429 schedules Retry-After instead of an immediate retry; bound scheduled delay to 24 hours. Otherwise back off at least 30 seconds. Limit response parsing to 16 KiB. Never log credentials or payloads. Whether delivery succeeds or fails, return the persisted domain result. On network/timeout/429/503/ambiguous or malformed success, keep **pending** and show **"Saved; Aura pending"**. A 200/201 valid receipt changes status to delivered, even awardedAura=0. Invalid facts, 401/403/409/413 and expired bindings become attention for operator review; they never delete the result. Manual correction of credentials may retry the unchanged payload; immutable fact conflicts require investigation, not a replacement event ID.
+The exact database must match MONGO_URI; system databases are rejected. Output reports module and ok/unavailable/deferred. Success means a bounded batch was attempted, not that all pending rewards settled.
 
-A timeout may occur **after Core committed**. Retrying exactly the same payload returns the original receipt and cannot reaward. Persist the acknowledgement with revision/CAS, and never let a slower failed concurrent delivery overwrite a delivered receipt. If the module crashes before acknowledging, the row stays pending and replay is safe.
+## Consumer-first rollout
 
-## Owned reads and service-only manual recovery
+1. Back up retained stores. Apply Learn migration 0002_delivery_attention before deploying its adapter: `node services/learn/scripts/migrate.ts --database=YOUR_LEARN_DATABASE --dry-run`, then `--apply`, using DATABASE_URL. Fresh schemas already include the column/status; migration remains safe for them.
+2. Deploy consumers/shared policy and attention handling. Core creates the coordinator collection/index before listening. Verify original receipts, caps and occurrence-day scoring without rewriting historical keys/rules.
+3. Configure reconciliation keys and exercise the operator command. Verify outage backoff, responsive Core, lost-acknowledgement recovery and expired-to-attention with unchanged facts.
+4. TP7 must seal exactly one ordinary-or-daily event per session, with challenge/day ownership and midnight/concurrency checks. TP8 must validate complete path membership and frozen curriculum. Extend producer receipt bounds and canonical-alias handling before release.
+5. Only after producer acceptance: explicitly provision scopes and introduce new prospective released rule versions/selectors. Keep historical rules. Do not replay preactivation events under new weights. Require ownership, cap, concurrency, midnight and cross-Hub replay evidence.
 
-An authenticated module result GET loads with both userId and hubId from its validated session, then retries at most that result's due pending event before returning its saved result and delivery status. It never discovers another user's result. Timeout leaves the response saved/pending. No regrading, new IDs, browser service keys, or client-supplied scores.
-
-Each released module implements (these routes are **not module adapters shipped by P2.2**):
-
-- `GET /<module>/api/integration/pending-results?cursor=...&limit=50`: a **separate Core reconciliation credential** authenticated by that module, not a student cookie or its outgoing module key. At most 50 rows, stable keyset cursor bound to module/filters; summarize result/event IDs, subject/Hub, pending/attention status, attempts, dates and safe error codes. No resume, code, answers, private game seeds or provider output. Permit an explicit attention filter for operator diagnosis. Reject invalid/foreign cursors.
-- `POST /<module>/api/integration/reconcile`: same dedicated credential, no Origin, allowlisted body `{eventIds:[...]}` with 1-50 unique IDs. Load the module's own frozen rows and call the same bounded delivery path; skip delivered rows. Limit concurrency to 2 and the whole request to 10 seconds, returning attempted/delivered/pending/attention IDs plus unattempted IDs to continue later. No arbitrary destination URL or payload replacement. Honor due times unless an explicit operator-only retry is requested after credential repair.
-
-Core does not query module databases or host a generic proxy to arbitrary URLs. Store reconciliation keys only in server config; provision them when adapters are built, separate from outgoing credentials. This phase adds no scheduler, broker, outbox, workers, new ports or promised automatic-delivery SLA. Results recover on owned reads or deliberate service-only reconciliation. A module/database outage cannot block unrelated Core requests.
-
-## Manual acceptance
-
-Use a disposable replica set and a synthetic user/Hub, ephemeral service key, retained issuance, and injected fixture rules. Persist a stub result with pending metadata in a separate disposable module database. Stop the Core listener, attempt bounded delivery, reload the stored result and observe saved/pending. Restart Core and deliver; discard the first successful response to simulate loss. Replay the frozen payload; verify 200/original receipt, one canonical ledger row and a single award. Save that receipt and read delivered. Repeat with a zero-award result: delivered, no later retry. Never enable real modules or live scoring just to demonstrate this seam.
+Tests: reward-recovery guards, existing G3 receipt-loss guards, migration/restore checks and reward-recovery-browser UI fixtures. See docs/tp5.2-evidence.md for results and limits.

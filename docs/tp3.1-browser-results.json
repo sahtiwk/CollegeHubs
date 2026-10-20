@@ -1,0 +1,58 @@
+{
+  "checks": [
+    "sample tabs support click/arrow/Home navigation and expandable preview",
+    "3 theme fixtures retain neutral surfaces",
+    "keyboard open/trap/select/Escape/return focus",
+    "navigation closes drawer",
+    "390/320px no horizontal overflow",
+    "reduced motion no GPU/import",
+    "persisted motion-off no GPU/import",
+    "static no external requests",
+    "null adapter retains HTML/CSS fallback",
+    "injected import failure disposes device",
+    "injected renderer pauses offscreen/hidden and resumes",
+    "injected device loss removes canvas/disposes resources"
+  ],
+  "performance": [
+    {
+      "enhanced": false,
+      "activationMs": 0,
+      "longTasks": [],
+      "lcp": 1156,
+      "fcp": 1156,
+      "status": "static",
+      "canvas": [],
+      "frameP95": 16.700000000000273,
+      "resources": [
+        {
+          "name": "design-lab-xWA_I1jD.js",
+          "bytes": 52483
+        },
+        {
+          "name": "design-lab-yT0Kp5ol.css",
+          "bytes": 9782
+        }
+      ]
+    },
+    {
+      "enhanced": true,
+      "activationMs": 59,
+      "longTasks": [],
+      "lcp": 1180,
+      "fcp": 1180,
+      "status": "fallback",
+      "canvas": [],
+      "frameP95": 16.799999999999727,
+      "resources": [
+        {
+          "name": "design-lab-xWA_I1jD.js",
+          "bytes": 52483
+        },
+        {
+          "name": "design-lab-yT0Kp5ol.css",
+          "bytes": 9782
+        }
+      ]
+    }
+  ]
+}

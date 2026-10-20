@@ -1,11 +1,15 @@
+const {expired,attentionCode}=require('@collegehubs/contracts/delivery-policy.cjs');
 const { randomUUID }=require('node:crypto');const {jsonRequest}=require('./http');
 function createCoreEvents(Session,config,fetcher=fetch){
   async function deliver(id){
     const now=new Date(),lease=randomUUID();
     const session=await Session.findOneAndUpdate({_id:id,deliveryStatus:'pending',nextAttemptAt:{$lte:now},deliveryLeaseUntil:{$lte:now}},{$set:{deliveryLeaseId:lease,deliveryLeaseUntil:new Date(+now+15000),nextAttemptAt:new Date(+now+30000)},$inc:{attempts:1}},{new:true});
     if(!session)return;
+    async function attention(code){await Session.updateOne({_id:id,deliveryLeaseId:lease,deliveryStatus:'pending'},{$set:{deliveryStatus:'attention',lastDeliveryError:code,deliveryLeaseId:null,deliveryLeaseUntil:new Date(0)}});}
+    if(expired(session.event)){await attention('EVENT_REPLAY_EXPIRED');return;}
     try{
       const result=await jsonRequest(config.core+'/api/aura/events',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+config.serviceKey},body:JSON.stringify(session.event)},fetcher);
+      const terminal=attentionCode(result.status,result.data);if(terminal){await attention(terminal);return;}
       const r=result.data?.receipt;
       if(![200,201].includes(result.status)||!r||r.eventId!==session.event.eventId||r.userId!==session.userId||r.hubId!==session.hubId||!Number.isSafeInteger(r.awardedAura)||r.awardedAura<0||r.awardedAura>30||typeof r.reason!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(r.dayKey))throw Error('Receipt unavailable');
       await Session.updateOne({_id:id,deliveryLeaseId:lease,deliveryStatus:'pending'},{$set:{receipt:{eventId:r.eventId,awardedAura:r.awardedAura,reason:r.reason,dayKey:r.dayKey},deliveryStatus:'settled',deliveryLeaseId:null,deliveryLeaseUntil:new Date(0),lastDeliveryError:null}});

@@ -19,4 +19,7 @@ function safeTheme(tokens) {
   if (Object.keys(tokens).some(key => !Object.hasOwn(result, key))) throw new Error('Unknown theme token');
   return result;
 }
-module.exports = { config, normalizeDomain, emailDomain, safeTheme };
+function activeDomainFilter(email) {
+  return { status: 'active', domains: { $elemMatch: { normalizedDomain: emailDomain(email), verifiedAt: { $type: 'date' }, evidenceRef: { $regex: /\S/ } } } };
+}
+module.exports = { config, normalizeDomain, emailDomain, safeTheme, activeDomainFilter };

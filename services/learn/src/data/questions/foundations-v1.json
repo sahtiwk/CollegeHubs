@@ -1,0 +1,5743 @@
+{
+  "version": "foundations-v1",
+  "license": "CC0-1.0",
+  "review": {
+    "status": "reviewed",
+    "reviewer": "Codex static content and answer review",
+    "reviewedAt": "2026-10-20",
+    "notes": "Original bounded practice; checked unique answers, scenario consistency and prerequisites. Not independent human certification or calibrated assessment."
+  },
+  "attribution": "Original CollegeHubs practice content. Linked references retain their publishers’ licenses.",
+  "nodes": [
+    {
+      "slug": "arrays",
+      "domain": "dsa",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Indexed_collections",
+      "items": [
+        {
+          "id": "arrays-01",
+          "mode": "checkpoint",
+          "prompt": "Which index identifies the first element of a JavaScript array?",
+          "options": [
+            {
+              "id": "a",
+              "text": "0"
+            },
+            {
+              "id": "b",
+              "text": "1"
+            },
+            {
+              "id": "c",
+              "text": "-1"
+            },
+            {
+              "id": "d",
+              "text": "The array length"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Array indexing starts at zero."
+        },
+        {
+          "id": "arrays-02",
+          "mode": "checkpoint",
+          "prompt": "What is [4, 7, 9][1]?",
+          "options": [
+            {
+              "id": "a",
+              "text": "7"
+            },
+            {
+              "id": "b",
+              "text": "4"
+            },
+            {
+              "id": "c",
+              "text": "9"
+            },
+            {
+              "id": "d",
+              "text": "undefined"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Index 1 selects the second element."
+        },
+        {
+          "id": "arrays-03",
+          "mode": "checkpoint",
+          "prompt": "How many elements are in [2, 5, 8]?",
+          "options": [
+            {
+              "id": "a",
+              "text": "3"
+            },
+            {
+              "id": "b",
+              "text": "2"
+            },
+            {
+              "id": "c",
+              "text": "4"
+            },
+            {
+              "id": "d",
+              "text": "8"
+            }
+          ],
+          "correct": "a",
+          "explanation": "This array contains three listed elements."
+        },
+        {
+          "id": "arrays-04",
+          "mode": "checkpoint",
+          "prompt": "Which method appends an element to an array?",
+          "options": [
+            {
+              "id": "a",
+              "text": "push"
+            },
+            {
+              "id": "b",
+              "text": "pop"
+            },
+            {
+              "id": "c",
+              "text": "shift"
+            },
+            {
+              "id": "d",
+              "text": "slice"
+            }
+          ],
+          "correct": "a",
+          "explanation": "push adds elements at the end."
+        },
+        {
+          "id": "arrays-05",
+          "mode": "checkpoint",
+          "prompt": "Which loop condition visits each index of a dense array a, starting at i = 0?",
+          "options": [
+            {
+              "id": "a",
+              "text": "i < a.length"
+            },
+            {
+              "id": "b",
+              "text": "i <= a.length"
+            },
+            {
+              "id": "c",
+              "text": "i > a.length"
+            },
+            {
+              "id": "d",
+              "text": "i === a.length"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Valid indices run from zero through length minus one."
+        },
+        {
+          "id": "arrays-06",
+          "mode": "test-out",
+          "prompt": "After const a = [3, 8]; a[0] = 6; what is a?",
+          "options": [
+            {
+              "id": "a",
+              "text": "[6, 8]"
+            },
+            {
+              "id": "b",
+              "text": "[3, 6]"
+            },
+            {
+              "id": "c",
+              "text": "[3, 8, 6]"
+            },
+            {
+              "id": "d",
+              "text": "[6]"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Assignment replaces the value at index zero."
+        },
+        {
+          "id": "arrays-07",
+          "mode": "test-out",
+          "prompt": "What does [10, 20, 30].slice(1, 3) return?",
+          "options": [
+            {
+              "id": "a",
+              "text": "[20, 30]"
+            },
+            {
+              "id": "b",
+              "text": "[10, 20]"
+            },
+            {
+              "id": "c",
+              "text": "[20]"
+            },
+            {
+              "id": "d",
+              "text": "[10, 20, 30]"
+            }
+          ],
+          "correct": "a",
+          "explanation": "slice includes the start index and excludes the end index."
+        },
+        {
+          "id": "arrays-08",
+          "mode": "test-out",
+          "prompt": "After const a = [2, 4]; const x = a.pop(); what is x?",
+          "options": [
+            {
+              "id": "a",
+              "text": "4"
+            },
+            {
+              "id": "b",
+              "text": "2"
+            },
+            {
+              "id": "c",
+              "text": "[2]"
+            },
+            {
+              "id": "d",
+              "text": "2,4"
+            }
+          ],
+          "correct": "a",
+          "explanation": "pop removes and returns the last element."
+        },
+        {
+          "id": "arrays-09",
+          "mode": "test-out",
+          "prompt": "After const a = [1]; const b = a; b.push(2); what is a.length?",
+          "options": [
+            {
+              "id": "a",
+              "text": "2"
+            },
+            {
+              "id": "b",
+              "text": "1"
+            },
+            {
+              "id": "c",
+              "text": "0"
+            },
+            {
+              "id": "d",
+              "text": "3"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Both variables reference the same array."
+        },
+        {
+          "id": "arrays-10",
+          "mode": "test-out",
+          "prompt": "Which expression produces a new array with each value doubled?",
+          "options": [
+            {
+              "id": "a",
+              "text": "a.map(x => x * 2)"
+            },
+            {
+              "id": "b",
+              "text": "a.pop(x => x * 2)"
+            },
+            {
+              "id": "c",
+              "text": "a.length * 2"
+            },
+            {
+              "id": "d",
+              "text": "a.push(x => x * 2)"
+            }
+          ],
+          "correct": "a",
+          "explanation": "map returns a new array of callback results."
+        },
+        {
+          "id": "arrays-11",
+          "mode": "test-out",
+          "prompt": "What does [1, 4, 6].filter(x => x > 3) return?",
+          "options": [
+            {
+              "id": "a",
+              "text": "[4, 6]"
+            },
+            {
+              "id": "b",
+              "text": "[1]"
+            },
+            {
+              "id": "c",
+              "text": "[true, true]"
+            },
+            {
+              "id": "d",
+              "text": "[1, 4, 6]"
+            }
+          ],
+          "correct": "a",
+          "explanation": "filter retains values for which the predicate is true."
+        },
+        {
+          "id": "arrays-12",
+          "mode": "test-out",
+          "prompt": "What is the final valid index of a nonempty dense array of length n?",
+          "options": [
+            {
+              "id": "a",
+              "text": "n - 1"
+            },
+            {
+              "id": "b",
+              "text": "n"
+            },
+            {
+              "id": "c",
+              "text": "n + 1"
+            },
+            {
+              "id": "d",
+              "text": "1"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Zero-based indexing means the final index is one below the length."
+        },
+        {
+          "id": "arrays-13",
+          "mode": "test-out",
+          "prompt": "Which expression checks whether a value is an array?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Array.isArray(value)"
+            },
+            {
+              "id": "b",
+              "text": "value.isArray"
+            },
+            {
+              "id": "c",
+              "text": "typeof value === \"array\""
+            },
+            {
+              "id": "d",
+              "text": "value === Array"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Array.isArray is the built-in array check."
+        },
+        {
+          "id": "arrays-14",
+          "mode": "test-out",
+          "prompt": "What is [5, 10].indexOf(7)?",
+          "options": [
+            {
+              "id": "a",
+              "text": "-1"
+            },
+            {
+              "id": "b",
+              "text": "0"
+            },
+            {
+              "id": "c",
+              "text": "1"
+            },
+            {
+              "id": "d",
+              "text": "2"
+            }
+          ],
+          "correct": "a",
+          "explanation": "indexOf returns minus one when the value is absent."
+        },
+        {
+          "id": "arrays-15",
+          "mode": "test-out",
+          "prompt": "After const a = [1, 2, 3]; a.splice(1, 1); what remains?",
+          "options": [
+            {
+              "id": "a",
+              "text": "[1, 3]"
+            },
+            {
+              "id": "b",
+              "text": "[2, 3]"
+            },
+            {
+              "id": "c",
+              "text": "[1, 2]"
+            },
+            {
+              "id": "d",
+              "text": "[1, 2, 3]"
+            }
+          ],
+          "correct": "a",
+          "explanation": "splice removes one item starting at index one."
+        }
+      ]
+    },
+    {
+      "slug": "iteration",
+      "domain": "dsa",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Loops_and_iteration",
+      "items": [
+        {
+          "id": "iteration-01",
+          "mode": "checkpoint",
+          "prompt": "How many times does for (let i = 0; i < 3; i++) execute its body?",
+          "options": [
+            {
+              "id": "a",
+              "text": "3"
+            },
+            {
+              "id": "b",
+              "text": "2"
+            },
+            {
+              "id": "c",
+              "text": "4"
+            },
+            {
+              "id": "d",
+              "text": "0"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The body runs for i equal to zero, one and two."
+        },
+        {
+          "id": "iteration-02",
+          "mode": "checkpoint",
+          "prompt": "Which statement exits the nearest loop immediately?",
+          "options": [
+            {
+              "id": "a",
+              "text": "break"
+            },
+            {
+              "id": "b",
+              "text": "continue"
+            },
+            {
+              "id": "c",
+              "text": "const"
+            },
+            {
+              "id": "d",
+              "text": "else"
+            }
+          ],
+          "correct": "a",
+          "explanation": "break exits the nearest enclosing loop or switch."
+        },
+        {
+          "id": "iteration-03",
+          "mode": "checkpoint",
+          "prompt": "What does continue do inside a for loop?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Skips the rest of this iteration"
+            },
+            {
+              "id": "b",
+              "text": "Exits the function"
+            },
+            {
+              "id": "c",
+              "text": "Restarts the program"
+            },
+            {
+              "id": "d",
+              "text": "Removes the loop condition"
+            }
+          ],
+          "correct": "a",
+          "explanation": "continue moves to the next iteration, including the for update step."
+        },
+        {
+          "id": "iteration-04",
+          "mode": "checkpoint",
+          "prompt": "What does for...of iterate over when used with an array?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Element values"
+            },
+            {
+              "id": "b",
+              "text": "Only property names"
+            },
+            {
+              "id": "c",
+              "text": "Only the last element"
+            },
+            {
+              "id": "d",
+              "text": "The array length repeatedly"
+            }
+          ],
+          "correct": "a",
+          "explanation": "for...of visits iterable values."
+        },
+        {
+          "id": "iteration-05",
+          "mode": "checkpoint",
+          "prompt": "When is a while loop condition checked?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Before each iteration"
+            },
+            {
+              "id": "b",
+              "text": "Only after the last iteration"
+            },
+            {
+              "id": "c",
+              "text": "Only once at declaration"
+            },
+            {
+              "id": "d",
+              "text": "After the loop is removed"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A false initial condition can cause zero iterations."
+        },
+        {
+          "id": "iteration-06",
+          "mode": "test-out",
+          "prompt": "What is s after let s = 0; for (const x of [2, 3, 4]) s += x;?",
+          "options": [
+            {
+              "id": "a",
+              "text": "9"
+            },
+            {
+              "id": "b",
+              "text": "6"
+            },
+            {
+              "id": "c",
+              "text": "4"
+            },
+            {
+              "id": "d",
+              "text": "0"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The accumulator adds two, three and four."
+        },
+        {
+          "id": "iteration-07",
+          "mode": "test-out",
+          "prompt": "How many iterations occur in for (let i = 1; i <= 5; i += 2)?",
+          "options": [
+            {
+              "id": "a",
+              "text": "3"
+            },
+            {
+              "id": "b",
+              "text": "2"
+            },
+            {
+              "id": "c",
+              "text": "5"
+            },
+            {
+              "id": "d",
+              "text": "4"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The values of i are one, three and five."
+        },
+        {
+          "id": "iteration-08",
+          "mode": "test-out",
+          "prompt": "What is the final s: let s=0; for(let i=0;i<4;i++){if(i===2) continue;s+=i;}?",
+          "options": [
+            {
+              "id": "a",
+              "text": "4"
+            },
+            {
+              "id": "b",
+              "text": "6"
+            },
+            {
+              "id": "c",
+              "text": "3"
+            },
+            {
+              "id": "d",
+              "text": "2"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The sum includes zero, one and three but skips two."
+        },
+        {
+          "id": "iteration-09",
+          "mode": "test-out",
+          "prompt": "How many times does the inner body run: for(let i=0;i<2;i++){for(let j=0;j<3;j++){work();}}?",
+          "options": [
+            {
+              "id": "a",
+              "text": "6"
+            },
+            {
+              "id": "b",
+              "text": "5"
+            },
+            {
+              "id": "c",
+              "text": "3"
+            },
+            {
+              "id": "d",
+              "text": "2"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Each of two outer iterations runs three inner iterations."
+        },
+        {
+          "id": "iteration-10",
+          "mode": "test-out",
+          "prompt": "Which loop executes its body at least once?",
+          "options": [
+            {
+              "id": "a",
+              "text": "do...while"
+            },
+            {
+              "id": "b",
+              "text": "while"
+            },
+            {
+              "id": "c",
+              "text": "for...of over an empty array"
+            },
+            {
+              "id": "d",
+              "text": "for with an initially false condition"
+            }
+          ],
+          "correct": "a",
+          "explanation": "do...while checks its condition after executing the body."
+        },
+        {
+          "id": "iteration-11",
+          "mode": "test-out",
+          "prompt": "What is the last logged value: for(let i=0;i<5;i++){if(i===3) break;console.log(i);}?",
+          "options": [
+            {
+              "id": "a",
+              "text": "2"
+            },
+            {
+              "id": "b",
+              "text": "3"
+            },
+            {
+              "id": "c",
+              "text": "4"
+            },
+            {
+              "id": "d",
+              "text": "5"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The loop exits before logging three."
+        },
+        {
+          "id": "iteration-12",
+          "mode": "test-out",
+          "prompt": "Which update lets while (i > 0) eventually stop when i starts at 3?",
+          "options": [
+            {
+              "id": "a",
+              "text": "i--"
+            },
+            {
+              "id": "b",
+              "text": "i++"
+            },
+            {
+              "id": "c",
+              "text": "i += 3"
+            },
+            {
+              "id": "d",
+              "text": "i = 3"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Decrementing eventually makes i zero."
+        },
+        {
+          "id": "iteration-13",
+          "mode": "test-out",
+          "prompt": "For a dense array a of length 4, which condition would read one index beyond its end?",
+          "options": [
+            {
+              "id": "a",
+              "text": "i <= a.length, starting at 0"
+            },
+            {
+              "id": "b",
+              "text": "i < a.length, starting at 0"
+            },
+            {
+              "id": "c",
+              "text": "i < 4, starting at 0"
+            },
+            {
+              "id": "d",
+              "text": "i <= 3, starting at 0"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The index equal to length is beyond the final element."
+        },
+        {
+          "id": "iteration-14",
+          "mode": "test-out",
+          "prompt": "In a classic for loop, which part executes after the body and before the next condition check?",
+          "options": [
+            {
+              "id": "a",
+              "text": "The update expression"
+            },
+            {
+              "id": "b",
+              "text": "The initialization expression"
+            },
+            {
+              "id": "c",
+              "text": "The entire function again"
+            },
+            {
+              "id": "d",
+              "text": "No expression"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The normal order is initialization, condition, body, update, then condition."
+        },
+        {
+          "id": "iteration-15",
+          "mode": "test-out",
+          "prompt": "If break runs in an inner loop, what happens to the outer loop?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It continues unless separately stopped"
+            },
+            {
+              "id": "b",
+              "text": "It always exits too"
+            },
+            {
+              "id": "c",
+              "text": "It automatically restarts at zero"
+            },
+            {
+              "id": "d",
+              "text": "It becomes a while loop"
+            }
+          ],
+          "correct": "a",
+          "explanation": "An unlabeled break affects only the nearest loop."
+        }
+      ]
+    },
+    {
+      "slug": "html",
+      "domain": "web",
+      "source": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Basic_HTML_syntax",
+      "items": [
+        {
+          "id": "html-01",
+          "mode": "checkpoint",
+          "prompt": "What is the main purpose of HTML?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Describe document structure"
+            },
+            {
+              "id": "b",
+              "text": "Encrypt network traffic"
+            },
+            {
+              "id": "c",
+              "text": "Store database passwords"
+            },
+            {
+              "id": "d",
+              "text": "Schedule server processes"
+            }
+          ],
+          "correct": "a",
+          "explanation": "HTML marks up document structure and meaning."
+        },
+        {
+          "id": "html-02",
+          "mode": "checkpoint",
+          "prompt": "Which tag creates a paragraph?",
+          "options": [
+            {
+              "id": "a",
+              "text": "<p>"
+            },
+            {
+              "id": "b",
+              "text": "<img>"
+            },
+            {
+              "id": "c",
+              "text": "<br>"
+            },
+            {
+              "id": "d",
+              "text": "<input>"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The p element represents a paragraph."
+        },
+        {
+          "id": "html-03",
+          "mode": "checkpoint",
+          "prompt": "Which syntax closes a strong element?",
+          "options": [
+            {
+              "id": "a",
+              "text": "</strong>"
+            },
+            {
+              "id": "b",
+              "text": "<strong/>"
+            },
+            {
+              "id": "c",
+              "text": "<endstrong>"
+            },
+            {
+              "id": "d",
+              "text": "</end>"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A closing tag uses a slash before the element name."
+        },
+        {
+          "id": "html-04",
+          "mode": "checkpoint",
+          "prompt": "Where do attributes belong?",
+          "options": [
+            {
+              "id": "a",
+              "text": "In the opening tag"
+            },
+            {
+              "id": "b",
+              "text": "Only after the closing tag"
+            },
+            {
+              "id": "c",
+              "text": "In a separate SQL table"
+            },
+            {
+              "id": "d",
+              "text": "Before the doctype only"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Attributes add information to the opening tag."
+        },
+        {
+          "id": "html-05",
+          "mode": "checkpoint",
+          "prompt": "Which element is a void element?",
+          "options": [
+            {
+              "id": "a",
+              "text": "<br>"
+            },
+            {
+              "id": "b",
+              "text": "<p>"
+            },
+            {
+              "id": "c",
+              "text": "<div>"
+            },
+            {
+              "id": "d",
+              "text": "<strong>"
+            }
+          ],
+          "correct": "a",
+          "explanation": "br has no content or closing tag."
+        },
+        {
+          "id": "html-06",
+          "mode": "test-out",
+          "prompt": "Which nesting is correct?",
+          "options": [
+            {
+              "id": "a",
+              "text": "<p><strong>Hi</strong></p>"
+            },
+            {
+              "id": "b",
+              "text": "<p><strong>Hi</p></strong>"
+            },
+            {
+              "id": "c",
+              "text": "</p><strong>Hi<p></strong>"
+            },
+            {
+              "id": "d",
+              "text": "<p>Hi</strong></p>"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Nested elements must close in the reverse order in which they opened."
+        },
+        {
+          "id": "html-07",
+          "mode": "test-out",
+          "prompt": "Which part of <a href=\"/learn\">Learn</a> supplies the link destination?",
+          "options": [
+            {
+              "id": "a",
+              "text": "href=\"/learn\""
+            },
+            {
+              "id": "b",
+              "text": "Learn"
+            },
+            {
+              "id": "c",
+              "text": "</a>"
+            },
+            {
+              "id": "d",
+              "text": "The space before Learn"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The href attribute identifies the link target."
+        },
+        {
+          "id": "html-08",
+          "mode": "test-out",
+          "prompt": "Which section contains the visible page content?",
+          "options": [
+            {
+              "id": "a",
+              "text": "body"
+            },
+            {
+              "id": "b",
+              "text": "doctype"
+            },
+            {
+              "id": "c",
+              "text": "The closing html tag"
+            },
+            {
+              "id": "d",
+              "text": "The file extension"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The body holds the document content displayed on the page."
+        },
+        {
+          "id": "html-09",
+          "mode": "test-out",
+          "prompt": "What does <!doctype html> declare?",
+          "options": [
+            {
+              "id": "a",
+              "text": "The HTML document type"
+            },
+            {
+              "id": "b",
+              "text": "A CSS color"
+            },
+            {
+              "id": "c",
+              "text": "A JavaScript variable"
+            },
+            {
+              "id": "d",
+              "text": "An image location"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The doctype tells the browser the document uses modern HTML."
+        },
+        {
+          "id": "html-10",
+          "mode": "test-out",
+          "prompt": "Which is an HTML comment?",
+          "options": [
+            {
+              "id": "a",
+              "text": "<!-- note -->"
+            },
+            {
+              "id": "b",
+              "text": "// note"
+            },
+            {
+              "id": "c",
+              "text": "/* note */"
+            },
+            {
+              "id": "d",
+              "text": "# note"
+            }
+          ],
+          "correct": "a",
+          "explanation": "HTML comments use the opening less-than exclamation double-hyphen delimiter and a matching closing delimiter."
+        },
+        {
+          "id": "html-11",
+          "mode": "test-out",
+          "prompt": "Which character reference displays a less-than sign as text?",
+          "options": [
+            {
+              "id": "a",
+              "text": "&lt;"
+            },
+            {
+              "id": "b",
+              "text": "&gt;"
+            },
+            {
+              "id": "c",
+              "text": "&amp;"
+            },
+            {
+              "id": "d",
+              "text": "&quot;"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The lt character reference represents the less-than sign."
+        },
+        {
+          "id": "html-12",
+          "mode": "test-out",
+          "prompt": "What is the role of an element attribute such as class?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Provide additional information about the element"
+            },
+            {
+              "id": "b",
+              "text": "Close the element"
+            },
+            {
+              "id": "c",
+              "text": "Replace every child element"
+            },
+            {
+              "id": "d",
+              "text": "Run a database query"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A class attribute supplies classification information that can be used by CSS and scripts."
+        },
+        {
+          "id": "html-13",
+          "mode": "test-out",
+          "prompt": "Which filename conventionally identifies a website directory landing page?",
+          "options": [
+            {
+              "id": "a",
+              "text": "index.html"
+            },
+            {
+              "id": "b",
+              "text": "styles.css"
+            },
+            {
+              "id": "c",
+              "text": "package-lock.json"
+            },
+            {
+              "id": "d",
+              "text": "server.sql"
+            }
+          ],
+          "correct": "a",
+          "explanation": "index.html is commonly used as a directory entry page."
+        },
+        {
+          "id": "html-14",
+          "mode": "test-out",
+          "prompt": "Which is a properly quoted attribute?",
+          "options": [
+            {
+              "id": "a",
+              "text": "<a href=\"/learn\">"
+            },
+            {
+              "id": "b",
+              "text": "<a href/learn>"
+            },
+            {
+              "id": "c",
+              "text": "<a /learn=\"href\">"
+            },
+            {
+              "id": "d",
+              "text": "<a =href \"/learn\">"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The attribute name is followed by an equals sign and its quoted value."
+        },
+        {
+          "id": "html-15",
+          "mode": "test-out",
+          "prompt": "What is the content in <p>Hello</p>?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Hello"
+            },
+            {
+              "id": "b",
+              "text": "p"
+            },
+            {
+              "id": "c",
+              "text": "</p>"
+            },
+            {
+              "id": "d",
+              "text": "<p>"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The content is between the opening and closing tags."
+        }
+      ]
+    },
+    {
+      "slug": "css",
+      "domain": "web",
+      "source": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/What_is_CSS",
+      "items": [
+        {
+          "id": "css-01",
+          "mode": "checkpoint",
+          "prompt": "What is CSS primarily used for?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Styling document presentation"
+            },
+            {
+              "id": "b",
+              "text": "Creating database users"
+            },
+            {
+              "id": "c",
+              "text": "Issuing login tokens"
+            },
+            {
+              "id": "d",
+              "text": "Compiling server code"
+            }
+          ],
+          "correct": "a",
+          "explanation": "CSS controls how structured content is presented."
+        },
+        {
+          "id": "css-02",
+          "mode": "checkpoint",
+          "prompt": "In p { color: red; }, what is the selector?",
+          "options": [
+            {
+              "id": "a",
+              "text": "p"
+            },
+            {
+              "id": "b",
+              "text": "color"
+            },
+            {
+              "id": "c",
+              "text": "red"
+            },
+            {
+              "id": "d",
+              "text": ";"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The selector chooses the elements to style."
+        },
+        {
+          "id": "css-03",
+          "mode": "checkpoint",
+          "prompt": "In color: red;, what is the property?",
+          "options": [
+            {
+              "id": "a",
+              "text": "color"
+            },
+            {
+              "id": "b",
+              "text": "red"
+            },
+            {
+              "id": "c",
+              "text": ":"
+            },
+            {
+              "id": "d",
+              "text": ";"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A declaration pairs a property name with a value."
+        },
+        {
+          "id": "css-04",
+          "mode": "checkpoint",
+          "prompt": "Which property changes text color?",
+          "options": [
+            {
+              "id": "a",
+              "text": "color"
+            },
+            {
+              "id": "b",
+              "text": "font-color"
+            },
+            {
+              "id": "c",
+              "text": "text-paint"
+            },
+            {
+              "id": "d",
+              "text": "foreground-text"
+            }
+          ],
+          "correct": "a",
+          "explanation": "The color property sets the foreground text color."
+        },
+        {
+          "id": "css-05",
+          "mode": "checkpoint",
+          "prompt": "Which punctuation separates a CSS property from its value?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Colon"
+            },
+            {
+              "id": "b",
+              "text": "Comma"
+            },
+            {
+              "id": "c",
+              "text": "Question mark"
+            },
+            {
+              "id": "d",
+              "text": "Slash"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Declarations use property: value syntax."
+        },
+        {
+          "id": "css-06",
+          "mode": "test-out",
+          "prompt": "Which selector targets elements with class card?",
+          "options": [
+            {
+              "id": "a",
+              "text": ".card"
+            },
+            {
+              "id": "b",
+              "text": "#card"
+            },
+            {
+              "id": "c",
+              "text": "card()"
+            },
+            {
+              "id": "d",
+              "text": "@card"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A dot introduces a class selector."
+        },
+        {
+          "id": "css-07",
+          "mode": "test-out",
+          "prompt": "Which selector targets the element with id main?",
+          "options": [
+            {
+              "id": "a",
+              "text": "#main"
+            },
+            {
+              "id": "b",
+              "text": ".main"
+            },
+            {
+              "id": "c",
+              "text": "main[]"
+            },
+            {
+              "id": "d",
+              "text": "@main"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A hash introduces an ID selector."
+        },
+        {
+          "id": "css-08",
+          "mode": "test-out",
+          "prompt": "Which selector targets all paragraph elements?",
+          "options": [
+            {
+              "id": "a",
+              "text": "p"
+            },
+            {
+              "id": "b",
+              "text": ".p"
+            },
+            {
+              "id": "c",
+              "text": "#p"
+            },
+            {
+              "id": "d",
+              "text": "@p"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A type selector is the element name."
+        },
+        {
+          "id": "css-09",
+          "mode": "test-out",
+          "prompt": "Which syntax correctly groups two declarations in a rule?",
+          "options": [
+            {
+              "id": "a",
+              "text": "p { color: red; font-size: 20px; }"
+            },
+            {
+              "id": "b",
+              "text": "p (color = red, font-size = 20px)"
+            },
+            {
+              "id": "c",
+              "text": "p [color red font-size 20px]"
+            },
+            {
+              "id": "d",
+              "text": "p => color:red;font-size:20px"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A declaration block uses braces and semicolon-separated declarations."
+        },
+        {
+          "id": "css-10",
+          "mode": "test-out",
+          "prompt": "Which HTML element links an external stylesheet?",
+          "options": [
+            {
+              "id": "a",
+              "text": "<link rel=\"stylesheet\" href=\"styles.css\">"
+            },
+            {
+              "id": "b",
+              "text": "<script src=\"styles.css\">"
+            },
+            {
+              "id": "c",
+              "text": "<img src=\"styles.css\">"
+            },
+            {
+              "id": "d",
+              "text": "<p stylesheet=\"styles.css\">"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A link element with the stylesheet relationship loads external CSS."
+        },
+        {
+          "id": "css-11",
+          "mode": "test-out",
+          "prompt": "Which is a CSS comment?",
+          "options": [
+            {
+              "id": "a",
+              "text": "/* note */"
+            },
+            {
+              "id": "b",
+              "text": "<!-- note -->"
+            },
+            {
+              "id": "c",
+              "text": "// note"
+            },
+            {
+              "id": "d",
+              "text": "# note"
+            }
+          ],
+          "correct": "a",
+          "explanation": "CSS comments use slash-star delimiters."
+        },
+        {
+          "id": "css-12",
+          "mode": "test-out",
+          "prompt": "What does background-color control?",
+          "options": [
+            {
+              "id": "a",
+              "text": "The background color of an element"
+            },
+            {
+              "id": "b",
+              "text": "Only the text color"
+            },
+            {
+              "id": "c",
+              "text": "The document title"
+            },
+            {
+              "id": "d",
+              "text": "The URL of a link"
+            }
+          ],
+          "correct": "a",
+          "explanation": "background-color paints the element background."
+        },
+        {
+          "id": "css-13",
+          "mode": "test-out",
+          "prompt": "Which declaration gives text a size of twenty pixels?",
+          "options": [
+            {
+              "id": "a",
+              "text": "font-size: 20px;"
+            },
+            {
+              "id": "b",
+              "text": "text-size = 20px;"
+            },
+            {
+              "id": "c",
+              "text": "font: pixels(20);"
+            },
+            {
+              "id": "d",
+              "text": "size-font: 20;"
+            }
+          ],
+          "correct": "a",
+          "explanation": "font-size accepts lengths such as pixels."
+        },
+        {
+          "id": "css-14",
+          "mode": "test-out",
+          "prompt": "Where can a document contain an internal stylesheet?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Inside a style element"
+            },
+            {
+              "id": "b",
+              "text": "Inside the doctype"
+            },
+            {
+              "id": "c",
+              "text": "Only inside an image"
+            },
+            {
+              "id": "d",
+              "text": "In a closing tag attribute"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A style element can contain CSS rules."
+        },
+        {
+          "id": "css-15",
+          "mode": "test-out",
+          "prompt": "Which example is an inline style?",
+          "options": [
+            {
+              "id": "a",
+              "text": "<p style=\"color: red;\">Hi</p>"
+            },
+            {
+              "id": "b",
+              "text": "<p class=\"red\">Hi</p>"
+            },
+            {
+              "id": "c",
+              "text": "<p id=\"red\">Hi</p>"
+            },
+            {
+              "id": "d",
+              "text": "<p href=\"red\">Hi</p>"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Inline CSS is supplied through the style attribute."
+        }
+      ]
+    },
+    {
+      "slug": "complexity",
+      "domain": "dsa",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Loops_and_iteration",
+      "items": [
+        {
+          "id": "complexity-0-0",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a full traversal?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It visits n entries"
+            },
+            {
+              "id": "b",
+              "text": "It visits no entries"
+            },
+            {
+              "id": "c",
+              "text": "It always visits two entries"
+            },
+            {
+              "id": "d",
+              "text": "It visits n squared entries"
+            }
+          ],
+          "correct": "a",
+          "explanation": "One visit per entry gives n visits."
+        },
+        {
+          "id": "complexity-1-0",
+          "mode": "test-out",
+          "prompt": "A loop visits every entry of an n-item list once. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It visits no entries"
+            },
+            {
+              "id": "b",
+              "text": "It always visits two entries"
+            },
+            {
+              "id": "c",
+              "text": "It visits n squared entries"
+            },
+            {
+              "id": "d",
+              "text": "It visits n entries"
+            }
+          ],
+          "correct": "d",
+          "explanation": "One visit per entry gives n visits."
+        },
+        {
+          "id": "complexity-2-0",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a full traversal, \"it visits no entries\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It always visits two entries"
+            },
+            {
+              "id": "b",
+              "text": "It visits n squared entries"
+            },
+            {
+              "id": "c",
+              "text": "It visits n entries"
+            },
+            {
+              "id": "d",
+              "text": "It visits no entries"
+            }
+          ],
+          "correct": "c",
+          "explanation": "One visit per entry gives n visits."
+        },
+        {
+          "id": "complexity-0-1",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes two nested full traversals?",
+          "options": [
+            {
+              "id": "a",
+              "text": "They always perform two visits"
+            },
+            {
+              "id": "b",
+              "text": "They perform n plus one visits"
+            },
+            {
+              "id": "c",
+              "text": "They perform zero visits"
+            },
+            {
+              "id": "d",
+              "text": "They perform n squared visits"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Each of n outer iterations performs n inner iterations."
+        },
+        {
+          "id": "complexity-1-1",
+          "mode": "test-out",
+          "prompt": "Both loop bounds are n and neither loop exits early. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "They perform n plus one visits"
+            },
+            {
+              "id": "b",
+              "text": "They perform zero visits"
+            },
+            {
+              "id": "c",
+              "text": "They perform n squared visits"
+            },
+            {
+              "id": "d",
+              "text": "They always perform two visits"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Each of n outer iterations performs n inner iterations."
+        },
+        {
+          "id": "complexity-2-1",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for two nested full traversals, \"they always perform two visits\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "They perform zero visits"
+            },
+            {
+              "id": "b",
+              "text": "They perform n squared visits"
+            },
+            {
+              "id": "c",
+              "text": "They always perform two visits"
+            },
+            {
+              "id": "d",
+              "text": "They perform n plus one visits"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Each of n outer iterations performs n inner iterations."
+        },
+        {
+          "id": "complexity-0-2",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes constant work?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It requires an empty input"
+            },
+            {
+              "id": "b",
+              "text": "It must visit all entries"
+            },
+            {
+              "id": "c",
+              "text": "Its step count is independent of input length"
+            },
+            {
+              "id": "d",
+              "text": "Its runtime is always zero"
+            }
+          ],
+          "correct": "c",
+          "explanation": "A fixed number of steps does not depend on n."
+        },
+        {
+          "id": "complexity-1-2",
+          "mode": "test-out",
+          "prompt": "A procedure compares only the first two supplied values. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It must visit all entries"
+            },
+            {
+              "id": "b",
+              "text": "Its step count is independent of input length"
+            },
+            {
+              "id": "c",
+              "text": "Its runtime is always zero"
+            },
+            {
+              "id": "d",
+              "text": "It requires an empty input"
+            }
+          ],
+          "correct": "b",
+          "explanation": "A fixed number of steps does not depend on n."
+        },
+        {
+          "id": "complexity-2-2",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for constant work, \"its runtime is always zero\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Its step count is independent of input length"
+            },
+            {
+              "id": "b",
+              "text": "Its runtime is always zero"
+            },
+            {
+              "id": "c",
+              "text": "It requires an empty input"
+            },
+            {
+              "id": "d",
+              "text": "It must visit all entries"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A fixed number of steps does not depend on n."
+        },
+        {
+          "id": "complexity-0-3",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes early exit?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It needs no comparison"
+            },
+            {
+              "id": "b",
+              "text": "A first-position match needs one comparison"
+            },
+            {
+              "id": "c",
+              "text": "Every search must visit all positions"
+            },
+            {
+              "id": "d",
+              "text": "It sorts the list"
+            }
+          ],
+          "correct": "b",
+          "explanation": "A search can stop when the target is found."
+        },
+        {
+          "id": "complexity-1-3",
+          "mode": "test-out",
+          "prompt": "The first entry matches and the loop immediately breaks. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "A first-position match needs one comparison"
+            },
+            {
+              "id": "b",
+              "text": "Every search must visit all positions"
+            },
+            {
+              "id": "c",
+              "text": "It sorts the list"
+            },
+            {
+              "id": "d",
+              "text": "It needs no comparison"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A search can stop when the target is found."
+        },
+        {
+          "id": "complexity-2-3",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for early exit, \"every search must visit all positions\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Every search must visit all positions"
+            },
+            {
+              "id": "b",
+              "text": "It sorts the list"
+            },
+            {
+              "id": "c",
+              "text": "It needs no comparison"
+            },
+            {
+              "id": "d",
+              "text": "A first-position match needs one comparison"
+            }
+          ],
+          "correct": "d",
+          "explanation": "A search can stop when the target is found."
+        },
+        {
+          "id": "complexity-0-4",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes worst-case linear search?",
+          "options": [
+            {
+              "id": "a",
+              "text": "A missing target requires n checks"
+            },
+            {
+              "id": "b",
+              "text": "It checks only the first entry"
+            },
+            {
+              "id": "c",
+              "text": "It checks only the last entry"
+            },
+            {
+              "id": "d",
+              "text": "It always checks half the entries"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Without additional structure every position may contain the target."
+        },
+        {
+          "id": "complexity-1-4",
+          "mode": "test-out",
+          "prompt": "An unsorted list of n entries does not contain the target. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It checks only the first entry"
+            },
+            {
+              "id": "b",
+              "text": "It checks only the last entry"
+            },
+            {
+              "id": "c",
+              "text": "It always checks half the entries"
+            },
+            {
+              "id": "d",
+              "text": "A missing target requires n checks"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Without additional structure every position may contain the target."
+        },
+        {
+          "id": "complexity-2-4",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for worst-case linear search, \"it checks only the first entry\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It checks only the last entry"
+            },
+            {
+              "id": "b",
+              "text": "It always checks half the entries"
+            },
+            {
+              "id": "c",
+              "text": "A missing target requires n checks"
+            },
+            {
+              "id": "d",
+              "text": "It checks only the first entry"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Without additional structure every position may contain the target."
+        }
+      ]
+    },
+    {
+      "slug": "http",
+      "domain": "web",
+      "source": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview",
+      "items": [
+        {
+          "id": "http-0-0",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a request?",
+          "options": [
+            {
+              "id": "a",
+              "text": "The client sends it to ask the server for something"
+            },
+            {
+              "id": "b",
+              "text": "It is always a database row"
+            },
+            {
+              "id": "c",
+              "text": "Only CSS sends it"
+            },
+            {
+              "id": "d",
+              "text": "It replaces all responses"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A client initiates an HTTP exchange with a request."
+        },
+        {
+          "id": "http-1-0",
+          "mode": "test-out",
+          "prompt": "A browser asks a server for an HTML document. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is always a database row"
+            },
+            {
+              "id": "b",
+              "text": "Only CSS sends it"
+            },
+            {
+              "id": "c",
+              "text": "It replaces all responses"
+            },
+            {
+              "id": "d",
+              "text": "The client sends it to ask the server for something"
+            }
+          ],
+          "correct": "d",
+          "explanation": "A client initiates an HTTP exchange with a request."
+        },
+        {
+          "id": "http-2-0",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a request, \"it is always a database row\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Only CSS sends it"
+            },
+            {
+              "id": "b",
+              "text": "It replaces all responses"
+            },
+            {
+              "id": "c",
+              "text": "The client sends it to ask the server for something"
+            },
+            {
+              "id": "d",
+              "text": "It is always a database row"
+            }
+          ],
+          "correct": "c",
+          "explanation": "A client initiates an HTTP exchange with a request."
+        },
+        {
+          "id": "http-0-1",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a response status?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is the user password"
+            },
+            {
+              "id": "b",
+              "text": "It is the screen size"
+            },
+            {
+              "id": "c",
+              "text": "It always means success"
+            },
+            {
+              "id": "d",
+              "text": "It communicates the request outcome"
+            }
+          ],
+          "correct": "d",
+          "explanation": "The status describes how the request was handled."
+        },
+        {
+          "id": "http-1-1",
+          "mode": "test-out",
+          "prompt": "A server must indicate that a page was not found. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is the screen size"
+            },
+            {
+              "id": "b",
+              "text": "It always means success"
+            },
+            {
+              "id": "c",
+              "text": "It communicates the request outcome"
+            },
+            {
+              "id": "d",
+              "text": "It is the user password"
+            }
+          ],
+          "correct": "c",
+          "explanation": "The status describes how the request was handled."
+        },
+        {
+          "id": "http-2-1",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a response status, \"it is the user password\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It always means success"
+            },
+            {
+              "id": "b",
+              "text": "It communicates the request outcome"
+            },
+            {
+              "id": "c",
+              "text": "It is the user password"
+            },
+            {
+              "id": "d",
+              "text": "It is the screen size"
+            }
+          ],
+          "correct": "b",
+          "explanation": "The status describes how the request was handled."
+        },
+        {
+          "id": "http-0-2",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes HTTP headers?",
+          "options": [
+            {
+              "id": "a",
+              "text": "They execute code automatically"
+            },
+            {
+              "id": "b",
+              "text": "They replace all URLs"
+            },
+            {
+              "id": "c",
+              "text": "They carry message metadata"
+            },
+            {
+              "id": "d",
+              "text": "They are always page content"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Headers describe aspects such as content type."
+        },
+        {
+          "id": "http-1-2",
+          "mode": "test-out",
+          "prompt": "A server declares that its body contains JSON. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "They replace all URLs"
+            },
+            {
+              "id": "b",
+              "text": "They carry message metadata"
+            },
+            {
+              "id": "c",
+              "text": "They are always page content"
+            },
+            {
+              "id": "d",
+              "text": "They execute code automatically"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Headers describe aspects such as content type."
+        },
+        {
+          "id": "http-2-2",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for HTTP headers, \"they are always page content\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "They carry message metadata"
+            },
+            {
+              "id": "b",
+              "text": "They are always page content"
+            },
+            {
+              "id": "c",
+              "text": "They execute code automatically"
+            },
+            {
+              "id": "d",
+              "text": "They replace all URLs"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Headers describe aspects such as content type."
+        },
+        {
+          "id": "http-0-3",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a response body?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is always absent"
+            },
+            {
+              "id": "b",
+              "text": "It carries returned content"
+            },
+            {
+              "id": "c",
+              "text": "It is always a status number"
+            },
+            {
+              "id": "d",
+              "text": "It must contain credentials"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Bodies can contain representations such as HTML or JSON."
+        },
+        {
+          "id": "http-1-3",
+          "mode": "test-out",
+          "prompt": "A client receives the HTML text of a page. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It carries returned content"
+            },
+            {
+              "id": "b",
+              "text": "It is always a status number"
+            },
+            {
+              "id": "c",
+              "text": "It must contain credentials"
+            },
+            {
+              "id": "d",
+              "text": "It is always absent"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Bodies can contain representations such as HTML or JSON."
+        },
+        {
+          "id": "http-2-3",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a response body, \"it is always a status number\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is always a status number"
+            },
+            {
+              "id": "b",
+              "text": "It must contain credentials"
+            },
+            {
+              "id": "c",
+              "text": "It is always absent"
+            },
+            {
+              "id": "d",
+              "text": "It carries returned content"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Bodies can contain representations such as HTML or JSON."
+        },
+        {
+          "id": "http-0-4",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes HTTPS?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It protects HTTP transport using TLS"
+            },
+            {
+              "id": "b",
+              "text": "It makes every site trustworthy"
+            },
+            {
+              "id": "c",
+              "text": "It replaces authorization"
+            },
+            {
+              "id": "d",
+              "text": "It prevents every application bug"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Transport protection does not replace application checks."
+        },
+        {
+          "id": "http-1-4",
+          "mode": "test-out",
+          "prompt": "A browser exchanges encrypted HTTP traffic with its intended server. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It makes every site trustworthy"
+            },
+            {
+              "id": "b",
+              "text": "It replaces authorization"
+            },
+            {
+              "id": "c",
+              "text": "It prevents every application bug"
+            },
+            {
+              "id": "d",
+              "text": "It protects HTTP transport using TLS"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Transport protection does not replace application checks."
+        },
+        {
+          "id": "http-2-4",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for HTTPS, \"it makes every site trustworthy\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It replaces authorization"
+            },
+            {
+              "id": "b",
+              "text": "It prevents every application bug"
+            },
+            {
+              "id": "c",
+              "text": "It protects HTTP transport using TLS"
+            },
+            {
+              "id": "d",
+              "text": "It makes every site trustworthy"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Transport protection does not replace application checks."
+        }
+      ]
+    },
+    {
+      "slug": "data",
+      "domain": "ml",
+      "source": "https://scikit-learn.org/stable/getting_started.html",
+      "items": [
+        {
+          "id": "data-0-0",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a sample?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is one observed example"
+            },
+            {
+              "id": "b",
+              "text": "It is always the whole dataset"
+            },
+            {
+              "id": "c",
+              "text": "It is model source code"
+            },
+            {
+              "id": "d",
+              "text": "It is always a metric"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A dataset contains individual observations."
+        },
+        {
+          "id": "data-1-0",
+          "mode": "test-out",
+          "prompt": "One row describes one house in a housing dataset. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is always the whole dataset"
+            },
+            {
+              "id": "b",
+              "text": "It is model source code"
+            },
+            {
+              "id": "c",
+              "text": "It is always a metric"
+            },
+            {
+              "id": "d",
+              "text": "It is one observed example"
+            }
+          ],
+          "correct": "d",
+          "explanation": "A dataset contains individual observations."
+        },
+        {
+          "id": "data-2-0",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a sample, \"it is always the whole dataset\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is model source code"
+            },
+            {
+              "id": "b",
+              "text": "It is always a metric"
+            },
+            {
+              "id": "c",
+              "text": "It is one observed example"
+            },
+            {
+              "id": "d",
+              "text": "It is always the whole dataset"
+            }
+          ],
+          "correct": "c",
+          "explanation": "A dataset contains individual observations."
+        },
+        {
+          "id": "data-0-1",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a feature?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is always the target"
+            },
+            {
+              "id": "b",
+              "text": "It is the final evaluation score"
+            },
+            {
+              "id": "c",
+              "text": "It is only an epoch counter"
+            },
+            {
+              "id": "d",
+              "text": "It is an input attribute"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Features supply information to a model."
+        },
+        {
+          "id": "data-1-1",
+          "mode": "test-out",
+          "prompt": "House area is supplied to predict price. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is the final evaluation score"
+            },
+            {
+              "id": "b",
+              "text": "It is only an epoch counter"
+            },
+            {
+              "id": "c",
+              "text": "It is an input attribute"
+            },
+            {
+              "id": "d",
+              "text": "It is always the target"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Features supply information to a model."
+        },
+        {
+          "id": "data-2-1",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a feature, \"it is always the target\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is only an epoch counter"
+            },
+            {
+              "id": "b",
+              "text": "It is an input attribute"
+            },
+            {
+              "id": "c",
+              "text": "It is always the target"
+            },
+            {
+              "id": "d",
+              "text": "It is the final evaluation score"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Features supply information to a model."
+        },
+        {
+          "id": "data-0-2",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a target?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is the filename"
+            },
+            {
+              "id": "b",
+              "text": "It is the random seed"
+            },
+            {
+              "id": "c",
+              "text": "It is the supervised outcome to predict"
+            },
+            {
+              "id": "d",
+              "text": "It is every input column"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Supervised learning pairs inputs with known outcomes."
+        },
+        {
+          "id": "data-1-2",
+          "mode": "test-out",
+          "prompt": "Historical sale prices serve as labels. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is the random seed"
+            },
+            {
+              "id": "b",
+              "text": "It is the supervised outcome to predict"
+            },
+            {
+              "id": "c",
+              "text": "It is every input column"
+            },
+            {
+              "id": "d",
+              "text": "It is the filename"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Supervised learning pairs inputs with known outcomes."
+        },
+        {
+          "id": "data-2-2",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a target, \"it is every input column\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is the supervised outcome to predict"
+            },
+            {
+              "id": "b",
+              "text": "It is every input column"
+            },
+            {
+              "id": "c",
+              "text": "It is the filename"
+            },
+            {
+              "id": "d",
+              "text": "It is the random seed"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Supervised learning pairs inputs with known outcomes."
+        },
+        {
+          "id": "data-0-3",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes classification?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It guarantees perfect predictions"
+            },
+            {
+              "id": "b",
+              "text": "It predicts a discrete class"
+            },
+            {
+              "id": "c",
+              "text": "It always predicts a continuous price"
+            },
+            {
+              "id": "d",
+              "text": "It only sorts rows"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Class labels are discrete outcomes."
+        },
+        {
+          "id": "data-1-3",
+          "mode": "test-out",
+          "prompt": "A model predicts spam or not spam. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It predicts a discrete class"
+            },
+            {
+              "id": "b",
+              "text": "It always predicts a continuous price"
+            },
+            {
+              "id": "c",
+              "text": "It only sorts rows"
+            },
+            {
+              "id": "d",
+              "text": "It guarantees perfect predictions"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Class labels are discrete outcomes."
+        },
+        {
+          "id": "data-2-3",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for classification, \"it always predicts a continuous price\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It always predicts a continuous price"
+            },
+            {
+              "id": "b",
+              "text": "It only sorts rows"
+            },
+            {
+              "id": "c",
+              "text": "It guarantees perfect predictions"
+            },
+            {
+              "id": "d",
+              "text": "It predicts a discrete class"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Class labels are discrete outcomes."
+        },
+        {
+          "id": "data-0-4",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes regression?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It predicts a numeric quantity"
+            },
+            {
+              "id": "b",
+              "text": "It only predicts class names"
+            },
+            {
+              "id": "c",
+              "text": "It guarantees zero error"
+            },
+            {
+              "id": "d",
+              "text": "It is only data storage"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Regression estimates numeric targets."
+        },
+        {
+          "id": "data-1-4",
+          "mode": "test-out",
+          "prompt": "A model estimates a house price in currency units. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It only predicts class names"
+            },
+            {
+              "id": "b",
+              "text": "It guarantees zero error"
+            },
+            {
+              "id": "c",
+              "text": "It is only data storage"
+            },
+            {
+              "id": "d",
+              "text": "It predicts a numeric quantity"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Regression estimates numeric targets."
+        },
+        {
+          "id": "data-2-4",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for regression, \"it only predicts class names\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It guarantees zero error"
+            },
+            {
+              "id": "b",
+              "text": "It is only data storage"
+            },
+            {
+              "id": "c",
+              "text": "It predicts a numeric quantity"
+            },
+            {
+              "id": "d",
+              "text": "It only predicts class names"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Regression estimates numeric targets."
+        }
+      ]
+    },
+    {
+      "slug": "training",
+      "domain": "ml",
+      "source": "https://scikit-learn.org/stable/common_pitfalls.html",
+      "items": [
+        {
+          "id": "training-0-0",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes training data?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It supplies examples for fitting"
+            },
+            {
+              "id": "b",
+              "text": "It is only the final report"
+            },
+            {
+              "id": "c",
+              "text": "It must include future labels"
+            },
+            {
+              "id": "d",
+              "text": "It is never used by fit"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Fitting learns from training examples."
+        },
+        {
+          "id": "training-1-0",
+          "mode": "test-out",
+          "prompt": "An estimator adjusts parameters using labelled rows. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is only the final report"
+            },
+            {
+              "id": "b",
+              "text": "It must include future labels"
+            },
+            {
+              "id": "c",
+              "text": "It is never used by fit"
+            },
+            {
+              "id": "d",
+              "text": "It supplies examples for fitting"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Fitting learns from training examples."
+        },
+        {
+          "id": "training-2-0",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for training data, \"it is only the final report\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It must include future labels"
+            },
+            {
+              "id": "b",
+              "text": "It is never used by fit"
+            },
+            {
+              "id": "c",
+              "text": "It supplies examples for fitting"
+            },
+            {
+              "id": "d",
+              "text": "It is only the final report"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Fitting learns from training examples."
+        },
+        {
+          "id": "training-0-1",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes test data?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It should tune every model choice"
+            },
+            {
+              "id": "b",
+              "text": "It must be copied into training"
+            },
+            {
+              "id": "c",
+              "text": "It proves perfect generalization"
+            },
+            {
+              "id": "d",
+              "text": "It evaluates examples held out of fitting"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Held-out examples estimate unseen-example performance."
+        },
+        {
+          "id": "training-1-1",
+          "mode": "test-out",
+          "prompt": "A fitted model is evaluated on untouched rows. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It must be copied into training"
+            },
+            {
+              "id": "b",
+              "text": "It proves perfect generalization"
+            },
+            {
+              "id": "c",
+              "text": "It evaluates examples held out of fitting"
+            },
+            {
+              "id": "d",
+              "text": "It should tune every model choice"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Held-out examples estimate unseen-example performance."
+        },
+        {
+          "id": "training-2-1",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for test data, \"it should tune every model choice\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It proves perfect generalization"
+            },
+            {
+              "id": "b",
+              "text": "It evaluates examples held out of fitting"
+            },
+            {
+              "id": "c",
+              "text": "It should tune every model choice"
+            },
+            {
+              "id": "d",
+              "text": "It must be copied into training"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Held-out examples estimate unseen-example performance."
+        },
+        {
+          "id": "training-0-2",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes data leakage?",
+          "options": [
+            {
+              "id": "a",
+              "text": "The model has a filename"
+            },
+            {
+              "id": "b",
+              "text": "A metric is rounded"
+            },
+            {
+              "id": "c",
+              "text": "Unavailable future information enters training"
+            },
+            {
+              "id": "d",
+              "text": "The dataset is simply small"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Leakage can make evaluation unrealistically optimistic."
+        },
+        {
+          "id": "training-1-2",
+          "mode": "test-out",
+          "prompt": "A feature contains the answer only known after prediction time. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "A metric is rounded"
+            },
+            {
+              "id": "b",
+              "text": "Unavailable future information enters training"
+            },
+            {
+              "id": "c",
+              "text": "The dataset is simply small"
+            },
+            {
+              "id": "d",
+              "text": "The model has a filename"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Leakage can make evaluation unrealistically optimistic."
+        },
+        {
+          "id": "training-2-2",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for data leakage, \"the dataset is simply small\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Unavailable future information enters training"
+            },
+            {
+              "id": "b",
+              "text": "The dataset is simply small"
+            },
+            {
+              "id": "c",
+              "text": "The model has a filename"
+            },
+            {
+              "id": "d",
+              "text": "A metric is rounded"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Leakage can make evaluation unrealistically optimistic."
+        },
+        {
+          "id": "training-0-3",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes safe preprocessing?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Delete the training split"
+            },
+            {
+              "id": "b",
+              "text": "Fit on training data and apply to test data"
+            },
+            {
+              "id": "c",
+              "text": "Fit on all rows before splitting"
+            },
+            {
+              "id": "d",
+              "text": "Copy test labels into features"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Learning transformation parameters from test data contaminates evaluation."
+        },
+        {
+          "id": "training-1-3",
+          "mode": "test-out",
+          "prompt": "A scaler must learn feature means before evaluation. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Fit on training data and apply to test data"
+            },
+            {
+              "id": "b",
+              "text": "Fit on all rows before splitting"
+            },
+            {
+              "id": "c",
+              "text": "Copy test labels into features"
+            },
+            {
+              "id": "d",
+              "text": "Delete the training split"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Learning transformation parameters from test data contaminates evaluation."
+        },
+        {
+          "id": "training-2-3",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for safe preprocessing, \"fit on all rows before splitting\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Fit on all rows before splitting"
+            },
+            {
+              "id": "b",
+              "text": "Copy test labels into features"
+            },
+            {
+              "id": "c",
+              "text": "Delete the training split"
+            },
+            {
+              "id": "d",
+              "text": "Fit on training data and apply to test data"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Learning transformation parameters from test data contaminates evaluation."
+        },
+        {
+          "id": "training-0-4",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes reproducibility?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Record split, seed and settings"
+            },
+            {
+              "id": "b",
+              "text": "Change test sets until scores improve"
+            },
+            {
+              "id": "c",
+              "text": "Keep no settings"
+            },
+            {
+              "id": "d",
+              "text": "Shuffle without recording anything"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Recorded configuration helps repeat comparisons."
+        },
+        {
+          "id": "training-1-4",
+          "mode": "test-out",
+          "prompt": "Two learners compare models using the same data split. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Change test sets until scores improve"
+            },
+            {
+              "id": "b",
+              "text": "Keep no settings"
+            },
+            {
+              "id": "c",
+              "text": "Shuffle without recording anything"
+            },
+            {
+              "id": "d",
+              "text": "Record split, seed and settings"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Recorded configuration helps repeat comparisons."
+        },
+        {
+          "id": "training-2-4",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for reproducibility, \"change test sets until scores improve\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Keep no settings"
+            },
+            {
+              "id": "b",
+              "text": "Shuffle without recording anything"
+            },
+            {
+              "id": "c",
+              "text": "Record split, seed and settings"
+            },
+            {
+              "id": "d",
+              "text": "Change test sets until scores improve"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Recorded configuration helps repeat comparisons."
+        }
+      ]
+    },
+    {
+      "slug": "evaluation",
+      "domain": "ml",
+      "source": "https://scikit-learn.org/stable/modules/model_evaluation.html",
+      "items": [
+        {
+          "id": "evaluation-0-0",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes accuracy?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is the fraction of correct predictions"
+            },
+            {
+              "id": "b",
+              "text": "It is always training loss"
+            },
+            {
+              "id": "c",
+              "text": "It counts only false positives"
+            },
+            {
+              "id": "d",
+              "text": "It counts features"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Accuracy compares predictions with true labels."
+        },
+        {
+          "id": "evaluation-1-0",
+          "mode": "test-out",
+          "prompt": "Eight of ten predicted classes match their labels. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is always training loss"
+            },
+            {
+              "id": "b",
+              "text": "It counts only false positives"
+            },
+            {
+              "id": "c",
+              "text": "It counts features"
+            },
+            {
+              "id": "d",
+              "text": "It is the fraction of correct predictions"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Accuracy compares predictions with true labels."
+        },
+        {
+          "id": "evaluation-2-0",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for accuracy, \"it is always training loss\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It counts only false positives"
+            },
+            {
+              "id": "b",
+              "text": "It counts features"
+            },
+            {
+              "id": "c",
+              "text": "It is the fraction of correct predictions"
+            },
+            {
+              "id": "d",
+              "text": "It is always training loss"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Accuracy compares predictions with true labels."
+        },
+        {
+          "id": "evaluation-0-1",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a false positive?",
+          "options": [
+            {
+              "id": "a",
+              "text": "An actual positive is predicted negative"
+            },
+            {
+              "id": "b",
+              "text": "A positive is predicted correctly"
+            },
+            {
+              "id": "c",
+              "text": "The model refuses to predict"
+            },
+            {
+              "id": "d",
+              "text": "An actual negative is predicted positive"
+            }
+          ],
+          "correct": "d",
+          "explanation": "A false positive incorrectly flags a negative case."
+        },
+        {
+          "id": "evaluation-1-1",
+          "mode": "test-out",
+          "prompt": "A legitimate message is flagged as spam. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "A positive is predicted correctly"
+            },
+            {
+              "id": "b",
+              "text": "The model refuses to predict"
+            },
+            {
+              "id": "c",
+              "text": "An actual negative is predicted positive"
+            },
+            {
+              "id": "d",
+              "text": "An actual positive is predicted negative"
+            }
+          ],
+          "correct": "c",
+          "explanation": "A false positive incorrectly flags a negative case."
+        },
+        {
+          "id": "evaluation-2-1",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a false positive, \"an actual positive is predicted negative\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "The model refuses to predict"
+            },
+            {
+              "id": "b",
+              "text": "An actual negative is predicted positive"
+            },
+            {
+              "id": "c",
+              "text": "An actual positive is predicted negative"
+            },
+            {
+              "id": "d",
+              "text": "A positive is predicted correctly"
+            }
+          ],
+          "correct": "b",
+          "explanation": "A false positive incorrectly flags a negative case."
+        },
+        {
+          "id": "evaluation-0-2",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a false negative?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Every prediction is correct"
+            },
+            {
+              "id": "b",
+              "text": "The model has no features"
+            },
+            {
+              "id": "c",
+              "text": "An actual positive is predicted negative"
+            },
+            {
+              "id": "d",
+              "text": "An actual negative is predicted positive"
+            }
+          ],
+          "correct": "c",
+          "explanation": "A false negative misses a positive case."
+        },
+        {
+          "id": "evaluation-1-2",
+          "mode": "test-out",
+          "prompt": "Spam is incorrectly accepted as legitimate mail. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "The model has no features"
+            },
+            {
+              "id": "b",
+              "text": "An actual positive is predicted negative"
+            },
+            {
+              "id": "c",
+              "text": "An actual negative is predicted positive"
+            },
+            {
+              "id": "d",
+              "text": "Every prediction is correct"
+            }
+          ],
+          "correct": "b",
+          "explanation": "A false negative misses a positive case."
+        },
+        {
+          "id": "evaluation-2-2",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a false negative, \"an actual negative is predicted positive\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "An actual positive is predicted negative"
+            },
+            {
+              "id": "b",
+              "text": "An actual negative is predicted positive"
+            },
+            {
+              "id": "c",
+              "text": "Every prediction is correct"
+            },
+            {
+              "id": "d",
+              "text": "The model has no features"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A false negative misses a positive case."
+        },
+        {
+          "id": "evaluation-0-3",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes imbalanced classes?",
+          "options": [
+            {
+              "id": "a",
+              "text": "The minority can never matter"
+            },
+            {
+              "id": "b",
+              "text": "Accuracy can hide poor minority-class performance"
+            },
+            {
+              "id": "c",
+              "text": "Accuracy is always perfect"
+            },
+            {
+              "id": "d",
+              "text": "Every class has the same count"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Frequent classes can dominate aggregate accuracy."
+        },
+        {
+          "id": "evaluation-1-3",
+          "mode": "test-out",
+          "prompt": "A model always predicts the class found in 99 percent of rows. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Accuracy can hide poor minority-class performance"
+            },
+            {
+              "id": "b",
+              "text": "Accuracy is always perfect"
+            },
+            {
+              "id": "c",
+              "text": "Every class has the same count"
+            },
+            {
+              "id": "d",
+              "text": "The minority can never matter"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Frequent classes can dominate aggregate accuracy."
+        },
+        {
+          "id": "evaluation-2-3",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for imbalanced classes, \"accuracy is always perfect\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Accuracy is always perfect"
+            },
+            {
+              "id": "b",
+              "text": "Every class has the same count"
+            },
+            {
+              "id": "c",
+              "text": "The minority can never matter"
+            },
+            {
+              "id": "d",
+              "text": "Accuracy can hide poor minority-class performance"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Frequent classes can dominate aggregate accuracy."
+        },
+        {
+          "id": "evaluation-0-4",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes error analysis?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Inspect mistakes and relevant subsets"
+            },
+            {
+              "id": "b",
+              "text": "Hide every incorrect prediction"
+            },
+            {
+              "id": "c",
+              "text": "Use test labels as input features"
+            },
+            {
+              "id": "d",
+              "text": "Report only easy examples"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Inspecting errors can reveal systematic weaknesses."
+        },
+        {
+          "id": "evaluation-1-4",
+          "mode": "test-out",
+          "prompt": "A good overall score hides failure on one input category. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Hide every incorrect prediction"
+            },
+            {
+              "id": "b",
+              "text": "Use test labels as input features"
+            },
+            {
+              "id": "c",
+              "text": "Report only easy examples"
+            },
+            {
+              "id": "d",
+              "text": "Inspect mistakes and relevant subsets"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Inspecting errors can reveal systematic weaknesses."
+        },
+        {
+          "id": "evaluation-2-4",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for error analysis, \"hide every incorrect prediction\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Use test labels as input features"
+            },
+            {
+              "id": "b",
+              "text": "Report only easy examples"
+            },
+            {
+              "id": "c",
+              "text": "Inspect mistakes and relevant subsets"
+            },
+            {
+              "id": "d",
+              "text": "Hide every incorrect prediction"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Inspecting errors can reveal systematic weaknesses."
+        }
+      ]
+    },
+    {
+      "slug": "requests",
+      "domain": "backend",
+      "source": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Server-side/First_steps/Client-Server_overview",
+      "items": [
+        {
+          "id": "requests-0-0",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes routing?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It selects handlers by method and path"
+            },
+            {
+              "id": "b",
+              "text": "It only selects fonts"
+            },
+            {
+              "id": "c",
+              "text": "It always runs inside SQL"
+            },
+            {
+              "id": "d",
+              "text": "It removes the HTTP method"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Routes decide how requests are handled."
+        },
+        {
+          "id": "requests-1-0",
+          "mode": "test-out",
+          "prompt": "GET /books and POST /books need different handlers. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It only selects fonts"
+            },
+            {
+              "id": "b",
+              "text": "It always runs inside SQL"
+            },
+            {
+              "id": "c",
+              "text": "It removes the HTTP method"
+            },
+            {
+              "id": "d",
+              "text": "It selects handlers by method and path"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Routes decide how requests are handled."
+        },
+        {
+          "id": "requests-2-0",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for routing, \"it only selects fonts\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It always runs inside SQL"
+            },
+            {
+              "id": "b",
+              "text": "It removes the HTTP method"
+            },
+            {
+              "id": "c",
+              "text": "It selects handlers by method and path"
+            },
+            {
+              "id": "d",
+              "text": "It only selects fonts"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Routes decide how requests are handled."
+        },
+        {
+          "id": "requests-0-1",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes parsing?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It proves input is safe"
+            },
+            {
+              "id": "b",
+              "text": "It grants ownership"
+            },
+            {
+              "id": "c",
+              "text": "It always writes a database"
+            },
+            {
+              "id": "d",
+              "text": "It decodes input into a usable form"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Parsing is separate from validation and permission checks."
+        },
+        {
+          "id": "requests-1-1",
+          "mode": "test-out",
+          "prompt": "A handler converts a JSON body into an object. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It grants ownership"
+            },
+            {
+              "id": "b",
+              "text": "It always writes a database"
+            },
+            {
+              "id": "c",
+              "text": "It decodes input into a usable form"
+            },
+            {
+              "id": "d",
+              "text": "It proves input is safe"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Parsing is separate from validation and permission checks."
+        },
+        {
+          "id": "requests-2-1",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for parsing, \"it proves input is safe\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It always writes a database"
+            },
+            {
+              "id": "b",
+              "text": "It decodes input into a usable form"
+            },
+            {
+              "id": "c",
+              "text": "It proves input is safe"
+            },
+            {
+              "id": "d",
+              "text": "It grants ownership"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Parsing is separate from validation and permission checks."
+        },
+        {
+          "id": "requests-0-2",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes authorization?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It changes text color"
+            },
+            {
+              "id": "b",
+              "text": "It proves an input is numeric"
+            },
+            {
+              "id": "c",
+              "text": "It checks permission for an operation"
+            },
+            {
+              "id": "d",
+              "text": "It merely parses JSON"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Authorization determines what a verified identity may do."
+        },
+        {
+          "id": "requests-1-2",
+          "mode": "test-out",
+          "prompt": "A logged-in user tries to edit another user’s private note. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It proves an input is numeric"
+            },
+            {
+              "id": "b",
+              "text": "It checks permission for an operation"
+            },
+            {
+              "id": "c",
+              "text": "It merely parses JSON"
+            },
+            {
+              "id": "d",
+              "text": "It changes text color"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Authorization determines what a verified identity may do."
+        },
+        {
+          "id": "requests-2-2",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for authorization, \"it merely parses json\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It checks permission for an operation"
+            },
+            {
+              "id": "b",
+              "text": "It merely parses JSON"
+            },
+            {
+              "id": "c",
+              "text": "It changes text color"
+            },
+            {
+              "id": "d",
+              "text": "It proves an input is numeric"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Authorization determines what a verified identity may do."
+        },
+        {
+          "id": "requests-0-3",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a server response?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It cannot indicate failure"
+            },
+            {
+              "id": "b",
+              "text": "It communicates status and a result"
+            },
+            {
+              "id": "c",
+              "text": "It must reveal server files"
+            },
+            {
+              "id": "d",
+              "text": "It always repeats the input"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Responses provide an outcome and appropriate public data."
+        },
+        {
+          "id": "requests-1-3",
+          "mode": "test-out",
+          "prompt": "A creation request returns the new record’s public fields. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It communicates status and a result"
+            },
+            {
+              "id": "b",
+              "text": "It must reveal server files"
+            },
+            {
+              "id": "c",
+              "text": "It always repeats the input"
+            },
+            {
+              "id": "d",
+              "text": "It cannot indicate failure"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Responses provide an outcome and appropriate public data."
+        },
+        {
+          "id": "requests-2-3",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a server response, \"it must reveal server files\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It must reveal server files"
+            },
+            {
+              "id": "b",
+              "text": "It always repeats the input"
+            },
+            {
+              "id": "c",
+              "text": "It cannot indicate failure"
+            },
+            {
+              "id": "d",
+              "text": "It communicates status and a result"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Responses provide an outcome and appropriate public data."
+        },
+        {
+          "id": "requests-0-4",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes error handling?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Return a controlled failure without secrets"
+            },
+            {
+              "id": "b",
+              "text": "Return all environment variables"
+            },
+            {
+              "id": "c",
+              "text": "Claim success for every failure"
+            },
+            {
+              "id": "d",
+              "text": "Silently corrupt stored data"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Bounded errors inform callers without exposing internals."
+        },
+        {
+          "id": "requests-1-4",
+          "mode": "test-out",
+          "prompt": "A dependency becomes unavailable during a request. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Return all environment variables"
+            },
+            {
+              "id": "b",
+              "text": "Claim success for every failure"
+            },
+            {
+              "id": "c",
+              "text": "Silently corrupt stored data"
+            },
+            {
+              "id": "d",
+              "text": "Return a controlled failure without secrets"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Bounded errors inform callers without exposing internals."
+        },
+        {
+          "id": "requests-2-4",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for error handling, \"return all environment variables\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Claim success for every failure"
+            },
+            {
+              "id": "b",
+              "text": "Silently corrupt stored data"
+            },
+            {
+              "id": "c",
+              "text": "Return a controlled failure without secrets"
+            },
+            {
+              "id": "d",
+              "text": "Return all environment variables"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Bounded errors inform callers without exposing internals."
+        }
+      ]
+    },
+    {
+      "slug": "validation",
+      "domain": "backend",
+      "source": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Server-side/First_steps/Website_security",
+      "items": [
+        {
+          "id": "validation-0-0",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes server validation?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It checks input at the authoritative server"
+            },
+            {
+              "id": "b",
+              "text": "A hidden form field replaces it"
+            },
+            {
+              "id": "c",
+              "text": "It trusts every browser value"
+            },
+            {
+              "id": "d",
+              "text": "It runs only as CSS"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Clients can bypass browser-side checks."
+        },
+        {
+          "id": "validation-1-0",
+          "mode": "test-out",
+          "prompt": "A caller submits a direct request without using the form. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "A hidden form field replaces it"
+            },
+            {
+              "id": "b",
+              "text": "It trusts every browser value"
+            },
+            {
+              "id": "c",
+              "text": "It runs only as CSS"
+            },
+            {
+              "id": "d",
+              "text": "It checks input at the authoritative server"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Clients can bypass browser-side checks."
+        },
+        {
+          "id": "validation-2-0",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for server validation, \"a hidden form field replaces it\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It trusts every browser value"
+            },
+            {
+              "id": "b",
+              "text": "It runs only as CSS"
+            },
+            {
+              "id": "c",
+              "text": "It checks input at the authoritative server"
+            },
+            {
+              "id": "d",
+              "text": "A hidden form field replaces it"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Clients can bypass browser-side checks."
+        },
+        {
+          "id": "validation-0-1",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes an allowlist?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It accepts all unknown fields"
+            },
+            {
+              "id": "b",
+              "text": "It guesses administrator roles"
+            },
+            {
+              "id": "c",
+              "text": "It removes authentication"
+            },
+            {
+              "id": "d",
+              "text": "It accepts explicitly supported values"
+            }
+          ],
+          "correct": "d",
+          "explanation": "An allowlist bounds the supported input space."
+        },
+        {
+          "id": "validation-1-1",
+          "mode": "test-out",
+          "prompt": "A setting permits only new, some and advanced. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It guesses administrator roles"
+            },
+            {
+              "id": "b",
+              "text": "It removes authentication"
+            },
+            {
+              "id": "c",
+              "text": "It accepts explicitly supported values"
+            },
+            {
+              "id": "d",
+              "text": "It accepts all unknown fields"
+            }
+          ],
+          "correct": "c",
+          "explanation": "An allowlist bounds the supported input space."
+        },
+        {
+          "id": "validation-2-1",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for an allowlist, \"it accepts all unknown fields\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It removes authentication"
+            },
+            {
+              "id": "b",
+              "text": "It accepts explicitly supported values"
+            },
+            {
+              "id": "c",
+              "text": "It accepts all unknown fields"
+            },
+            {
+              "id": "d",
+              "text": "It guesses administrator roles"
+            }
+          ],
+          "correct": "b",
+          "explanation": "An allowlist bounds the supported input space."
+        },
+        {
+          "id": "validation-0-2",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes ownership checks?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Require only a guessable resource ID"
+            },
+            {
+              "id": "b",
+              "text": "Expose all tenant data"
+            },
+            {
+              "id": "c",
+              "text": "Use verified identity to scope access"
+            },
+            {
+              "id": "d",
+              "text": "Trust the owner ID in the body"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Server-verified identity must establish the owner."
+        },
+        {
+          "id": "validation-1-2",
+          "mode": "test-out",
+          "prompt": "A request references another user’s private resource. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Expose all tenant data"
+            },
+            {
+              "id": "b",
+              "text": "Use verified identity to scope access"
+            },
+            {
+              "id": "c",
+              "text": "Trust the owner ID in the body"
+            },
+            {
+              "id": "d",
+              "text": "Require only a guessable resource ID"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Server-verified identity must establish the owner."
+        },
+        {
+          "id": "validation-2-2",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for ownership checks, \"trust the owner id in the body\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Use verified identity to scope access"
+            },
+            {
+              "id": "b",
+              "text": "Trust the owner ID in the body"
+            },
+            {
+              "id": "c",
+              "text": "Require only a guessable resource ID"
+            },
+            {
+              "id": "d",
+              "text": "Expose all tenant data"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Server-verified identity must establish the owner."
+        },
+        {
+          "id": "validation-0-3",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes parameterized queries?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Grant every caller administrator rights"
+            },
+            {
+              "id": "b",
+              "text": "Separate query structure from input values"
+            },
+            {
+              "id": "c",
+              "text": "Concatenate raw input into SQL"
+            },
+            {
+              "id": "d",
+              "text": "Disable input validation"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Parameters prevent values becoming SQL syntax."
+        },
+        {
+          "id": "validation-1-3",
+          "mode": "test-out",
+          "prompt": "A search term contains quotes and SQL-like text. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Separate query structure from input values"
+            },
+            {
+              "id": "b",
+              "text": "Concatenate raw input into SQL"
+            },
+            {
+              "id": "c",
+              "text": "Disable input validation"
+            },
+            {
+              "id": "d",
+              "text": "Grant every caller administrator rights"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Parameters prevent values becoming SQL syntax."
+        },
+        {
+          "id": "validation-2-3",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for parameterized queries, \"concatenate raw input into sql\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Concatenate raw input into SQL"
+            },
+            {
+              "id": "b",
+              "text": "Disable input validation"
+            },
+            {
+              "id": "c",
+              "text": "Grant every caller administrator rights"
+            },
+            {
+              "id": "d",
+              "text": "Separate query structure from input values"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Parameters prevent values becoming SQL syntax."
+        },
+        {
+          "id": "validation-0-4",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes payload limits?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Bound input size and supported shape"
+            },
+            {
+              "id": "b",
+              "text": "Accept unlimited bytes"
+            },
+            {
+              "id": "c",
+              "text": "Make all text trusted"
+            },
+            {
+              "id": "d",
+              "text": "Eliminate every outage"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Limits reduce resource abuse and unexpected processing."
+        },
+        {
+          "id": "validation-1-4",
+          "mode": "test-out",
+          "prompt": "An endpoint expects a short answer but receives a huge body. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Accept unlimited bytes"
+            },
+            {
+              "id": "b",
+              "text": "Make all text trusted"
+            },
+            {
+              "id": "c",
+              "text": "Eliminate every outage"
+            },
+            {
+              "id": "d",
+              "text": "Bound input size and supported shape"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Limits reduce resource abuse and unexpected processing."
+        },
+        {
+          "id": "validation-2-4",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for payload limits, \"accept unlimited bytes\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Make all text trusted"
+            },
+            {
+              "id": "b",
+              "text": "Eliminate every outage"
+            },
+            {
+              "id": "c",
+              "text": "Bound input size and supported shape"
+            },
+            {
+              "id": "d",
+              "text": "Accept unlimited bytes"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Limits reduce resource abuse and unexpected processing."
+        }
+      ]
+    },
+    {
+      "slug": "persistence",
+      "domain": "backend",
+      "source": "https://www.postgresql.org/docs/current/tutorial-transactions.html",
+      "items": [
+        {
+          "id": "persistence-0-0",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a transaction?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Group changes into one commit or rollback"
+            },
+            {
+              "id": "b",
+              "text": "Always use one network packet"
+            },
+            {
+              "id": "c",
+              "text": "Skip all consistency checks"
+            },
+            {
+              "id": "d",
+              "text": "Only cache data in a browser"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Transactions define an atomic unit of work."
+        },
+        {
+          "id": "persistence-1-0",
+          "mode": "test-out",
+          "prompt": "A transfer must debit and credit accounts together. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Always use one network packet"
+            },
+            {
+              "id": "b",
+              "text": "Skip all consistency checks"
+            },
+            {
+              "id": "c",
+              "text": "Only cache data in a browser"
+            },
+            {
+              "id": "d",
+              "text": "Group changes into one commit or rollback"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Transactions define an atomic unit of work."
+        },
+        {
+          "id": "persistence-2-0",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a transaction, \"always use one network packet\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Skip all consistency checks"
+            },
+            {
+              "id": "b",
+              "text": "Only cache data in a browser"
+            },
+            {
+              "id": "c",
+              "text": "Group changes into one commit or rollback"
+            },
+            {
+              "id": "d",
+              "text": "Always use one network packet"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Transactions define an atomic unit of work."
+        },
+        {
+          "id": "persistence-0-1",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes rollback?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Publish partial changes"
+            },
+            {
+              "id": "b",
+              "text": "Automatically redesign the schema"
+            },
+            {
+              "id": "c",
+              "text": "Permanently disable reads"
+            },
+            {
+              "id": "d",
+              "text": "Discard uncommitted transaction changes"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Rollback avoids committing incomplete work."
+        },
+        {
+          "id": "persistence-1-1",
+          "mode": "test-out",
+          "prompt": "The second required write fails after the first succeeds. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Automatically redesign the schema"
+            },
+            {
+              "id": "b",
+              "text": "Permanently disable reads"
+            },
+            {
+              "id": "c",
+              "text": "Discard uncommitted transaction changes"
+            },
+            {
+              "id": "d",
+              "text": "Publish partial changes"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Rollback avoids committing incomplete work."
+        },
+        {
+          "id": "persistence-2-1",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for rollback, \"publish partial changes\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Permanently disable reads"
+            },
+            {
+              "id": "b",
+              "text": "Discard uncommitted transaction changes"
+            },
+            {
+              "id": "c",
+              "text": "Publish partial changes"
+            },
+            {
+              "id": "d",
+              "text": "Automatically redesign the schema"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Rollback avoids committing incomplete work."
+        },
+        {
+          "id": "persistence-0-2",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes commit?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Only change a local variable"
+            },
+            {
+              "id": "b",
+              "text": "Always delete the database"
+            },
+            {
+              "id": "c",
+              "text": "Make the transaction changes take effect"
+            },
+            {
+              "id": "d",
+              "text": "Discard successful writes"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Commit completes the transaction."
+        },
+        {
+          "id": "persistence-1-2",
+          "mode": "test-out",
+          "prompt": "All required changes succeed and should become durable. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Always delete the database"
+            },
+            {
+              "id": "b",
+              "text": "Make the transaction changes take effect"
+            },
+            {
+              "id": "c",
+              "text": "Discard successful writes"
+            },
+            {
+              "id": "d",
+              "text": "Only change a local variable"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Commit completes the transaction."
+        },
+        {
+          "id": "persistence-2-2",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for commit, \"discard successful writes\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Make the transaction changes take effect"
+            },
+            {
+              "id": "b",
+              "text": "Discard successful writes"
+            },
+            {
+              "id": "c",
+              "text": "Only change a local variable"
+            },
+            {
+              "id": "d",
+              "text": "Always delete the database"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Commit completes the transaction."
+        },
+        {
+          "id": "persistence-0-3",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes uniqueness?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Make all fields optional"
+            },
+            {
+              "id": "b",
+              "text": "Reject duplicate constrained keys"
+            },
+            {
+              "id": "c",
+              "text": "Sort every response"
+            },
+            {
+              "id": "d",
+              "text": "Encrypt all columns"
+            }
+          ],
+          "correct": "b",
+          "explanation": "A unique constraint is checked at the database boundary."
+        },
+        {
+          "id": "persistence-1-3",
+          "mode": "test-out",
+          "prompt": "Concurrent requests try to create the same account key. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Reject duplicate constrained keys"
+            },
+            {
+              "id": "b",
+              "text": "Sort every response"
+            },
+            {
+              "id": "c",
+              "text": "Encrypt all columns"
+            },
+            {
+              "id": "d",
+              "text": "Make all fields optional"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A unique constraint is checked at the database boundary."
+        },
+        {
+          "id": "persistence-2-3",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for uniqueness, \"sort every response\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Sort every response"
+            },
+            {
+              "id": "b",
+              "text": "Encrypt all columns"
+            },
+            {
+              "id": "c",
+              "text": "Make all fields optional"
+            },
+            {
+              "id": "d",
+              "text": "Reject duplicate constrained keys"
+            }
+          ],
+          "correct": "d",
+          "explanation": "A unique constraint is checked at the database boundary."
+        },
+        {
+          "id": "persistence-0-4",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes idempotent retries?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Recover the result for the same operation key"
+            },
+            {
+              "id": "b",
+              "text": "Always create another charge"
+            },
+            {
+              "id": "c",
+              "text": "Change the request meaning"
+            },
+            {
+              "id": "d",
+              "text": "Ignore committed writes"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A stable operation key recognizes previously completed work."
+        },
+        {
+          "id": "persistence-1-4",
+          "mode": "test-out",
+          "prompt": "A response is lost after a successful commit. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Always create another charge"
+            },
+            {
+              "id": "b",
+              "text": "Change the request meaning"
+            },
+            {
+              "id": "c",
+              "text": "Ignore committed writes"
+            },
+            {
+              "id": "d",
+              "text": "Recover the result for the same operation key"
+            }
+          ],
+          "correct": "d",
+          "explanation": "A stable operation key recognizes previously completed work."
+        },
+        {
+          "id": "persistence-2-4",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for idempotent retries, \"always create another charge\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Change the request meaning"
+            },
+            {
+              "id": "b",
+              "text": "Ignore committed writes"
+            },
+            {
+              "id": "c",
+              "text": "Recover the result for the same operation key"
+            },
+            {
+              "id": "d",
+              "text": "Always create another charge"
+            }
+          ],
+          "correct": "c",
+          "explanation": "A stable operation key recognizes previously completed work."
+        }
+      ]
+    },
+    {
+      "slug": "git",
+      "domain": "devops",
+      "source": "https://git-scm.com/docs/gittutorial",
+      "items": [
+        {
+          "id": "git-0-0",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a commit?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It records a history snapshot"
+            },
+            {
+              "id": "b",
+              "text": "It automatically deploys production"
+            },
+            {
+              "id": "c",
+              "text": "It always uploads every remote"
+            },
+            {
+              "id": "d",
+              "text": "It is only an unstaged edit"
+            }
+          ],
+          "correct": "a",
+          "explanation": "A commit records staged content and metadata."
+        },
+        {
+          "id": "git-1-0",
+          "mode": "test-out",
+          "prompt": "A developer records a tested change in repository history. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It automatically deploys production"
+            },
+            {
+              "id": "b",
+              "text": "It always uploads every remote"
+            },
+            {
+              "id": "c",
+              "text": "It is only an unstaged edit"
+            },
+            {
+              "id": "d",
+              "text": "It records a history snapshot"
+            }
+          ],
+          "correct": "d",
+          "explanation": "A commit records staged content and metadata."
+        },
+        {
+          "id": "git-2-0",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a commit, \"it automatically deploys production\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It always uploads every remote"
+            },
+            {
+              "id": "b",
+              "text": "It is only an unstaged edit"
+            },
+            {
+              "id": "c",
+              "text": "It records a history snapshot"
+            },
+            {
+              "id": "d",
+              "text": "It automatically deploys production"
+            }
+          ],
+          "correct": "c",
+          "explanation": "A commit records staged content and metadata."
+        },
+        {
+          "id": "git-0-1",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes staging?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is the production server"
+            },
+            {
+              "id": "b",
+              "text": "It is always empty"
+            },
+            {
+              "id": "c",
+              "text": "It resolves all conflicts"
+            },
+            {
+              "id": "d",
+              "text": "It selects content for the next commit"
+            }
+          ],
+          "correct": "d",
+          "explanation": "The staging area lets a commit contain selected changes."
+        },
+        {
+          "id": "git-1-1",
+          "mode": "test-out",
+          "prompt": "Only one of several edited files should enter the next commit. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is always empty"
+            },
+            {
+              "id": "b",
+              "text": "It resolves all conflicts"
+            },
+            {
+              "id": "c",
+              "text": "It selects content for the next commit"
+            },
+            {
+              "id": "d",
+              "text": "It is the production server"
+            }
+          ],
+          "correct": "c",
+          "explanation": "The staging area lets a commit contain selected changes."
+        },
+        {
+          "id": "git-2-1",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for staging, \"it is the production server\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It resolves all conflicts"
+            },
+            {
+              "id": "b",
+              "text": "It selects content for the next commit"
+            },
+            {
+              "id": "c",
+              "text": "It is the production server"
+            },
+            {
+              "id": "d",
+              "text": "It is always empty"
+            }
+          ],
+          "correct": "b",
+          "explanation": "The staging area lets a commit contain selected changes."
+        },
+        {
+          "id": "git-0-2",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a branch?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It erases all old commits"
+            },
+            {
+              "id": "b",
+              "text": "It automatically merges everything"
+            },
+            {
+              "id": "c",
+              "text": "It names a line of development"
+            },
+            {
+              "id": "d",
+              "text": "It is another programming language"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Branches organize separate development histories."
+        },
+        {
+          "id": "git-1-2",
+          "mode": "test-out",
+          "prompt": "A feature is developed separately before integration. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It automatically merges everything"
+            },
+            {
+              "id": "b",
+              "text": "It names a line of development"
+            },
+            {
+              "id": "c",
+              "text": "It is another programming language"
+            },
+            {
+              "id": "d",
+              "text": "It erases all old commits"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Branches organize separate development histories."
+        },
+        {
+          "id": "git-2-2",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a branch, \"it is another programming language\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It names a line of development"
+            },
+            {
+              "id": "b",
+              "text": "It is another programming language"
+            },
+            {
+              "id": "c",
+              "text": "It erases all old commits"
+            },
+            {
+              "id": "d",
+              "text": "It automatically merges everything"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Branches organize separate development histories."
+        },
+        {
+          "id": "git-0-3",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a merge conflict?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It changes every password"
+            },
+            {
+              "id": "b",
+              "text": "It requires resolving incompatible edits"
+            },
+            {
+              "id": "c",
+              "text": "It proves all files are lost"
+            },
+            {
+              "id": "d",
+              "text": "It should always be ignored"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Incompatible overlapping edits need a deliberate resolution."
+        },
+        {
+          "id": "git-1-3",
+          "mode": "test-out",
+          "prompt": "Two branches change the same lines differently. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It requires resolving incompatible edits"
+            },
+            {
+              "id": "b",
+              "text": "It proves all files are lost"
+            },
+            {
+              "id": "c",
+              "text": "It should always be ignored"
+            },
+            {
+              "id": "d",
+              "text": "It changes every password"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Incompatible overlapping edits need a deliberate resolution."
+        },
+        {
+          "id": "git-2-3",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a merge conflict, \"it proves all files are lost\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It proves all files are lost"
+            },
+            {
+              "id": "b",
+              "text": "It should always be ignored"
+            },
+            {
+              "id": "c",
+              "text": "It changes every password"
+            },
+            {
+              "id": "d",
+              "text": "It requires resolving incompatible edits"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Incompatible overlapping edits need a deliberate resolution."
+        },
+        {
+          "id": "git-0-4",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes git status?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It reports working-tree and staging state"
+            },
+            {
+              "id": "b",
+              "text": "It publishes a release"
+            },
+            {
+              "id": "c",
+              "text": "It deletes all branches"
+            },
+            {
+              "id": "d",
+              "text": "It generates an SSH key"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Status shows modified and staged content."
+        },
+        {
+          "id": "git-1-4",
+          "mode": "test-out",
+          "prompt": "A developer checks pending changes before committing. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It publishes a release"
+            },
+            {
+              "id": "b",
+              "text": "It deletes all branches"
+            },
+            {
+              "id": "c",
+              "text": "It generates an SSH key"
+            },
+            {
+              "id": "d",
+              "text": "It reports working-tree and staging state"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Status shows modified and staged content."
+        },
+        {
+          "id": "git-2-4",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for git status, \"it publishes a release\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It deletes all branches"
+            },
+            {
+              "id": "b",
+              "text": "It generates an SSH key"
+            },
+            {
+              "id": "c",
+              "text": "It reports working-tree and staging state"
+            },
+            {
+              "id": "d",
+              "text": "It publishes a release"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Status shows modified and staged content."
+        }
+      ]
+    },
+    {
+      "slug": "ci",
+      "domain": "devops",
+      "source": "https://docs.github.com/en/actions/get-started/understand-github-actions",
+      "items": [
+        {
+          "id": "ci-0-0",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a workflow trigger?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It determines when automation starts"
+            },
+            {
+              "id": "b",
+              "text": "It is a user password"
+            },
+            {
+              "id": "c",
+              "text": "It is the build output"
+            },
+            {
+              "id": "d",
+              "text": "It disables all jobs"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Events can initiate a workflow."
+        },
+        {
+          "id": "ci-1-0",
+          "mode": "test-out",
+          "prompt": "Checks should start when a pull request opens. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is a user password"
+            },
+            {
+              "id": "b",
+              "text": "It is the build output"
+            },
+            {
+              "id": "c",
+              "text": "It disables all jobs"
+            },
+            {
+              "id": "d",
+              "text": "It determines when automation starts"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Events can initiate a workflow."
+        },
+        {
+          "id": "ci-2-0",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a workflow trigger, \"it is a user password\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is the build output"
+            },
+            {
+              "id": "b",
+              "text": "It disables all jobs"
+            },
+            {
+              "id": "c",
+              "text": "It determines when automation starts"
+            },
+            {
+              "id": "d",
+              "text": "It is a user password"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Events can initiate a workflow."
+        },
+        {
+          "id": "ci-0-1",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a CI job?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is only a repository label"
+            },
+            {
+              "id": "b",
+              "text": "It always runs in the user browser"
+            },
+            {
+              "id": "c",
+              "text": "It cannot contain commands"
+            },
+            {
+              "id": "d",
+              "text": "It groups steps on a runner"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Jobs organize automated execution."
+        },
+        {
+          "id": "ci-1-1",
+          "mode": "test-out",
+          "prompt": "Checkout, installation and tests run in sequence. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It always runs in the user browser"
+            },
+            {
+              "id": "b",
+              "text": "It cannot contain commands"
+            },
+            {
+              "id": "c",
+              "text": "It groups steps on a runner"
+            },
+            {
+              "id": "d",
+              "text": "It is only a repository label"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Jobs organize automated execution."
+        },
+        {
+          "id": "ci-2-1",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a CI job, \"it is only a repository label\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It cannot contain commands"
+            },
+            {
+              "id": "b",
+              "text": "It groups steps on a runner"
+            },
+            {
+              "id": "c",
+              "text": "It is only a repository label"
+            },
+            {
+              "id": "d",
+              "text": "It always runs in the user browser"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Jobs organize automated execution."
+        },
+        {
+          "id": "ci-0-2",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a runner?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is an issue comment"
+            },
+            {
+              "id": "b",
+              "text": "It is always a database owner"
+            },
+            {
+              "id": "c",
+              "text": "It executes a workflow job"
+            },
+            {
+              "id": "d",
+              "text": "It is the HTML response"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Runners supply execution resources."
+        },
+        {
+          "id": "ci-1-2",
+          "mode": "test-out",
+          "prompt": "A workflow needs an environment to run tests. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is always a database owner"
+            },
+            {
+              "id": "b",
+              "text": "It executes a workflow job"
+            },
+            {
+              "id": "c",
+              "text": "It is the HTML response"
+            },
+            {
+              "id": "d",
+              "text": "It is an issue comment"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Runners supply execution resources."
+        },
+        {
+          "id": "ci-2-2",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a runner, \"it is the html response\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It executes a workflow job"
+            },
+            {
+              "id": "b",
+              "text": "It is the HTML response"
+            },
+            {
+              "id": "c",
+              "text": "It is an issue comment"
+            },
+            {
+              "id": "d",
+              "text": "It is always a database owner"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Runners supply execution resources."
+        },
+        {
+          "id": "ci-0-3",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes failed checks?",
+          "options": [
+            {
+              "id": "a",
+              "text": "They should be labelled passing"
+            },
+            {
+              "id": "b",
+              "text": "They should be investigated before integration"
+            },
+            {
+              "id": "c",
+              "text": "They prove tests must be removed"
+            },
+            {
+              "id": "d",
+              "text": "They mean the product is correct"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Failed checks are evidence of a problem to inspect."
+        },
+        {
+          "id": "ci-1-3",
+          "mode": "test-out",
+          "prompt": "A change breaks a previously passing test. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "They should be investigated before integration"
+            },
+            {
+              "id": "b",
+              "text": "They prove tests must be removed"
+            },
+            {
+              "id": "c",
+              "text": "They mean the product is correct"
+            },
+            {
+              "id": "d",
+              "text": "They should be labelled passing"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Failed checks are evidence of a problem to inspect."
+        },
+        {
+          "id": "ci-2-3",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for failed checks, \"they prove tests must be removed\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "They prove tests must be removed"
+            },
+            {
+              "id": "b",
+              "text": "They mean the product is correct"
+            },
+            {
+              "id": "c",
+              "text": "They should be labelled passing"
+            },
+            {
+              "id": "d",
+              "text": "They should be investigated before integration"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Failed checks are evidence of a problem to inspect."
+        },
+        {
+          "id": "ci-0-4",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes CI secrets?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Scope credentials and keep them out of logs"
+            },
+            {
+              "id": "b",
+              "text": "Commit credentials in plaintext"
+            },
+            {
+              "id": "c",
+              "text": "Print credentials for all readers"
+            },
+            {
+              "id": "d",
+              "text": "Copy credentials to public artifacts"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Automation must not expose secrets."
+        },
+        {
+          "id": "ci-1-4",
+          "mode": "test-out",
+          "prompt": "A job requires a credential for an authorized action. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Commit credentials in plaintext"
+            },
+            {
+              "id": "b",
+              "text": "Print credentials for all readers"
+            },
+            {
+              "id": "c",
+              "text": "Copy credentials to public artifacts"
+            },
+            {
+              "id": "d",
+              "text": "Scope credentials and keep them out of logs"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Automation must not expose secrets."
+        },
+        {
+          "id": "ci-2-4",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for CI secrets, \"commit credentials in plaintext\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Print credentials for all readers"
+            },
+            {
+              "id": "b",
+              "text": "Copy credentials to public artifacts"
+            },
+            {
+              "id": "c",
+              "text": "Scope credentials and keep them out of logs"
+            },
+            {
+              "id": "d",
+              "text": "Commit credentials in plaintext"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Automation must not expose secrets."
+        }
+      ]
+    },
+    {
+      "slug": "containers",
+      "domain": "devops",
+      "source": "https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/",
+      "items": [
+        {
+          "id": "containers-0-0",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes an image?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is a packaged template for a container"
+            },
+            {
+              "id": "b",
+              "text": "It is always a running process"
+            },
+            {
+              "id": "c",
+              "text": "It is only a screenshot"
+            },
+            {
+              "id": "d",
+              "text": "It proves no vulnerabilities exist"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Containers start from image files and configuration."
+        },
+        {
+          "id": "containers-1-0",
+          "mode": "test-out",
+          "prompt": "A team distributes a packaged application environment. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is always a running process"
+            },
+            {
+              "id": "b",
+              "text": "It is only a screenshot"
+            },
+            {
+              "id": "c",
+              "text": "It proves no vulnerabilities exist"
+            },
+            {
+              "id": "d",
+              "text": "It is a packaged template for a container"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Containers start from image files and configuration."
+        },
+        {
+          "id": "containers-2-0",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for an image, \"it is always a running process\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is only a screenshot"
+            },
+            {
+              "id": "b",
+              "text": "It proves no vulnerabilities exist"
+            },
+            {
+              "id": "c",
+              "text": "It is a packaged template for a container"
+            },
+            {
+              "id": "d",
+              "text": "It is always a running process"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Containers start from image files and configuration."
+        },
+        {
+          "id": "containers-0-1",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes a container?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It always contains its own kernel"
+            },
+            {
+              "id": "b",
+              "text": "It is only a Git branch"
+            },
+            {
+              "id": "c",
+              "text": "It is always a virtual machine"
+            },
+            {
+              "id": "d",
+              "text": "It is an isolated process environment"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Containers typically share their host kernel."
+        },
+        {
+          "id": "containers-1-1",
+          "mode": "test-out",
+          "prompt": "An application runs from an image on a container host. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is only a Git branch"
+            },
+            {
+              "id": "b",
+              "text": "It is always a virtual machine"
+            },
+            {
+              "id": "c",
+              "text": "It is an isolated process environment"
+            },
+            {
+              "id": "d",
+              "text": "It always contains its own kernel"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Containers typically share their host kernel."
+        },
+        {
+          "id": "containers-2-1",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for a container, \"it always contains its own kernel\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "It is always a virtual machine"
+            },
+            {
+              "id": "b",
+              "text": "It is an isolated process environment"
+            },
+            {
+              "id": "c",
+              "text": "It always contains its own kernel"
+            },
+            {
+              "id": "d",
+              "text": "It is only a Git branch"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Containers typically share their host kernel."
+        },
+        {
+          "id": "containers-0-2",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes persistent storage?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Rely on the image name"
+            },
+            {
+              "id": "b",
+              "text": "Delete data on every restart"
+            },
+            {
+              "id": "c",
+              "text": "Keep durable data beyond a disposable container layer"
+            },
+            {
+              "id": "d",
+              "text": "Keep all data only in memory"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Data needs a deliberate persistence strategy."
+        },
+        {
+          "id": "containers-1-2",
+          "mode": "test-out",
+          "prompt": "Records must survive replacement of an application container. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Delete data on every restart"
+            },
+            {
+              "id": "b",
+              "text": "Keep durable data beyond a disposable container layer"
+            },
+            {
+              "id": "c",
+              "text": "Keep all data only in memory"
+            },
+            {
+              "id": "d",
+              "text": "Rely on the image name"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Data needs a deliberate persistence strategy."
+        },
+        {
+          "id": "containers-2-2",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for persistent storage, \"keep all data only in memory\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Keep durable data beyond a disposable container layer"
+            },
+            {
+              "id": "b",
+              "text": "Keep all data only in memory"
+            },
+            {
+              "id": "c",
+              "text": "Rely on the image name"
+            },
+            {
+              "id": "d",
+              "text": "Delete data on every restart"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Data needs a deliberate persistence strategy."
+        },
+        {
+          "id": "containers-0-3",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes image versioning?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Automatically migrate every database"
+            },
+            {
+              "id": "b",
+              "text": "Identify the packaged application being run"
+            },
+            {
+              "id": "c",
+              "text": "Assume all versions are equally safe"
+            },
+            {
+              "id": "d",
+              "text": "Remove the need for testing"
+            }
+          ],
+          "correct": "b",
+          "explanation": "Identifiable builds make reproducing releases clearer."
+        },
+        {
+          "id": "containers-1-3",
+          "mode": "test-out",
+          "prompt": "A team needs to reproduce yesterday’s deployment. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Identify the packaged application being run"
+            },
+            {
+              "id": "b",
+              "text": "Assume all versions are equally safe"
+            },
+            {
+              "id": "c",
+              "text": "Remove the need for testing"
+            },
+            {
+              "id": "d",
+              "text": "Automatically migrate every database"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Identifiable builds make reproducing releases clearer."
+        },
+        {
+          "id": "containers-2-3",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for image versioning, \"assume all versions are equally safe\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Assume all versions are equally safe"
+            },
+            {
+              "id": "b",
+              "text": "Remove the need for testing"
+            },
+            {
+              "id": "c",
+              "text": "Automatically migrate every database"
+            },
+            {
+              "id": "d",
+              "text": "Identify the packaged application being run"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Identifiable builds make reproducing releases clearer."
+        },
+        {
+          "id": "containers-0-4",
+          "mode": "checkpoint",
+          "prompt": "Which statement correctly describes least privilege?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Give processes only necessary permissions"
+            },
+            {
+              "id": "b",
+              "text": "Run every task as administrator"
+            },
+            {
+              "id": "c",
+              "text": "Disable access checks"
+            },
+            {
+              "id": "d",
+              "text": "Publish host credentials"
+            }
+          ],
+          "correct": "a",
+          "explanation": "Limited permissions reduce potential damage."
+        },
+        {
+          "id": "containers-1-4",
+          "mode": "test-out",
+          "prompt": "An app needs only its own configuration and service ports. Which principle applies?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Run every task as administrator"
+            },
+            {
+              "id": "b",
+              "text": "Disable access checks"
+            },
+            {
+              "id": "c",
+              "text": "Publish host credentials"
+            },
+            {
+              "id": "d",
+              "text": "Give processes only necessary permissions"
+            }
+          ],
+          "correct": "d",
+          "explanation": "Limited permissions reduce potential damage."
+        },
+        {
+          "id": "containers-2-4",
+          "mode": "test-out",
+          "prompt": "A learner claims that, for least privilege, \"run every task as administrator\". Which correction is accurate?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Disable access checks"
+            },
+            {
+              "id": "b",
+              "text": "Publish host credentials"
+            },
+            {
+              "id": "c",
+              "text": "Give processes only necessary permissions"
+            },
+            {
+              "id": "d",
+              "text": "Run every task as administrator"
+            }
+          ],
+          "correct": "c",
+          "explanation": "Limited permissions reduce potential damage."
+        }
+      ]
+    }
+  ]
+}

@@ -98,7 +98,8 @@ CREATE TABLE node_completion (
 );
 CREATE TABLE learn_event (
  hub_id text NOT NULL, user_id text NOT NULL, attempt_id uuid NOT NULL, event_id text PRIMARY KEY,
- payload jsonb NOT NULL, status text NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','settled')),
+ payload jsonb NOT NULL, status text NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','settled','attention')),
+ last_error_code text,
  receipt jsonb, tries integer NOT NULL DEFAULT 0, next_attempt_at timestamptz NOT NULL DEFAULT now(),
  lease_id uuid, lease_until timestamptz NOT NULL DEFAULT to_timestamp(0),
  FOREIGN KEY(hub_id,user_id,attempt_id) REFERENCES quiz_attempt(hub_id,user_id,id)

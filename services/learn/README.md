@@ -1,6 +1,8 @@
 # Learn API
 
-Independent Express/TypeScript/PostgreSQL service for seeded DSA/Web roadmaps, readings, eligible checkpoint/test-out quizzes, server grading, unlocks and first mastery. These are starter practice curricula, not complete certified courses. Core owns identity and Aura.
+TP8.2 adds schema v4 path-completion facts, up-to-30 Aura confirmations through Core, and finite optional review after failed assessments. Deploy the compatible Core/Learn code and explicitly provision the path-event scope before applying migration `0004_path_completion`. Readiness supports schema 2–4. See [operation](../../docs/learn.md), [policy](../../docs/aura-transition-policy.md) and [local evidence](../../docs/tp8.2-evidence.md). Repeated checkpoints remain unrewarded; required path progress excludes optional review.
+
+Independent Express/TypeScript/PostgreSQL service for versioned DSA, Web, Machine Learning, Backend and DevOps roadmaps, readings, checkpoint/test-out quizzes, server grading, unlocks and first mastery. `foundations-v1` provides 15 topics and 225 questions after the explicit schema-v3 migration. Existing `demo-v1` enrollments retain their history and offer an opt-in upgrade. These are starter practice curricula, not complete certified courses. Core owns identity and Aura.
 
 Run `npm ci` at repository root, configure ignored `services/learn/.env`, build with `npm run build:learn`, and run `npm run dev:learn`. Needs its own `DATABASE_URL`, `APP_ORIGIN`, Core public key/issuer/audience/key ID, `CORE_API_BASE_URL`, distinct `CORE_SERVICE_KEY` and `LEARN_RECONCILE_KEY`. Seeded learning requires no Gemini key. Optional lookup remains bounded and must not introduce paid fallback.
 

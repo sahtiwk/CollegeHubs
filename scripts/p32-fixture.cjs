@@ -23,11 +23,11 @@ async function main() {
   // Optional four isolated browser-storage origins for the manual P11.2 Core rehearsal.
   // Module handoff remains bound to the primary origin; these do not relax production CORS.
   const fourBrowsers = process.env.P112_FOUR_BROWSERS === 'true';
-  Object.assign(process.env, { JWT_SECRET: 'p32-local-disposable-core-secret', ALLOWED_ORIGINS: origin + ',http://127.0.0.1:5182' + (fourBrowsers ? ',http://localhost:5187,http://127.0.0.1:5187' : ''), APP_ORIGIN: origin, ENABLE_MODULES: 'learn,arcade,interview', NODE_ENV: 'test',
+  Object.assign(process.env, { JWT_SECRET: 'p32-local-disposable-core-secret', ALLOWED_ORIGINS: origin + ',http://127.0.0.1:5182' + (fourBrowsers ? ',http://localhost:5187,http://127.0.0.1:5187' : ''), APP_ORIGIN: origin, ENABLE_MODULES: 'learn,arcade,interview', NODE_ENV: 'test', VERIFICATION_MAIL_MODE: 'capture',
     CORE_MODULE_PRIVATE_KEY: keys.privateKey, CORE_MODULE_KEY_ID: 'p32-key', CORE_MODULE_PUBLIC_KEYS: JSON.stringify({ 'p32-key': keys.publicKey }), MONGO_URI: repl.getUri('collegehubs_demo_p32') });
   mongoose.set('autoCreate', false).set('autoIndex', false);
   await mongoose.connect(process.env.MONGO_URI);
-  const names = ['College', 'Hub', 'Channel', 'Message', 'NativeFact', 'AuraRuleSet', 'Contest', 'CalendarEvent', 'Problem', 'StudyRoom', 'StudySolution', 'PeerReview', 'User', 'Post', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'];
+  const names = ['College', 'Hub', 'Channel', 'Message', 'NativeFact', 'AchievementAward', 'AuraRuleSet', 'Contest', 'CalendarEvent', 'Problem', 'StudyRoom', 'StudySolution', 'PeerReview', 'User', 'VerificationChallenge', 'AuthSession', 'AuthThrottle', 'Post', 'ModuleGrant', 'ServiceCredential', 'AuraEvent', 'AuraBalance', 'AuraDayCounter', 'DailyActivity'];
   const models = Object.fromEntries(names.map(name => [name, require('../services/core/models/' + name)]));
   await Promise.all(Object.values(models).map(async model => { await model.createCollection(); await model.createIndexes(); }));
   const provision = require('../services/core/services/hubProvisioning');
@@ -37,11 +37,11 @@ async function main() {
   await require('../services/core/services/scheduleService').seedCalendar();
   const second = await models.College.create({ name: 'Sky College · fixture', slug: 'p32-sky', status: 'active', timezone: 'Asia/Kolkata', themeTokens: { ...college.themeTokens, background: '#DFF7FF', surface: '#DFF7FF', surfaceRaised: '#F4ECD6', secondary: '#F4ECD6' }, domains: [{ normalizedDomain: 'sky.example.test', verifiedAt: new Date(), evidenceRef: 'synthetic fixture' }] });
   const secondHub = await provision.ensureHubForCollege(second.id);
-  for (const [username, email, hubId] of [['cvr-preview', 'preview@cvr.ac.in', hub.id], ['cvr-peer', 'peer@cvr.ac.in', hub.id], ['sky-preview', 'preview@sky.example.test', secondHub.id], ...(fourBrowsers ? [['sky-peer', 'peer@sky.example.test', secondHub.id]] : [])]) await models.User.create({ username, email, password: 'Preview-only-32!', hubId, membershipStatus: 'active', membershipVersion: 1, onboardingComplete: true });
+  for (const [username, email, hubId] of [['cvr-preview', 'preview@cvr.ac.in', hub.id], ['cvr-peer', 'peer@cvr.ac.in', hub.id], ['sky-preview', 'preview@sky.example.test', secondHub.id], ...(fourBrowsers ? [['sky-peer', 'peer@sky.example.test', secondHub.id]] : [])]) await models.User.create({ username, email, password: 'Preview-only-32!', hubId, membershipStatus: 'active', membershipVerified: true, verificationMethod: 'email', emailVerificationMethod: 'email', emailVerifiedAt: new Date(), membershipVersion: 1, onboardingComplete: true });
   const { opaque, digest } = require('../services/core/services/moduleTokenService');
-  const serviceKey = 'p32learn.' + opaque(), learnReconcileKey=opaque(); await models.ServiceCredential.create({ service: 'learn', keyId: 'p32learn', keyHash: digest(serviceKey), eventTypes:['learn.quiz_completed','learn.node_mastered'] });
+  const serviceKey = 'p32learn.' + opaque(), learnReconcileKey=opaque(); await models.ServiceCredential.create({ service: 'learn', keyId: 'p32learn', keyHash: digest(serviceKey), eventTypes:['learn.quiz_completed','learn.node_mastered','learn.path_completed'] });
   const arcadeKey = 'p71arcade.' + opaque(), reconcileKey = opaque();
-  await models.ServiceCredential.create({ service: 'arcade', keyId: 'p71arcade', keyHash: digest(arcadeKey), eventTypes: ['arcade.game_completed'] });
+  await models.ServiceCredential.create({ service: 'arcade', keyId: 'p71arcade', keyHash: digest(arcadeKey), eventTypes: ['arcade.game_completed','arcade.daily_completed'] });
   const arcadeUri = repl.getUri('collegehubs_demo_arcade');
   const interviewUri = repl.getUri('collegehubs_demo_interview'), interviewKey = 'p81interview.' + opaque(), interviewReconcileKey = opaque();
   await models.ServiceCredential.create({ service: 'interview', keyId: 'p81interview', keyHash: digest(interviewKey), eventTypes: ['interview.completed'] });
@@ -74,7 +74,7 @@ async function main() {
     } catch (error) { guardRunning = false; throw error; }
     mkdirSync(resolve(root, '.local'), { recursive: true });
     const log = createWriteStream(resolve(root, '.local/p32-guards.tap'));
-    const proc = spawn(process.execPath, ['--test', '--test-reporter=tap', 'tests/guards/hub-isolation.test.js', 'tests/guards/module-grants.test.js', 'tests/guards/aura-events.test.js', 'tests/guards/study-room.test.js', 'tests/guards/schedules.test.js'], { cwd: root, env: { ...process.env, GUARD_LEARN_SERVICE_KEY:serviceKey, GUARD_LEARN_RECONCILE_KEY:learnReconcileKey, GUARD_INTERVIEW_MONGO_URI: interviewUri, GUARD_INTERVIEW_SERVICE_KEY: interviewKey, GUARD_INTERVIEW_RECONCILE_KEY: interviewReconcileKey, GUARD_MONGO_URI: repl.getUri(), GUARD_ARCADE_MONGO_URI: arcadeUri, GUARD_ARCADE_SERVICE_KEY: arcadeKey, GUARD_ARCADE_RECONCILE_KEY: reconcileKey, GUARD_CORE_SIGNING_SECRET: process.env.JWT_SECRET, GUARD_APP_ORIGIN: origin, GUARD_LEARN_DATABASE_URL: url.toString() }, stdio: ['ignore', 'pipe', 'pipe'] });
+    const proc = spawn(process.execPath, ['--test', '--test-concurrency=2', '--test-reporter=tap', 'tests/identity/core-sessions.test.js', 'tests/identity/verification.test.js', 'tests/identity/onboarding.test.js', 'tests/identity/return-intent.test.js', 'tests/guards/hub-isolation.test.js', 'tests/guards/module-grants.test.js', 'tests/guards/aura-events.test.js', 'tests/guards/achievements.test.js', 'tests/guards/reward-recovery.test.js', 'tests/guards/study-room.test.js', 'tests/guards/schedules.test.js', 'tests/guards/calendar.test.js', 'tests/guards/external-progress.test.js', 'tests/guards/spot-bug.test.js','tests/guards/arcade-daily.test.js','tests/guards/learn-curricula.test.js','tests/guards/learn-paths.test.js','tests/guards/inference.test.js','tests/guards/interview-lifecycle.test.js','tests/guards/rich-progress.test.js'], { cwd: root, env: { ...process.env, GUARD_LEARN_SERVICE_KEY:serviceKey, GUARD_LEARN_RECONCILE_KEY:learnReconcileKey, GUARD_INTERVIEW_MONGO_URI: interviewUri, GUARD_INTERVIEW_SERVICE_KEY: interviewKey, GUARD_INTERVIEW_RECONCILE_KEY: interviewReconcileKey, GUARD_MONGO_URI: repl.getUri(), GUARD_ARCADE_MONGO_URI: arcadeUri, GUARD_ARCADE_SERVICE_KEY: arcadeKey, GUARD_ARCADE_RECONCILE_KEY: reconcileKey, GUARD_CORE_SIGNING_SECRET: process.env.JWT_SECRET, GUARD_APP_ORIGIN: origin, GUARD_LEARN_DATABASE_URL: url.toString() }, stdio: ['ignore', 'pipe', 'pipe'] });
     children.push(proc); proc.stdout.pipe(log, { end: false }); proc.stderr.pipe(log, { end: false });
     await new Promise(resolve => proc.once('close', code => { log.end(); guardRunning = false; console.log('Guard exit:', code, '(report .local/p32-guards.tap)'); resolve(); }));
   }
@@ -88,6 +88,10 @@ async function main() {
       if (command === 'stop-core') { core.kill(); console.log('Core stopped; fixture Mongo remains live'); }
       if (command === 'start-core') { core = child('services/core', ['index.js'], { PORT: '5183' }); }
       if (command === 'guards') await guards();
+        if (command === 'study-browser') {
+          const browser = spawn(process.execPath, ['tests/frontend/study-browser.cjs'], { cwd: root, env: { ...process.env, GUARD_MONGO_URI: process.env.MONGO_URI }, stdio: 'inherit' });
+          children.push(browser);
+        }
       if (command === 'schedule-timeout') {
         core.kill(); await new Promise(resolve => core.once('exit', resolve));
         await models.Contest.updateOne({ provider: 'codeforces' }, { $set: { nextAttemptAt: new Date(0), leaseUntil: new Date(0) } });
@@ -116,6 +120,6 @@ async function main() {
       if (command === 'quit') await close();
     } catch { console.error('Fixture command failed'); }
   });
-  console.log('Integration fixture prepared at ' + origin + '. Commands: stop-core, start-core, stop-arcade, start-arcade, arcade-retry-due, stop-interview, start-interview, guards, stop-learn, start-learn, expire-learn, db-down, db-up, schedule-timeout, schedule-disable, quit.');
+    console.log('Integration fixture prepared at ' + origin + '. Commands: stop-core, start-core, stop-arcade, start-arcade, arcade-retry-due, stop-interview, start-interview, guards, study-browser, stop-learn, start-learn, expire-learn, db-down, db-up, schedule-timeout, schedule-disable, quit.');
 }
 main().catch(() => { console.error('P3.2 fixture failed; check local disposable database and ports.'); process.exitCode = 1; });

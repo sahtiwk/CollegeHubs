@@ -11,7 +11,10 @@ function createApp({ connection, models, config, fetcher = fetch, ai = require('
   app.use('/api/interview', (req, res, next) => {
     try {
       if (connection.readyState !== 1) throw fail(503, 'INTERVIEW_DB_UNAVAILABLE');
-      if (Object.keys(req.query).length) throw fail(400, 'QUERY_NOT_ALLOWED');
+      if (Object.keys(req.query).length) {
+        if (req.method !== 'GET' || !['/sessions','/interviews'].includes(req.path)) throw fail(400, 'QUERY_NOT_ALLOWED');
+        require('./services/historyPage').pageQuery(req.query);
+      }
       const integration = req.path.startsWith('/integration/');
       if (req.get('Origin') && req.get('Origin') !== config.origin || !integration && !['GET', 'HEAD'].includes(req.method) && req.get('Origin') !== config.origin) throw fail(403, 'ORIGIN_FORBIDDEN');
       const now = Date.now(); for (const [key, value] of buckets) if (value.until <= now) buckets.delete(key);

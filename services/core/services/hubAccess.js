@@ -6,7 +6,7 @@ async function currentMembership(principal) {
   const id = principal?._id || principal?.userId || principal?.sub;
   if (!id || !/^[a-f0-9]{24}$/i.test(String(id))) return null;
   const user = await User.findById(id);
-  if (!user || !user.hubId || user.membershipStatus !== 'active') return null;
+  if (!user || !require('./membershipPolicy').hasMembershipAuthority(user)) return null;
   const hub = await Hub.findOne({ _id: user.hubId, hubId: user.hubId, status: 'active' });
   if (!hub || !(await College.exists({ _id: hub.collegeId, status: 'active' }))) return null;
   return { userId: String(user._id), hubId: String(hub._id), membershipVersion: user.membershipVersion };

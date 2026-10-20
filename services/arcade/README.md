@@ -1,6 +1,6 @@
 # Arcade API
 
-Independent Express/Mongo service for three ranked games: NumberGuess, MathAmplitude and Sorting Complexity. Server-validated actions produce durable immutable results; Core owns Aura. Other legacy games remain unavailable.
+Independent Express/Mongo service for four ranked games: NumberGuess, MathAmplitude, Sorting Complexity and Spot the Bug. Server-validated actions produce durable immutable results; Core owns Aura. Other legacy games remain unavailable.
 
 Run `npm ci` at repository root, configure ignored `services/arcade/.env`, then `npm run dev:arcade`. Build: `npm run build:arcade`. Needs its own transaction-capable `ARCADE_MONGO_URI`, `APP_ORIGIN`, Core public key/issuer/audience/key ID, `CORE_API_BASE_URL`, distinct `CORE_SERVICE_KEY` and `ARCADE_RECONCILE_KEY`. No AI key required.
 

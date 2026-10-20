@@ -1,5 +1,5 @@
 const Activity = require('../models/DailyActivity');
-const dayKey = date => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+const { dayKey } = require('@collegehubs/contracts/day-policy.cjs');
 const previous = day => new Date(Date.parse(day + 'T00:00:00Z') - 86400000).toISOString().slice(0, 10);
 function countDays(days, today) {
   const keys = new Set(days); let current = keys.has(today) ? today : previous(today), count = 0;

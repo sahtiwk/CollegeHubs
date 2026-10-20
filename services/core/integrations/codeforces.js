@@ -17,6 +17,8 @@ function normalize(data) {
   return [...found.values()].sort((a, b) => a.startsAt - b.startsAt || a.providerId.localeCompare(b.providerId));
 }
 async function fetchContests({ fetcher = fetch, timeoutMs = 6000, maxBytes = 4 * 1024 * 1024 } = {}) {
+  // Statistics and schedules share the provider's aggregate request budget when enabled.
+  if (require('../config/externalProviders').config().codeforces) await require('../services/providerBudget').reserve();
   const controller = new AbortController(); let timer;
   const timeout = new Promise((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Error('Provider timeout')); }, timeoutMs); });
   try {

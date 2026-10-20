@@ -27,10 +27,10 @@ export default function Leaderboard() {
     <p className="eyebrow">{hub?.name || 'Your college'}</p><h1>A little friendly<br />competition.</h1>
     <p className="muted">College standings based on recorded Aura. Equal totals are ordered consistently by member ID.</p>
     <button disabled={busy} onClick={() => load()}>Refresh rankings</button>
-    {own && <div className="rank-summary"><span>Your college rank <strong>#{own.rank}</strong></span><span>{own.auraPoints} Aura</span></div>}
+    {own && <div className="rank-summary"><span>Your college rank <strong>#{own.rank}</strong></span><span>{own.title} / {own.auraPoints} Aura</span></div>}
     {error && <p className="error" role="alert">{error} <button onClick={() => load(cursor)} disabled={busy}>Retry rankings</button></p>}
     <div className="card ranking-table"><table><caption className="sr-only">College leaderboard</caption><thead><tr><th scope="col">Rank</th><th scope="col">Member</th><th scope="col">Aura</th></tr></thead>
-      <tbody>{items.map(row => <tr key={row._id} className={row._id === user._id ? 'own-row' : ''}><td>{row.rank}</td><td>{row.fullName || row.username}{row._id === user._id && <small> (you)</small>}<small className="muted">@{row.username}</small></td><td>{row.auraPoints}</td></tr>)}</tbody></table></div>
+      <tbody>{items.map(row => <tr key={row._id} className={row._id === user._id ? 'own-row' : ''}><td>{row.rank}</td><td>{row.fullName || row.username}{row._id === user._id && <small> (you)</small>}<small className="muted">@{row.username}</small></td><td>{row.auraPoints}<small>{row.title}</small></td></tr>)}</tbody></table></div>
     {busy && <p role="status">Loading rankings...</p>}
     {!busy && !error && !items.length && <p>No rankings yet.</p>}
     {cursor && <button onClick={() => load(cursor)} disabled={busy}>Load more members</button>}

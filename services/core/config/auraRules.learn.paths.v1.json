@@ -1,0 +1,9 @@
+{
+  "version": "learn-foundations-paths-v1",
+  "timezone": "Asia/Kolkata",
+  "timezonePolicyVersion": 1,
+  "curriculumVersion": "foundations-v1",
+  "types": {
+    "learn.path_completed": { "weight": 30, "countCap": 5, "sourceCap": 100 }
+  }
+}

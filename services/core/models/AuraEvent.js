@@ -16,4 +16,5 @@ const schema = new mongoose.Schema({
 schema.eachPath((path, field) => { if (!['_id', '__v'].includes(path)) field.immutable(true); });
 schema.index({ businessKey: 1 }, { unique: true, partialFilterExpression: { canonical: true } });
 schema.index({ hubId: 1, userId: 1, occurredAt: -1 });
+schema.index({ hubId: 1, userId: 1, canonical: 1, _id: -1 });
 module.exports = mongoose.model('AuraEvent', schema);

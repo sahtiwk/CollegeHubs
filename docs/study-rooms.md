@@ -6,7 +6,7 @@ P5.1 implements Core-owned synchronized individual solving. P5.2 adds the shared
 
 Create a waiting room in a current Hub channel with one of the two original, versioned problem seeds (balanced brackets or first occurrence), a 5-60 minute integer duration, and a unique `clientRoomId` (16-80 letters/digits/underscore/hyphen). Creation atomically stores the host's empty solution. Identical retries return the same room; changed creation payloads conflict. Up to eight participants can join while waiting. Only the host can start, with at least two participants. Existing participants can reconnect at any time. New late joins fail.
 
-MongoDB assigns `startAt` and `endAt` once. Repeating start never changes either. Room state is `waiting -> active -> review`; problem, duration and channel are frozen copies. Each participant has one `StudySolution`, initially revision 0. An early submission freezes that person's acknowledged revision; it does not end the room or expose source. Everyone waits for the same deadline. A disconnected participant is retained and their acknowledged draft is sealed normally.
+MongoDB assigns `startAt` and `endAt` once. Repeating start never changes either. Room state is `waiting -> active -> review`, with a separate `waiting -> cancelled` exit; problem, duration and channel are frozen copies. Each participant has one `StudySolution`, initially revision 0. An early submission freezes that person's acknowledged revision; it does not end the room or expose source. Everyone waits for the same deadline. A disconnected participant is retained and their acknowledged draft is sealed normally.
 
 Drafts accept literal source (including empty strings) up to 32 KiB UTF-8, one seed-allowed language, `expectedRevision` and `revision = expectedRevision + 1`. The ordinary 64 KiB JSON transport cap still applies. Identical retry of the latest persisted revision succeeds even after closure; altered or stale revisions conflict. Empty drafts are explicit empty outcomes, never qualified participation. Source is never executed. A later successful revision supersedes older replay IDs: synchronize before editing after a stale conflict.
 
@@ -29,6 +29,7 @@ All paths below begin `/api/study-rooms`. Current verified Core JWT membership, 
 | GET `/:id` | No selectors | Participant-only room, own solution and DB time. |
 | POST `/:id/join` | `{}` | Waiting-only enrolment; existing participants safely reconnect. |
 | POST `/:id/start` | `{}` | Host-only start; immutable retry. |
+| POST `/:id/cancel` | `{}` | Host-only waiting cancellation; identical retry returns the retained cancelled room. |
 | POST `/:id/draft` | `expectedRevision`, `revision`, `language`, `source` | Durable own revision; 409 on stale/frozen/deadline conflict. |
 | POST `/:id/submit` | `draftRevision` | Freezes latest acknowledged own revision; identical retry is safe. |
 | GET `/:id/submissions` | No selectors | Participant-only sealed solutions after review; before close 409 `STUDY_PRIVATE`. |
@@ -56,11 +57,11 @@ Only G1-G4 are automated suites. `node --test tests/guards/study-room.test.js` r
 
 The channel's **Open study rooms** link opens `/channels/:id/study` inside the existing Hub shell. The lobby provides the problem catalog, 5-60 minute duration, waiting-room creation, join/open actions and bounded older-page navigation. Unconfirmed creation retries reuse the exact creation ID and payload. `/study-rooms/:id` shows the problem, participants, timer and private editor. The host starts only after a peer joins.
 
-Use **Save draft** explicitly; no autosave is implied. The editor labels unsaved, waiting, saved, unconfirmed and frozen states. It preserves the exact pending payload when a request is unconfirmed and offers **Retry same save**. Editing is paused during that retry to avoid ambiguity. A conflict with a newer revision preserves local text, offers the current saved draft or an explicit rebase of local text, and never silently overwrites a peer tab's acknowledged work. **Submit and freeze** requires a nonempty, clean, acknowledged revision. Unsent text exists only in the mounted tab; leaving a route discards it. Reload/close warns when possible, but this is not a durable local backup.
+Use **Save draft** explicitly; no autosave is implied. The editor labels unsaved, waiting, saved, unconfirmed and frozen states. It preserves the exact pending payload when a request is unconfirmed and offers **Retry same save**. Editing is paused during that retry to avoid ambiguity. A conflict with a newer revision preserves local text, offers the current saved draft or an explicit rebase of local text, and never silently overwrites a peer tab's acknowledged work. **Submit and freeze** requires a nonempty, clean, acknowledged revision. Local edits and exact pending saves are held in account/Hub-scoped session storage for up to 24 hours in this tab. Reload/close warns when possible. This is a recovery aid, not a server acknowledgment or a durable backup.
 
 Database time is anchored to `performance.now()` at each successful round trip, including a half-round-trip latency estimate. The countdown uses that monotonic anchor rather than browser wall time, so a +/-120 second wall-clock skew does not extend the room. It is a display estimate, not deadline authority. At zero the editor stops writes and synchronizes. Backend fences remain authoritative during sleep, latency or disconnect.
 
-After closure, sealed solutions appear in two columns on wider screens and one column at 900px and below. Long source lines scroll inside keyboard-focusable code blocks. Literal code/review content is rendered through React text nodes and the existing allowlisted highlighter. Nothing executes. The source editor is intentionally a plain textarea, without a language server or execution engine. There are no new fonts, theme providers or palette overrides.
+After closure, sealed solutions appear in two columns on wider screens. At 900px and below, a keyboard-accessible selector shows one solution at a time; switching solutions preserves review drafts. Long source lines scroll inside keyboard-focusable code blocks. Literal code/review content is rendered through React text nodes and the existing allowlisted highlighter. Nothing executes. The source editor is intentionally a plain textarea, without a language server or execution engine. There are no new fonts, theme providers or palette overrides.
 
 ## Peer reviews
 
@@ -75,3 +76,39 @@ A bounded reconciler (50 pending solutions per pass) creates the native fact and
 Live composition stores `rules_inactive` facts and does not award Aura. An internal transaction-only scorer seam is exercised by G3 fixtures; it is not exposed to HTTP or environment toggles. P6 must choose prospective activation/rules and explicit reconciliation policy for inactive historical facts. There is no automatic retroactive award. `settled` indicates the native scorer returned the matching durable receipt. Peer reviews do not earn Aura.
 
 Startup also prepares `PeerReview` and the pending-solution index. The guarded demo-reset allowlist includes `peerreviews` without relaxing its target, confirmation or synthetic-data checks. No new environment names or dependencies were added in P5.2. See [P5.2 verification evidence](p5.2-evidence.md).
+
+
+## TP4.2 cancellation and save clarity
+
+`POST /api/study-rooms/:id/cancel` accepts exactly `{}`. `study:cancel` accepts
+only `{roomId}` and calls the same service. Current membership and participant
+checks apply; only the host can cancel a waiting room. The transaction competes
+on the same room document as start/join. Start versus cancellation has one winner;
+the loser receives 409. An identical cancellation retry returns the retained
+snapshot without changing its version or timestamp. Start on cancelled rooms,
+new joins, new draft writes, submissions and comparisons are rejected.
+
+Cancellation sets `status=cancelled`, a database-time `closedAt`, and
+`closeReason=host_cancelled`, increments version/fence once, and keeps the room
+and private solution rows. It does not seal solutions, increment deadline
+`closeCount`, create completion facts or award Aura. The due scanner only selects
+active rooms. No backfill or data reset is required; existing rows are unchanged.
+Deploy the API and UI together before exposing cancellation to clients.
+
+Participant labels report joined, solving, submitted, closed or cancelled.
+Snapshots select only participant identity and submission/seal markers, never
+another participant's draft source or saved revision. These are workflow states,
+not online-presence claims.
+
+The editor separates local text, an unconfirmed request and the server's saved
+revision. Saving remains explicit: there is no autosave. Pending retry text is
+locked and resubmitted exactly; two-tab conflicts require an explicit choice.
+At expiry, unsaved local text remains available to copy while comparisons use
+only sealed server source. Revision/fingerprint details are collapsed in review.
+Peer notes retain local drafts and exact uncertain retry bodies in session
+storage. One permanent review per peer solution remains enforced by the server.
+
+The editorial room screens share the existing palette and typography. A cancelled
+room offers another-room navigation; a closed room offers final saved comparisons.
+The timer uses monotonic elapsed time anchored to database time and never extends
+the deadline based on the browser clock.

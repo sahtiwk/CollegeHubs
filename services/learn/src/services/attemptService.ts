@@ -2,11 +2,14 @@ import { randomUUID } from 'node:crypto';
 import { owned } from '../db/index.ts';
 import type { Database, Owner } from '../db/index.ts';
 import type { PoolClient } from 'pg';
-import { fail, accessibleNode } from './learnerService.ts';
+import { fail, accessibleNode, schemaVersion } from './learnerService.ts';
+import { canonicalId } from './plannerAgent.ts';
 import { gradeAttempt } from './assessmentService.ts';
 import type { Mode, SavedAnswer } from './assessmentService.ts';
 import { snapshotQuestions } from './quizAgent.ts';
 import { unlockDownstream } from './progressAgent.ts';
+import {completePath} from './pathCompletionService.ts';
+import {planRemediation,remedialPlans} from './remediationPlanner.ts';
 
 async function attempt(c: PoolClient, o: Owner, id: string) {
   const { rows } = await c.query('SELECT * FROM quiz_attempt WHERE hub_id=$1 AND user_id=$2 AND id=$3', [o.hubId,o.userId,id]);
@@ -21,12 +24,13 @@ async function publicAttempt(c: PoolClient, a: any) {
   return { id:a.id,nodeId:a.node_id,domain:a.domain,version:a.version,mode:a.mode,status:a.status === 'active' && +a.expires_at <= Date.now() ? 'expired' : a.status,
     createdAt:a.created_at,expiresAt:a.expires_at,itemCount:a.questions.length,answeredCount:Object.keys(answers).length,
     question:q ? {id:q.id,prompt:q.prompt,options:q.options,number:index+1} : null,
-    result:a.result,rewards };
+    result:a.result,rewards,
+    ...(await schemaVersion(c)>=4?{remediation:await remedialPlans(c,{hubId:a.hub_id,userId:a.user_id},a.node_id),pathCompletion:(await c.query('SELECT domain,version,attempt_id AS "attemptId",completed_at AS "completedAt",jsonb_array_length(required_nodes) AS "requiredCount" FROM path_completion WHERE hub_id=$1 AND user_id=$2 AND domain=$3 AND version=$4',[a.hub_id,a.user_id,a.domain,a.version])).rows[0]||null}:{remediation:[],pathCompletion:null}) };
 }
 async function active(c: PoolClient, o: Owner, a: any) {
   if (a.status !== 'active') throw fail(409,'ATTEMPT_CLOSED','This attempt is already closed.');
   if (+a.expires_at <= Date.now()) throw fail(409,'ATTEMPT_EXPIRED','This attempt expired. Start a new checkpoint.');
-  await accessibleNode(c,o,a.node_id);
+  if(!(await accessibleNode(c,o,a.node_id)).active)throw fail(409,'PATH_ARCHIVED','This path version is archived.');
 }
 export function attemptService(pool: Database) {
   return {
@@ -37,6 +41,7 @@ export function attemptService(pool: Database) {
         return publicAttempt(c,a);
       }
       const node=await accessibleNode(c,o,nodeId);
+      if(!node.active)throw fail(409,'PATH_ARCHIVED','This path version is archived.');
       if(node.status==='completed')throw fail(409,'NODE_COMPLETED','This topic is already complete.');
       await c.query("UPDATE quiz_attempt SET status='expired' WHERE hub_id=$1 AND user_id=$2 AND node_id=$3 AND status='active' AND expires_at<=now()",[o.hubId,o.userId,nodeId]);
       const open=await c.query("SELECT * FROM quiz_attempt WHERE hub_id=$1 AND user_id=$2 AND node_id=$3 AND status='active'",[o.hubId,o.userId,nodeId]);
@@ -46,13 +51,14 @@ export function attemptService(pool: Database) {
       const count=await c.query("SELECT count(*)::int AS n FROM quiz_attempt WHERE hub_id=$1 AND user_id=$2 AND node_id=$3 AND created_at>now()-interval '24 hours'",[o.hubId,o.userId,nodeId]);
       if(count.rows[0].n>=5)throw Object.assign(fail(429,'ATTEMPT_LIMIT','Five attempts per topic are allowed in 24 hours.'),{retryAfter:86400});
       const bank=await c.query('SELECT item FROM quiz_item WHERE hub_id=$1 AND node_id=$2 AND mode=$3 ORDER BY seed_id',[o.hubId,nodeId,mode]);
-      if(bank.rowCount!==(mode==='checkpoint'?5:10))throw fail(503,'QUESTION_BANK_UNAVAILABLE','The reviewed question bank is unavailable.');
-      const questions=snapshotQuestions(bank.rows.map(r=>r.item));
+      const required=mode==='checkpoint'?5:10;
+      if((bank.rowCount||0)<required)throw fail(503,'QUESTION_BANK_UNAVAILABLE','The reviewed question bank is unavailable.');
+      const questions=snapshotQuestions(bank.rows.slice(0,required).map(r=>r.item));
       const {rows}=await c.query('INSERT INTO quiz_attempt(hub_id,user_id,id,request_id,node_id,domain,version,mode,questions) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *',[o.hubId,o.userId,randomUUID(),requestId,nodeId,node.domain,node.version,mode,JSON.stringify(questions)]);
       return publicAttempt(c,rows[0]);
     }),
     get:(o:Owner,id:string)=>owned(pool,o,async c=>publicAttempt(c,await attempt(c,o,id))),
-    list:(o:Owner)=>owned(pool,o,async c=>({attempts:(await c.query('SELECT id,node_id AS "nodeId",domain,mode,status,result,created_at AS "createdAt",expires_at AS "expiresAt" FROM quiz_attempt WHERE hub_id=$1 AND user_id=$2 ORDER BY created_at DESC,id LIMIT 30',[o.hubId,o.userId])).rows.map(a=>({...a,status:a.status==='active'&&+a.expiresAt<=Date.now()?'expired':a.status}))})),
+    list:(o:Owner)=>owned(pool,o,async c=>({attempts:(await c.query('SELECT id,node_id AS "nodeId",domain,version,mode,status,result,created_at AS "createdAt",expires_at AS "expiresAt" FROM quiz_attempt WHERE hub_id=$1 AND user_id=$2 ORDER BY created_at DESC,id LIMIT 30',[o.hubId,o.userId])).rows.map(a=>({...a,status:a.status==='active'&&+a.expiresAt<=Date.now()?'expired':a.status}))})),
     answer:(o:Owner,id:string,questionId:string,optionId:string,requestId:string)=>owned(pool,o,async c=>{
       const a=await attempt(c,o,id), old=a.answers[questionId];
       if(old) { if(old.optionId!==optionId||old.requestId!==requestId)throw fail(409,'ANSWER_CONFLICT','This question already has a saved answer.'); return publicAttempt(c,a); }
@@ -79,13 +85,25 @@ export function attemptService(pool: Database) {
         await unlockDownstream(c,o,a.domain,a.version);
         const first=await c.query('INSERT INTO node_completion(hub_id,user_id,node_id,version,attempt_id,completed_at) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING RETURNING node_id',[o.hubId,o.userId,a.node_id,a.version,id,now]);
         // Re-enrollment can re-assess skills, but cannot create another first-pass award.
-        if(first.rowCount){
-          const common={accessJti:principal.jti,domainVersion:'v1',nodeId:a.node_id,curriculumVersion:a.version};
+        let eligible=!!first.rowCount, rewardNodeId=a.node_id;
+        if(await schemaVersion(c)>=3){
+          const node=(await c.query('SELECT domain,slug FROM skill_node WHERE hub_id=$1 AND id=$2',[o.hubId,a.node_id])).rows[0];
+          const canonical=canonicalId(node.domain,node.slug,a.version);
+          const claim=await c.query('INSERT INTO node_award_claim(user_id,canonical_id,hub_id,node_id,attempt_id,claimed_at) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING RETURNING canonical_id',[o.userId,canonical,o.hubId,a.node_id,id,now]);
+          eligible=eligible&&!!claim.rowCount;
+          if(a.version!=='demo-v1')rewardNodeId=canonical;
+        }
+        if(eligible){
+          const common={accessJti:principal.jti,domainVersion:'v1',nodeId:rewardNodeId,curriculumVersion:a.version};
           const events=[{type:'learn.quiz_completed',eventId:`learn:${id}:quiz:v1`,metadata:{...common,sourceId:id,attemptId:id,mode:a.mode,passed:true,correctCount:grade.correctCount,itemCount:grade.itemCount}},
-            {type:'learn.node_mastered',eventId:`learn:${id}:mastered:v1`,metadata:{...common,sourceId:a.node_id+':'+a.version,masteryMethod:a.mode}}];
+            {type:'learn.node_mastered',eventId:`learn:${id}:mastered:v1`,metadata:{...common,sourceId:rewardNodeId+':'+a.version,masteryMethod:a.mode}}];
           for(const event of events){const payload={schemaVersion:1,eventId:event.eventId,userId:o.userId,hubId:o.hubId,source:'learn',type:event.type,value:1,occurredAt:now.toISOString(),metadata:event.metadata};
             await c.query('INSERT INTO learn_event(hub_id,user_id,attempt_id,event_id,payload) VALUES($1,$2,$3,$4,$5)',[o.hubId,o.userId,id,event.eventId,JSON.stringify(payload)]);}
         }
+      }
+      if(await schemaVersion(c)>=4){
+        if(grade.passed){await c.query('UPDATE remedial_plan SET resolved=true WHERE hub_id=$1 AND user_id=$2 AND node_id=$3',[o.hubId,o.userId,a.node_id]);await completePath(c,o,a,principal,now);}
+        else await planRemediation(c,o,a);
       }
       return publicAttempt(c,a);
     })

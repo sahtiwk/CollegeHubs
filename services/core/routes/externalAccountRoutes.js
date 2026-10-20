@@ -1,0 +1,10 @@
+const router=require('express').Router();
+const service=require('../services/externalAccountService');
+const {requireHubAccess,accessError}=require('../services/hubAccess');
+router.use(require('../middleware/auth').authenticate);
+const route=fn=>async(req,res)=>{try{if(Object.keys(req.query).length)throw accessError(400,'INVALID_QUERY','No selectors are accepted');const context=await requireHubAccess(req.auth);res.set('Cache-Control','no-store').json(await fn(req,context));}catch(e){res.status(e.status||503).json({error:{code:e.status?e.code:'EXTERNAL_UNAVAILABLE',message:e.status?e.message:'External progress unavailable; retry shortly'}});}};
+router.get('/',route((req,context)=>service.read(context)));
+router.post('/',route((req,context)=>service.link(context,req.body)));
+router.delete('/:provider',route((req,context)=>{if(req.body&&Object.keys(req.body).length)throw accessError(400,'INVALID_BODY','Unlink accepts no fields');return service.unlink(context,req.params.provider);}));
+router.post('/codeforces/refresh',route((req,context)=>{if(!req.body||Array.isArray(req.body)||Object.keys(req.body).length)throw accessError(400,'INVALID_BODY','Send an empty object');return service.refresh(context);}));
+module.exports=router;

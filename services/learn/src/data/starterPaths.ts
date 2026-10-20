@@ -15,4 +15,12 @@ export const starterPaths = {
       resource: { title: 'What is CSS?', summary: 'See how style rules control presentation and how CSS connects to an HTML document.', url: 'https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/What_is_CSS' } }
   ] }
 } as const;
-export type Domain = keyof typeof starterPaths;
+export type Domain = 'dsa' | 'web' | 'ml' | 'backend' | 'devops';
+export type Topic = {slug:string;label:string;description:string;prerequisite:string|null;resource:{title:string;summary:string;url:string}};
+export type Path = {label:string;description:string;nodes:readonly Topic[]};
+export function pathsFor(version:string): Partial<Record<Domain,Path>> {
+  if(version==='demo-v1')return starterPaths;
+  if(version!=='foundations-v1')throw Error('Unknown curriculum version');
+  return Object.fromEntries(foundation.domains.map(d=>[d.id,{label:d.label,description:d.description,nodes:foundation.nodes.filter(n=>n.domain===d.id).map(n=>({slug:n.slug,label:n.label,description:n.description,prerequisite:n.prerequisites[0]||null,resource:{title:n.resourceTitle,summary:n.resourceSummary,url:n.resourceUrl}}))}]));
+}
+import foundation from './curriculum/foundations-v1.json' with {type:'json'};

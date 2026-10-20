@@ -1,0 +1,27 @@
+{
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "provider": "local",
+  "rewardable": false,
+  "qualityGate": "not-approved",
+  "measurements": [
+    {
+      "resumeCharacters": 500,
+      "valid": false,
+      "error": "AI_INVALID_RESPONSE",
+      "latencyMs": 48
+    },
+    {
+      "resumeCharacters": 8000,
+      "valid": false,
+      "error": "AI_INVALID_RESPONSE",
+      "latencyMs": 2
+    },
+    {
+      "answerCharacters": 10000,
+      "valid": false,
+      "error": "AI_INVALID_RESPONSE",
+      "latencyMs": 1
+    }
+  ],
+  "note": "Client memory is not inference-server or GPU memory. No grading quality or hosted availability is certified."
+}

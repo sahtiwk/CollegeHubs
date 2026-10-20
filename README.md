@@ -1,8 +1,12 @@
 # CollegeHubs
 
+TP9.1 adds provider-free Interview practice and contextual Learn guidance. See
+[inference capabilities and verification](docs/tp9.1-evidence.md), including the
+explicitly unapproved local grading gate.
+
 One React app, one npm monorepo, four independently deployed backends.
 
-| Workspace | Released capability |
+| Workspace | Implemented capability |
 |---|---|
 | `apps/web` | Shared Vite frontend, login, college theme and lazy feature routes |
 | `services/core` | College membership, feeds/channels, code/resources, Study Rooms, canonical Aura, college ranking and cached schedules |
@@ -27,9 +31,17 @@ Run `npm run dev`; enable only configured modules in Core's `ENABLE_MODULES`. Co
 - Exact `cvr.ac.in` membership is enabled. Password registration does not verify mailbox ownership; Google sign-in is not enabled in the hosted slice. No institutional endorsement is implied.
 - Shared Aura is authoritative. External coding-platform bonuses, global rankings, Google Calendar export and other legacy games are not enabled.
 - Interview feedback and Learn assessments are practice heuristics. Core downtime can leave saved results with Aura pending until a due read or operator reconciliation.
-- P10.2 cross-feature progress polish and P10.1 weak-skill interview suggestions remain future work.
+- P10.1 Learn weak-skill interview suggestions and P10.2 cross-feature progress summaries are implemented. Hosted activation was recorded on 11 October 2026; see [P10 evidence](docs/p10-hosted-evidence.md). Availability still depends on configured, awake services.
+- TP10.1 extends that foundation with five-domain path progress, owned continuation links and import-time recommendation checks. See [TP10.1 evidence](docs/tp10.1-evidence.md) for local verification; this richer version has not been deployed.
+- TP10.2 adds optional first steps, account-scoped preferences, page-error recovery and a cross-route consistency audit. [TP10.2 evidence](docs/tp10.2-evidence.md) separates automated browser checks from the unavailable five-person usability rehearsal.
 - A shared gateway and shared physical Atlas cluster remain common failure points despite independent backend deployments.
 
 [Demo guide](docs/demo.md) · [Release evidence](docs/release-evidence.md) · [Rollback](docs/rollback.md) · [Source adaptation record](docs/source-document-updates.md) · [Third-party notices](THIRD_PARTY.md)
 
 Dated phase evidence under `docs/p*-evidence.md` preserves historical observations; newer release evidence supersedes old deployment/feature status claims without rewriting history.
+
+The transition starts from [TP0.1 baseline](docs/transition-baseline.md), refreshed locally on 18 October 2026. See the [configuration reference](docs/configuration.md) and [contribution guide](CONTRIBUTING.md). Original project-owned work uses the scoped [MIT license](LICENSE); [distribution exceptions](docs/open-source-manifest.md) apply to upstream adaptations, dependencies and assets. The whole repository is not uniformly MIT-licensed.
+
+TP0.2 adds explicit retained-data migration runners and verified local restore
+rehearsals. Follow the [migration/restore runbook](docs/transition-restore.md)
+before schema changes; ordinary startup never runs migrations or resets data.

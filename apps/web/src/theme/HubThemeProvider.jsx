@@ -2,9 +2,10 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import api from '../api';
 import { useAuth } from '../auth/AuthProvider';
 import { defaultTokens, sanitizeTokens, themeStyle } from '../utils/collegeThemes';
+import { useMotionPreference } from '../hooks/useMotionPreference';
 const ThemeContext = createContext(null);
-const cache = new Map();
 export function HubThemeProvider({ children }) {
+  useMotionPreference();
   const { user } = useAuth();
   const hubId = user?.hubs?.[0]?.hubId;
   const [state, setState] = useState({ hub: null, error: '', loading: false });
@@ -14,12 +15,8 @@ export function HubThemeProvider({ children }) {
     setState(previous => hubId && previous.hub?.hubId === hubId ? { ...previous, error: '', loading: true } : { hub: null, error: '', loading: Boolean(hubId) });
     if (hubId) api.get('/me/hub').then(({ data }) => {
       if (data.hubId !== hubId) throw new Error('Hub identity mismatch');
-      const key = hubId + ':' + data.themeVersion;
-      const tokens = cache.get(key) || sanitizeTokens(data.tokens);
-      // Revalidate on every account/focus refresh; cache is never selected by a display label.
-      cache.set(key, tokens);
-      if (cache.size > 8) cache.delete(cache.keys().next().value);
-      if (active) setState({ hub: { ...data, tokens: cache.get(key) }, loading: false, error: '' });
+      const tokens = sanitizeTokens(data.tokens);
+      if (active) setState({ hub: { ...data, tokens }, loading: false, error: '' });
     }).catch(err => {
       if (active) setState({ hub: null, loading: false, error: err.response?.data?.error || 'College branding is unavailable.' });
     });

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import deliveryPolicy from '@collegehubs/contracts/delivery-policy.cjs';
 import type { Database, Owner } from '../db/index.ts';
 import type { LearnConfig } from '../auth/sessionService.ts';
 export function coreEvents(pool:Database,config:LearnConfig,fetcher:typeof fetch=fetch){
@@ -7,12 +8,16 @@ export function coreEvents(pool:Database,config:LearnConfig,fetcher:typeof fetch
     const {rows}=await pool.query(`UPDATE learn_event SET lease_id=$2,lease_until=now()+interval '15 seconds',next_attempt_at=now()+interval '30 seconds',tries=tries+1
       WHERE event_id=$1 AND status='pending' AND next_attempt_at<=now() AND lease_until<=now() RETURNING *`,[eventId,lease]);
     const e=rows[0];if(!e)return;
+    async function attention(code:string){await pool.query("UPDATE learn_event SET status='attention',last_error_code=$3,lease_id=NULL,lease_until=to_timestamp(0) WHERE event_id=$1 AND lease_id=$2 AND status='pending'",[eventId,lease,code]);}
+    if(deliveryPolicy.expired(e.payload)){await attention('EVENT_REPLAY_EXPIRED');return;}
     try{
       const response=await fetcher(String(config.core)+'/api/aura/events',{method:'POST',redirect:'error',signal:AbortSignal.timeout(4000),headers:{'Content-Type':'application/json',Authorization:'Bearer '+config.serviceKey},body:JSON.stringify(e.payload)});
       const reader=response.body?.getReader();if(!reader)throw Error('empty');let size=0;const chunks:Uint8Array[]=[];
       for(;;){const p=await reader.read();if(p.done)break;size+=p.value.byteLength;if(size>16384){await reader.cancel();throw Error('large');}chunks.push(p.value);}
-      const receipt=JSON.parse(Buffer.concat(chunks).toString('utf8')).receipt;
-      const limit=e.payload.type==='learn.quiz_completed'?5:15;
+      const data=JSON.parse(Buffer.concat(chunks).toString('utf8'));
+      const terminal=deliveryPolicy.attentionCode(response.status,data);if(terminal){await attention(terminal);return;}
+      const receipt=data.receipt;
+      const limit=e.payload.type==='learn.quiz_completed'?5:e.payload.type==='learn.path_completed'?30:15;
       if(![200,201].includes(response.status)||!receipt||receipt.eventId!==e.event_id||receipt.userId!==e.user_id||receipt.hubId!==e.hub_id||!Number.isSafeInteger(receipt.awardedAura)||receipt.awardedAura<0||receipt.awardedAura>limit||typeof receipt.reason!=='string'||receipt.reason.length>100||!/^\d{4}-\d{2}-\d{2}$/.test(receipt.dayKey))throw Error('receipt');
       await pool.query("UPDATE learn_event SET status='settled',receipt=$3,lease_id=NULL,lease_until=to_timestamp(0) WHERE event_id=$1 AND lease_id=$2 AND status='pending'",[eventId,lease,JSON.stringify({eventId:receipt.eventId,awardedAura:receipt.awardedAura,reason:receipt.reason,dayKey:receipt.dayKey})]);
     }catch{

@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const schema = new mongoose.Schema({
   kind: { type: String, enum: ['session','recommendation'], default: 'session', immutable: true },
   recommendationHash: { type: String, match: /^[a-f0-9]{64}$/, select: false, immutable: true },
-  topics: { type: [new mongoose.Schema({ nodeId: String, label: String, version: String, reason: String, asOf: Date }, { _id: false })], default: undefined, immutable: true },
+  topics: { type: [new mongoose.Schema({ domain: String, nodeId: String, label: String, version: String, reason: String, asOf: Date }, { _id: false })], default: undefined, immutable: true },
   hubId: { type: mongoose.Schema.Types.ObjectId, required: true, immutable: true },
   userId: { type: mongoose.Schema.Types.ObjectId, required: true, immutable: true },
   module: { type: String, enum: ['arcade', 'interview', 'learn'], required: true, immutable: true },

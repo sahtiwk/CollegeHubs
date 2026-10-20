@@ -68,8 +68,8 @@ export function useChannel(channelId, hubId) {
     void sync();
     // Repairs a lost final broadcast even when no later message exposes the gap.
     const timer = setInterval(recover, 15000);
-    window.addEventListener('focus', recover); document.addEventListener('visibilitychange', recover);
-    return () => { dead = true; abort.abort(); clearInterval(timer); socket?.dispose(); window.removeEventListener('focus', recover); document.removeEventListener('visibilitychange', recover); control.current = null; };
+    window.addEventListener('core-session', recover); window.addEventListener('focus', recover); document.addEventListener('visibilitychange', recover);
+    return () => { dead = true; abort.abort(); clearInterval(timer); socket?.dispose(); window.removeEventListener('core-session', recover); window.removeEventListener('focus', recover); document.removeEventListener('visibilitychange', recover); control.current = null; };
   }, [channelId, hubId]);
   return { ...state, retry: () => control.current?.sync(), send: body => control.current?.send(body) ?? Promise.reject(new Error('Channel unavailable')) };
 }

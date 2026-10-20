@@ -15,10 +15,10 @@ export async function proxyApi(request: Request, env: Bindings, fetcher: typeof 
   upstream.pathname = incoming.pathname; upstream.search = incoming.search;
   const headers = new Headers();
   // Never accept an upstream URL/header from the caller. Do not send a Core bearer to a module.
-  for (const name of ['content-type', 'accept', 'origin', 'cookie', 'x-csrf-token', ...(module ? [] : ['authorization'])]) {
+  for (const name of ['content-type', 'accept', 'origin', 'cookie', ...(module ? ['x-csrf-token'] : ['authorization', 'x-core-csrf'])]) {
     const value = request.headers.get(name);
     if (name === 'cookie') {
-      if (module && value) { const selected = value.split(';').map(item => item.trim()).filter(item => ['ch_' + module + '_state', 'ch_' + module + '_session'].includes(item.split('=')[0])).join('; '); if (selected) headers.set(name, selected); }
+      if (value) { const selected = value.split(';').map(item => item.trim()).filter(item => (module ? ['ch_' + module + '_state', 'ch_' + module + '_session'] : ['ch_core_refresh']).includes(item.split('=')[0])).join('; '); if (selected) headers.set(name, selected); }
     } else if (value) headers.set(name, value);
   }
   const upload = request.method === 'POST' && incoming.pathname === '/api/interview/resumes/upload';
@@ -38,10 +38,15 @@ export async function proxyApi(request: Request, env: Bindings, fetcher: typeof 
     const response = await fetcher(upstream, { method: request.method, headers, body, ...(upload ? { duplex: 'half' } : {}), redirect: 'manual', signal: AbortSignal.any([request.signal, AbortSignal.timeout(incoming.pathname.endsWith('/health/ready') ? 75000 : 15000)]) } as RequestInit);
     if (overflow) return json(413, 'BODY_TOO_LARGE');
     if (response.status >= 300 && response.status < 400) return json(502, 'UPSTREAM_REDIRECT_REJECTED');
-    if (!response.headers.get('content-type')?.includes('application/json') && response.status !== 204) return json(502, 'UPSTREAM_NOT_JSON');
+    const calendarExport = request.method === 'GET' && /^\/api\/hubs\/[a-f0-9]{24}\/calendar\/export\.ics$/.test(incoming.pathname) && response.status === 200 && response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() === 'text/calendar';
+    if (!calendarExport && !response.headers.get('content-type')?.includes('application/json') && response.status !== 204) return json(502, 'UPSTREAM_NOT_JSON');
     const forwarded = new Headers({ 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
-    for (const name of ['content-type', 'retry-after']) { const value = response.headers.get(name); if (value) forwarded.set(name, value); }
-    for (const cookie of response.headers.getSetCookie()) forwarded.append('Set-Cookie', cookie);
+    if (calendarExport) forwarded.set('Content-Disposition', 'attachment; filename="collegehubs-calendar.ics"');
+    for (const name of ['content-type', 'retry-after', ...(module ? [] : ['x-core-csrf'])]) { const value = response.headers.get(name); if (value) forwarded.set(name, value); }
+    for (const cookie of response.headers.getSetCookie()) {
+      const name = cookie.slice(0, cookie.indexOf('='));
+      if ((module ? ['ch_' + module + '_state', 'ch_' + module + '_session'] : ['ch_core_refresh']).includes(name)) forwarded.append('Set-Cookie', cookie);
+    }
     return new Response(response.body, { status: response.status, headers: forwarded });
   } catch { return json(overflow ? 413 : 503, overflow ? 'BODY_TOO_LARGE' : 'SERVICE_UNAVAILABLE'); }
 }

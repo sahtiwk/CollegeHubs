@@ -1,0 +1,204 @@
+{
+  "version": "bug-puzzles-v1",
+  "license": "CC0-1.0",
+  "provenance": "Original snippets and explanations authored for CollegeHubs; no third-party snippets.",
+  "review": {
+    "date": "2026-10-20",
+    "reviewer": "Codex",
+    "method": "Static review of intended behavior, unique correct choice and explanation; snippets are never executed."
+  },
+  "puzzles": [
+    {
+      "id": "array-bound",
+      "version": 1,
+      "language": "javascript",
+      "difficulty": "beginner",
+      "prompt": "Return every item once.",
+      "code": "for (let i = 0; i <= items.length; i++) {\n  output.push(items[i]);\n}",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Use i < items.length"
+        },
+        {
+          "id": "b",
+          "text": "Start i at 1"
+        },
+        {
+          "id": "c",
+          "text": "Increment i by 2"
+        }
+      ],
+      "answer": "a",
+      "explanation": "Array indices end at length - 1. The <= condition also reads items[length], producing an extra undefined value."
+    },
+    {
+      "id": "numeric-sort",
+      "version": 1,
+      "language": "javascript",
+      "difficulty": "beginner",
+      "prompt": "Sort these numbers in ascending numeric order.",
+      "code": "const scores = [2, 10, 3];\nscores.sort();",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Reverse the result"
+        },
+        {
+          "id": "b",
+          "text": "Use sort((a, b) => a - b)"
+        },
+        {
+          "id": "c",
+          "text": "Convert scores to a string"
+        }
+      ],
+      "answer": "b",
+      "explanation": "Without a comparator, JavaScript sort compares string forms. A numeric comparator orders 2, 3, 10 correctly."
+    },
+    {
+      "id": "missing-return",
+      "version": 1,
+      "language": "javascript",
+      "difficulty": "beginner",
+      "prompt": "Double every number.",
+      "code": "const doubled = numbers.map(n => {\n  n * 2;\n});",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Replace map with filter"
+        },
+        {
+          "id": "b",
+          "text": "Remove the multiplication"
+        },
+        {
+          "id": "c",
+          "text": "Return n * 2 from the callback"
+        }
+      ],
+      "answer": "c",
+      "explanation": "A block-bodied arrow function needs an explicit return. Without it, map receives undefined for every element."
+    },
+    {
+      "id": "assignment",
+      "version": 1,
+      "language": "javascript",
+      "difficulty": "beginner",
+      "prompt": "Enter the branch only when attempts is zero.",
+      "code": "if (attempts = 0) {\n  reset();\n}",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Use attempts === 0"
+        },
+        {
+          "id": "b",
+          "text": "Use attempts + 0"
+        },
+        {
+          "id": "c",
+          "text": "Use attempts = 1"
+        }
+      ],
+      "answer": "a",
+      "explanation": "Assignment changes attempts to zero and evaluates to zero, which is falsy. Strict equality checks the value without changing it."
+    },
+    {
+      "id": "string-add",
+      "version": 1,
+      "language": "javascript",
+      "difficulty": "beginner",
+      "prompt": "Read two decimal integer strings and add them.",
+      "code": "const a = \"12\";\nconst b = \"3\";\nconst total = a + b;",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Use a.concat(b)"
+        },
+        {
+          "id": "b",
+          "text": "Use Number(a) + Number(b)"
+        },
+        {
+          "id": "c",
+          "text": "Use a - b"
+        }
+      ],
+      "answer": "b",
+      "explanation": "The + operator concatenates these strings into \"123\". Converting both known integer strings to numbers gives 15."
+    },
+    {
+      "id": "shared-object",
+      "version": 1,
+      "language": "javascript",
+      "difficulty": "beginner",
+      "prompt": "Change copy.name while preserving original.name.",
+      "code": "const original = { name: \"Ada\" };\nconst copy = original;\ncopy.name = \"Grace\";",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Declare copy with let"
+        },
+        {
+          "id": "b",
+          "text": "Freeze copy after assignment"
+        },
+        {
+          "id": "c",
+          "text": "Use const copy = { ...original }"
+        }
+      ],
+      "answer": "c",
+      "explanation": "Assignment shares the same object. A shallow copy is sufficient here because name is a primitive string, so changing the copy preserves the original."
+    },
+    {
+      "id": "boolean-range",
+      "version": 1,
+      "language": "javascript",
+      "difficulty": "beginner",
+      "prompt": "Accept ages from 18 through 25, inclusive.",
+      "code": "const eligible = age >= 18 || age <= 25;",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Use age >= 18 && age <= 25"
+        },
+        {
+          "id": "b",
+          "text": "Use age < 18 && age > 25"
+        },
+        {
+          "id": "c",
+          "text": "Use age === 18"
+        }
+      ],
+      "answer": "a",
+      "explanation": "Both bounds must hold. With OR, any ordinary numeric age satisfies at least one side, so ages outside the range are accepted."
+    },
+    {
+      "id": "accumulator",
+      "version": 1,
+      "language": "javascript",
+      "difficulty": "beginner",
+      "prompt": "Sum all entries, including when the array is empty.",
+      "code": "function sum(values) {\n  let total;\n  for (const value of values) total += value;\n  return total;\n}",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Set total = null"
+        },
+        {
+          "id": "b",
+          "text": "Initialize total to 0"
+        },
+        {
+          "id": "c",
+          "text": "Return values.length"
+        }
+      ],
+      "answer": "b",
+      "explanation": "An uninitialized variable is undefined. Adding a number to it produces NaN. Starting at zero also returns the correct sum for an empty array."
+    }
+  ]
+}

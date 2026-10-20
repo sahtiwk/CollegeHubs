@@ -1,0 +1,32 @@
+
+:root { font-family: var(--font-sans); color: var(--ink); background: var(--canvas); font-synthesis: none; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+button, input, textarea { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+.app-theme { min-height: 100dvh; background: var(--background); color: var(--text); }
+h1, h2, h3, p { margin: 0; }
+h1 { font-family: var(--font-sans); font-weight: 750; font-size: clamp(2.7rem, 5.3vw, 4.6rem); line-height: 1.07; letter-spacing: -.035em; }
+h2 { font-family: var(--font-sans); font-weight: 750; font-size: 1.55rem; line-height: 1.2; }
+h3 { font-size: 1.12rem; font-weight: 600; }
+p { line-height: 1.65; }
+a { color: inherit; text-underline-offset: 4px; }
+button { border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; min-height: 44px; background: var(--surface); color: var(--text); cursor: pointer; font-weight: 600; }
+button:hover { background: var(--surface-raised); }
+button:disabled { opacity: .55; cursor: not-allowed; }
+button.primary { background: var(--accent); color: var(--on-primary); border-color: var(--accent); }
+button.primary:hover { filter: brightness(1.15); }
+button.quiet { border-color: transparent; background: transparent; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+input, textarea { display: block; width: 100%; min-width: 0; border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--background); color: var(--text); margin-top: 8px; }
+textarea { resize: vertical; }
+label { font-size: .875rem; font-weight: 600; }
+input::placeholder, textarea::placeholder { color: var(--text-muted); opacity: 1; }
+.stack { display: flex; flex-direction: column; gap: 20px; }
+.muted { color: var(--text-muted); }
+.error { color: var(--error); font-size: .9rem; }
+.eyebrow { font-size: .7rem; line-height: 1.6; letter-spacing: .16em; text-transform: uppercase; font-weight: 700; }
+.pill { background: var(--surface-raised); border: 1px solid var(--border); border-radius: 99px; padding: 6px 10px; font-size: .7rem; white-space: nowrap; }
+.card { border: 1px solid var(--border); border-radius: 16px; background: var(--surface); padding: 22px; }
+
+code, pre { font-family: var(--font-mono); }

@@ -9,6 +9,17 @@ export function sanitizeTokens(tokens) {
     [key, typeof tokens?.[key] === 'string' && /^#[0-9a-f]{6}$/i.test(tokens[key]) ? tokens[key] : fallback]));
 }
 export function themeStyle(tokens) {
-  return Object.fromEntries(Object.entries(sanitizeTokens(tokens)).map(([key, value]) =>
-    ['--' + key.replace(/[A-Z]/g, letter => '-' + letter.toLowerCase()), value]));
+  const safe = sanitizeTokens(tokens);
+  // College identity is allowed; arbitrary palettes cannot recolor reading surfaces.
+  return { '--hub-accent': safe.accent, '--hub-secondary': safe.secondary,
+    '--hub-on-accent': contrastRatio(safe.accent, '#FFFFFF') >= 4.5 ? '#FFFFFF' : '#000000' };
+}
+export function contrastRatio(first, second) {
+  const luminance = color => {
+    const channels = color.slice(1).match(/../g).map(c => parseInt(c, 16) / 255)
+      .map(c => c <= .04045 ? c / 12.92 : ((c + .055) / 1.055) ** 2.4);
+    return channels[0] * .2126 + channels[1] * .7152 + channels[2] * .0722;
+  };
+  const a = luminance(first), b = luminance(second);
+  return (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
 }

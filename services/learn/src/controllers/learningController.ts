@@ -1,3 +1,4 @@
+import {contextualTutor} from '../services/contextualTutor.ts';
 import { createHash, timingSafeEqual } from 'node:crypto';
 import type { Request, Response } from 'express';
 import type { SessionStore } from '../auth/sessionService.ts';
@@ -27,13 +28,15 @@ export function learningController(pool: Database, store: SessionStore) {
     stats: handler(o => service.stats(o)), milestones: handler(o => service.milestones(o)),
     profile: handler(o => service.profile(o)),
     preferences: handler((o, req) => service.preferences(o, preferencesValue(body(req, ['goal', 'dailyMinutes'])))),
-    onboardingProfile: handler((_o, req) => service.onboardingProfile(domainValue(body(req, ['domain']).domain))),
+    onboardingProfile: handler((o, req) => service.onboardingProfile(o,domainValue(body(req, ['domain']).domain))),
     onboard: handler((o, req) => { const b = body(req, ['domain', 'selfRating', 'goal', 'dailyMinutes']); return service.onboard(o, domainValue(b.domain), ratingValue(b.selfRating), preferencesValue(b)); }),
     intake: handler((o, req) => { const b = body(req, ['domain', 'selfRating']); return service.intake(o, domainValue(b.domain), ratingValue(b.selfRating)); }),
     initialize: handler((o, req) => service.initialize(o, domainValue(body(req, ['domain']).domain))),
+    upgrade: handler((o,req)=>{const b=body(req,['domain','fromVersion','toVersion']);if(typeof b.fromVersion!=='string'||typeof b.toVersion!=='string')throw fail(400,'INVALID_UPGRADE','Choose a published version.');return service.upgrade(o,domainValue(b.domain),b.fromVersion,b.toVersion);}),
     node: handler((o, req) => service.node(o, nodeId(req.params.id))),
+    reviewRemediation:handler((o,req)=>service.reviewRemediation(o,nodeId(body(req,['id']).id))),
     recommend: handler((o, req) => service.recommend(o, nodeId(body(req, ['nodeId']).nodeId))),
-    tutor: handler((o, req) => { const b = body(req, ['nodeId', 'contentId']); return service.tutor(o, nodeId(b.nodeId), nodeId(b.contentId)); }),
+    tutor: handler((o, req) => { const b = body(req, ['nodeId', 'contentId']); return contextualTutor(pool)(o, nodeId(b.nodeId), nodeId(b.contentId)); }),
     reset: handler((o, req) => service.reset(o, domainValue(body(req, ['domain']).domain)))
   };
 }

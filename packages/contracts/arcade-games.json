@@ -1,11 +1,70 @@
 [
-  {"id":"numberguess","title":"NumberGuess","status":"ranked","rulesVersion":"numberguess-v1","durationSeconds":600,"description":"Find the private number in ten saved guesses."},
-  {"id":"mathamplitude","title":"MathAmplitude","status":"ranked","rulesVersion":"mathamplitude-v1","durationSeconds":60,"description":"Solve arithmetic in 60 seconds. Five correct answers and 30 seconds qualify."},
-  {"id":"sorting","title":"Sorting Complexity","status":"ranked","rulesVersion":"sorting-v1","durationSeconds":600,"description":"Trace bubble-sort comparisons and swaps, then choose its worst-case complexity."},
-  {"id":"snake","title":"Snake","status":"unavailable","description":"Coming later. Choose a ranked game to play today."},
-  {"id":"memory","title":"Memory","status":"unavailable","description":"Coming later. Choose a ranked game to play today."},
-  {"id":"minesweeper","title":"Minesweeper","status":"unavailable","description":"Coming later. Choose a ranked game to play today."},
-  {"id":"pong","title":"Pong","status":"unavailable","description":"Coming later. Choose a ranked game to play today."},
-  {"id":"crossword","title":"Crossword","status":"unavailable","description":"Coming later. Choose a ranked game to play today."},
-  {"id":"breathing","title":"Breathing","status":"unavailable","description":"Coming later. Choose a ranked game to play today."}
+  {
+    "id": "numberguess",
+    "title": "NumberGuess",
+    "status": "ranked",
+    "rulesVersion": "numberguess-v1",
+    "durationSeconds": 600,
+    "description": "Find the private number in ten saved guesses."
+  },
+  {
+    "id": "mathamplitude",
+    "title": "MathAmplitude",
+    "status": "ranked",
+    "rulesVersion": "mathamplitude-v1",
+    "durationSeconds": 60,
+    "description": "Solve arithmetic in 60 seconds. Five correct answers and 30 seconds qualify."
+  },
+  {
+    "id": "sorting",
+    "title": "Sorting Complexity",
+    "status": "ranked",
+    "rulesVersion": "sorting-v1",
+    "durationSeconds": 600,
+    "description": "Trace bubble-sort comparisons and swaps, then choose its worst-case complexity."
+  },
+  {
+    "id": "spotbug",
+    "title": "Spot the Bug",
+    "status": "ranked",
+    "rulesVersion": "spotbug-v1",
+    "durationSeconds": 600,
+    "description": "Code-reading practice: find four bugs in five questions. No code execution."
+  },
+  {
+    "id": "snake",
+    "title": "Snake",
+    "status": "unavailable",
+    "description": "Coming later. Choose a ranked game to play today."
+  },
+  {
+    "id": "memory",
+    "title": "Memory",
+    "status": "unavailable",
+    "description": "Coming later. Choose a ranked game to play today."
+  },
+  {
+    "id": "minesweeper",
+    "title": "Minesweeper",
+    "status": "unavailable",
+    "description": "Coming later. Choose a ranked game to play today."
+  },
+  {
+    "id": "pong",
+    "title": "Pong",
+    "status": "unavailable",
+    "description": "Coming later. Choose a ranked game to play today."
+  },
+  {
+    "id": "crossword",
+    "title": "Crossword",
+    "status": "unavailable",
+    "description": "Coming later. Choose a ranked game to play today."
+  },
+  {
+    "id": "breathing",
+    "title": "Breathing",
+    "status": "unavailable",
+    "description": "Coming later. Choose a ranked game to play today."
+  }
 ]

@@ -2,6 +2,7 @@ import { lazy } from 'react';
 import manifest from '@collegehubs/contracts/arcade-games.json';
 export type GameDefinition = {id:string;title:string;status:'ranked'|'casual'|'unavailable';description:string;rulesVersion?:string;durationSeconds?:number;path:string};
 const components = {
+  spotbug: lazy(() => import('./games/SpotTheBug')),
   numberguess: lazy(() => import('./games/NumberGuess')),
   mathamplitude: lazy(() => import('./games/MathAmplitude')),
   sorting: lazy(() => import('./games/SortingComplexity')),

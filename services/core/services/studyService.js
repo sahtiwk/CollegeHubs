@@ -110,9 +110,26 @@ async function start(claims, id, input = {}) {
   if (String(room.hostId) !== context.userId) fail(403, 'STUDY_HOST_REQUIRED', 'Only the host can start');
   await transaction(async session => {
     const current = await Room.findOne(scope(context, id)).session(session);
+    if (current.status === 'cancelled') fail(409, 'STUDY_CANCELLED', 'This waiting room was cancelled');
     if (current.status !== 'waiting') return; // Retry can never restart or extend.
     if (current.participantIds.length < 2) fail(409, 'STUDY_NEEDS_PEER', 'At least two participants are required');
     await Room.findOneAndUpdate({ ...scope(context, id), status: 'waiting' }, [{ $set: { status: 'active', startAt: '$$NOW', endAt: { $add: ['$$NOW', current.durationMinutes * 60000] }, version: { $add: ['$version', 1] }, fence: { $add: ['$fence', 1] } } }], { session, new: true });
+  });
+  return snapshot(claims, id);
+}
+async function cancel(claims, id, input = {}) {
+  fields(input, []);
+  const { context, room } = await authorized(claims, id);
+  if (String(room.hostId) !== context.userId) fail(403, 'STUDY_HOST_REQUIRED', 'Only the host can cancel');
+  await transaction(async session => {
+    const current = await Room.findOne(scope(context, id)).session(session);
+    if (current.status === 'cancelled') return;
+    if (current.status !== 'waiting') fail(409, 'STUDY_ALREADY_STARTED', 'Only a waiting room can be cancelled');
+    await Room.findOneAndUpdate({ ...scope(context, id), status: 'waiting' }, [{ $set: {
+      status: 'cancelled', closedAt: '$$NOW', closeReason: 'host_cancelled',
+      version: { $add: ['$version', 1] }, fence: { $add: ['$fence', 1] },
+    } }], { session });
+    // Retain room and private draft records. Cancellation never seals or awards work.
   });
   return snapshot(claims, id);
 }
@@ -191,7 +208,11 @@ async function snapshot(claims, id) {
     const [room] = await Room.aggregate([{ $match: { _id: new mongoose.Types.ObjectId(id), hubId: new mongoose.Types.ObjectId(context.hubId) } }, { $addFields: { serverNow: '$$NOW' } }]).session(session);
     const own = await Solution.findOne({ hubId: context.hubId, roomId: id, userId: context.userId }).session(session).lean();
     const people = await User.find({ _id: { $in: room.participantIds }, hubId: context.hubId }).select('_id username').session(session).lean();
-    return { room: { ...roomDto(room), participants: people.map(person => ({ userId: String(person._id), name: person.username })) }, ownSolution: solutionDto(own), serverNow: date(room.serverNow) };
+    const progress = await Solution.find({ hubId: context.hubId, roomId: id }).select('userId submittedAt sealedAt').session(session).lean();
+    return { room: { ...roomDto(room), participants: people.map(person => {
+      const draft = progress.find(item => String(item.userId) === String(person._id));
+      return { userId: String(person._id), name: person.username, status: room.status === 'cancelled' ? 'cancelled' : room.status === 'waiting' ? 'joined' : draft?.sealedAt ? 'closed' : draft?.submittedAt ? 'submitted' : 'solving' };
+    }) }, ownSolution: solutionDto(own), serverNow: date(room.serverNow) };
   });
 }
 async function submissions(claims, id) {
@@ -238,4 +259,4 @@ async function time(claims) {
 function errorDto(error) {
   return { error: { code: error.status ? error.code : 'STUDY_UNAVAILABLE', message: error.status ? error.message : 'Study rooms unavailable; retry or synchronize saved state', retryable: !error.status || [429, 503].includes(error.status) } };
 }
-module.exports = { problems, create, list, join, start, save, submit, snapshot, submissions, closeDue, reviews, review, time, fields, errorDto };
+module.exports = { problems, create, list, join, start, cancel, save, submit, snapshot, submissions, closeDue, reviews, review, time, fields, errorDto };

@@ -4,10 +4,21 @@ const User = require('../models/User');
 const { authenticate } = require('../middleware/auth');
 const { getUserHubs } = require('../services/hubAccess');
 const { tryAssignMembership } = require('../services/hubProvisioning');
-const { generateToken } = require('../config/auth');
 const { userDto } = require('../utils/userDto');
 const { bodyObject, profileFields, respondError } = require('../utils/validation');
 router.use(authenticate);
+router.post('/email-change', async (req,res) => {
+  try {
+    const body=bodyObject(req.body);
+    if(Object.keys(body).some(key=>key!=='email'))return res.status(400).json({error:'Only the replacement email is accepted'});
+    const email=require('../utils/validation').emailAddress(body.email);
+    res.status(202).json(await require('../services/emailVerification').requestVerification(req.user._id,email));
+  } catch(err) { const status=[400,403,409,429,503].includes(err.status)?err.status:503;res.status(status).json({error:err.status?err.message:'Email change unavailable',code:err.code||'EMAIL_CHANGE_UNAVAILABLE'}); }
+});
+router.delete('/email-change', async (req,res) => {
+  try { await require('../services/emailVerification').cancelEmailChange(req.user._id);res.json({status:'cancelled'}); }
+  catch {res.status(503).json({error:'Cancellation unavailable'});}
+});
 router.get('/hub', require('../services/hubAccess').requireTenant, async (req, res) => {
   try {
     const hub = await require('../models/Hub').findOne({ _id: req.hub.hubId, status: 'active' });
@@ -29,7 +40,7 @@ router.post('/assignment/retry', async (req, res) => {
   try {
     if (Object.keys(bodyObject(req.body)).length) return res.status(400).json({ error: 'Assignment retry accepts an empty object only' });
     const result = await tryAssignMembership(req.user);
-    res.json({ ...result, user: await userDto(result.user, true), token: generateToken(result.user) });
+    res.json({ ...result, user: await userDto(result.user, true), token: await require('../services/coreSessionService').issue(req, res, result.user) });
   } catch (err) { respondError(res, err, 'Assignment retry unavailable'); }
 });
 module.exports = router;

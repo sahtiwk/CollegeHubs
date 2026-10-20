@@ -1,5 +1,9 @@
 # Schedule providers and academic calendar
 
+For Interview/Learn model providers, see the separate [TP9.1 inference capability
+and feasibility evidence](tp9.1-evidence.md). It records the optional Groq adapter,
+local-only experimental adapter, and provider-free practice/guidance defaults.
+
 P6.2 review completed 2026-10-03. No paid plan, API key or external-stat bonus is required.
 
 ## Codeforces
@@ -20,19 +24,11 @@ Set `SCHEDULE_REFRESH_ENABLED=false` and restart Core to stop provider network a
 
 ## Other providers
 
-Clist is optional and **not integrated or enabled**: free account access/quota has not been verified for this installation. No fallback invents another provider's dates. Google Calendar export remains disabled. No GitHub/LeetCode/Codeforces statistics refresh or bonus scoring is added.
+Clist and LeetCode coverage remain disabled: permitted access/free eligibility is not established. Google synchronization remains disabled; academic ICS export is available. TP6.2 adds opt-in Codeforces statistics with ownership review and a separately gated bonus; see the [provider capability matrix](provider-capability-matrix.md) and [external progress operations](external-progress.md). No GitHub statistics adapter is added.
 
-## Academic samples and scope
+## Academic calendar and export
 
-`config/calendar.seed.json` contains clearly named sample DSA and web events for CVR. They are demonstrations, not reviewed official college announcements. No academic dates are auto-installed by normal Core startup. After provisioning Hubs, review the file and run:
-
-```powershell
-npm run seed:calendar -w @collegehubs/core -- --confirm-sample-dates
-```
-
-The explicit disposable fixture seeds them automatically. Each configured Hub slug and every channel slug must resolve within that same active Hub; all writes run in one transaction. Repeated seeds update the same Hub/seedKey rows. A missing channel rolls back the batch. Sample events do not award Aura. New official college data needs an explicitly reviewed provenance/import change; do not simply relabel these examples as official.
-
-`GET /api/hubs/:hubId/calendar?channelId=<id>` requires the caller's current active Hub and an unarchived channel in that Hub. Foreign/missing selectors fail, extra query fields fail, and a channel returns only its attached events. Up to 100 ordered rows are returned with hasMore, status, seeded provenance, seededAt per item, and India timezone. Calendar fetchedAt is null and stale false because these are installed seeds, not a provider fetch. Past seeds retain their explicit dates; they are not automatically shifted into the future. No write endpoint or calendar export is provided.
+TP6.1 adds reviewed-source imports, bounded month pagination and authenticated ICS export. Existing samples remain labeled and keep their original dates. See [the operator guide](academic-calendar.md) for import commands, schema, scope, snapshot semantics and Google integration limits.
 
 ## Fixtures and operation
 

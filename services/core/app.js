@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 // Composition only: importing this module never connects or listens.
 function createApp({ connection = mongoose.connection, auraRules = null } = {}) {
   require('./config/auth');
+  if (process.env.CORE_SESSION_ENABLED && !['true', 'false'].includes(process.env.CORE_SESSION_ENABLED)) throw new Error('CORE_SESSION_ENABLED must be true or false');
+  require('./services/membershipPolicy').legacyDeadline();
   mongoose.set('bufferCommands', false);
   const app = express();
   const modules = require('./config/modules').moduleConfig();
@@ -21,7 +23,7 @@ function createApp({ connection = mongoose.connection, auraRules = null } = {}) 
     }
     next();
   });
-  app.use(cors({ origin: allowedOrigins, methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization'] }));
+  app.use(cors({ origin: allowedOrigins, methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization', 'X-Core-CSRF'], exposedHeaders: ['X-Core-CSRF'], credentials: true }));
   app.use(express.json({ limit: '64kb' }));
 
 
@@ -52,9 +54,20 @@ function createApp({ connection = mongoose.connection, auraRules = null } = {}) 
     }
     next();
   });
+  app.use('/api', (req, res, next) => {
+    const sessions = require('./services/coreSessionService');
+    if (sessions.enabled() && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method) && (/^\/(auth\/(login|register|verification)|google\/(auth|link)|me(?:\/|$))/.test(req.path))) {
+      try { sessions.origin(req); } catch (err) { return res.status(403).json({ code: err.code, error: err.message }); }
+    }
+    next();
+  });
+  app.use('/api', require('./middleware/authRateLimit').authRateLimit());
+  app.use('/api/auth', require('./routes/coreSessionRoutes'));
   // Auth routes
+
   const authRoutes = require('./routes/authRoutes');
   app.use('/api/auth', authRoutes);
+  app.use('/api/auth/verification', require('./routes/verificationRoutes'));
   app.use('/api/auth', require('./routes/moduleAuthRoutes').moduleAuthRoutes(modules));
   app.use('/api/aura', require('./routes/auraEventRoutes').auraEventRoutes({ rules: auraRules }));
 
@@ -63,6 +76,7 @@ function createApp({ connection = mongoose.connection, auraRules = null } = {}) 
   app.use('/api', require('./routes/recommendationRoutes')(modules));
   app.use('/api', require('./routes/calendarRoutes'));
   app.use('/api/me', require('./routes/meRoutes'));
+  app.use('/api/me/external-accounts', require('./routes/externalAccountRoutes'));
   app.use('/api/hubs', require('./routes/hubRoutes'));
   app.use('/api/channels', require('./routes/channelRoutes'));
   app.use('/api/messages', require('./routes/messageRoutes'));

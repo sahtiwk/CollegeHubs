@@ -1,0 +1,10 @@
+{
+  "version": "daily-path-consumer-v1",
+  "releaseStatus": "disabled-until-producer-acceptance",
+  "timezone": "Asia/Kolkata",
+  "timezonePolicyVersion": 1,
+  "types": {
+    "arcade.daily_completed": { "weight": 15, "countCap": 1, "sourceCap": 30 },
+    "learn.path_completed": { "weight": 30, "countCap": 100, "sourceCap": 100 }
+  }
+}

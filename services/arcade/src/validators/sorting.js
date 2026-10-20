@@ -1,8 +1,8 @@
 const { randomInt } = require('node:crypto');
 const { fail } = require('../errors');
 const { ordered } = require('./ordered');
-function challenge() {
-  const values = new Set(); while (values.size < 6) values.add(randomInt(1, 100));
+function challenge(integer = randomInt) {
+  const values = new Set(); while (values.size < 6) values.add(integer(1, 100));
   const array = [...values];
   if (array.every((value, i) => !i || array[i - 1] < value)) [array[0], array[1]] = [array[1], array[0]];
   return { initialArray: array };

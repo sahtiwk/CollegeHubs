@@ -23,3 +23,28 @@
 .learn-topic-suggestions .interview-check{display:flex;gap:.6rem;align-items:flex-start}
 .learn-topic-suggestions input[type=checkbox]{width:auto;accent-color:var(--accent)}
 .learn-topic-suggestions small{color:var(--text-muted)}
+
+/* Campus editorial: a journal opening, quiet paper and a clear writing surface. */
+.interview-page{max-width:1140px}
+.interview-page header{padding:clamp(1rem,3vw,2.5rem) 0;border-bottom:2px solid var(--ink);margin-bottom:1rem}
+.interview-page header h1{max-width:20ch;font-size:clamp(2.4rem,5.5vw,4.5rem);line-height:1.03;letter-spacing:-.045em;margin:.6rem 0 1.2rem;overflow-wrap:anywhere}
+.interview-page header h1 em{font-family:var(--font-editorial);font-weight:400;color:var(--accent)}
+.interview-page header>p:last-child{max-width:62ch;color:var(--ink-muted);line-height:1.6}
+.interview-page>nav{border-bottom:1px solid var(--line);padding-block:.5rem}
+.interview-page>nav a{border-radius:0;border-bottom:3px solid transparent}
+.interview-page>nav a.active{background:transparent;border-color:var(--accent);font-weight:700}
+.interview-start-grid,.interview-history-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.interview-start-grid>.card:first-child{border-top:5px solid var(--accent)}
+.interview-start-grid>.card{padding:clamp(1.25rem,3vw,2rem)}
+.interview-start-grid h2{font-size:clamp(1.6rem,3vw,2.3rem);line-height:1.12}
+.interview-start-grid button,.interview-start-grid a{margin-top:auto}
+.interview-page .card{border-radius:var(--radius-card);overflow-wrap:anywhere}
+.interview-history-score{font-family:var(--font-editorial);font-size:1.75rem;color:var(--accent)}
+.interview-workspace{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:1.25rem;align-items:start}
+.interview-review-rail{background:var(--panel-subtle);position:sticky;top:1rem}
+.interview-page .interview-prompt{font-size:clamp(1.35rem,2.5vw,1.8rem);line-height:1.4;font-weight:600}
+.interview-page textarea{line-height:1.65;padding:1rem;background:var(--canvas)}
+.interview-status{font-size:.8rem;border:1px solid var(--line);padding:.2rem .55rem;border-radius:var(--radius-pill)}
+.interview-page .interview-score{font-size:clamp(2.5rem,6vw,4rem);letter-spacing:-.04em}
+.interview-page .interview-text{white-space:pre-wrap;overflow-wrap:anywhere;max-height:24rem;overflow:auto;padding:1rem;background:var(--canvas)}
+@media(max-width:760px){.interview-start-grid,.interview-history-grid,.interview-workspace{grid-template-columns:minmax(0,1fr)}.interview-review-rail{position:static}.interview-page header{padding-top:1rem}.interview-page .section-heading{flex-wrap:wrap}}

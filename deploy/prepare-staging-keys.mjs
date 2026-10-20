@@ -21,9 +21,9 @@ if (existsSync(destination)) {
   const kid = 'staging-' + randomBytes(8).toString('hex');
   const secret = () => randomBytes(32).toString('base64url');
   const scopes = {
-    arcade: ['arcade.game_completed'],
+    arcade: ['arcade.game_completed', 'arcade.daily_completed'],
     interview: ['interview.completed'],
-    learn: ['learn.quiz_completed', 'learn.node_mastered'],
+    learn: ['learn.quiz_completed', 'learn.node_mastered', 'learn.path_completed'],
   };
   const bundle = {
     createdAt: new Date().toISOString(),
@@ -39,7 +39,10 @@ if (existsSync(destination)) {
   for (const [service, eventTypes] of Object.entries(scopes)) {
     const keyId = service + '-' + randomBytes(8).toString('hex');
     const key = keyId + '.' + secret();
+    const readKey = secret();
+    bundle.core[service.toUpperCase() + '_READ_KEY'] = readKey;
     bundle.modules[service] = {
+      MODULE_READ_KEY: readKey,
       CORE_PUBLIC_KEY: publicKey,
       CORE_KEY_ID: kid,
       CORE_TOKEN_ISSUER: 'collegehubs-core',

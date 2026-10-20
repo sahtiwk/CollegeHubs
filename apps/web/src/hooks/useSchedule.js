@@ -6,9 +6,9 @@ export function useSchedule(path) {
   const [state, setState] = useState({ data: null, error: '', busy: true, key: null });
   const key = user._id + ':' + user.hubId + ':' + path;
   useEffect(() => {
-    const controller = new AbortController(); setState({ data: null, error: '', busy: !!path, key });
+    const controller = new AbortController(); setState(previous => ({ data: previous.key === key ? previous.data : null, error: '', busy: !!path, key }));
     if (path) api.get(path, { signal: controller.signal }).then(({ data }) => { if (!controller.signal.aborted) setState({ data, error: '', busy: false, key }); })
-      .catch(() => { if (!controller.signal.aborted) setState({ data: null, error: 'Schedules could not be loaded. Please retry.', busy: false, key }); });
+      .catch(() => { if (!controller.signal.aborted) setState(previous => ({ data: previous.key === key ? previous.data : null, error: 'Schedules could not be refreshed. Any dates below are the last saved view; confirm them with the source.', busy: false, key })); });
     return () => controller.abort();
   }, [key, attempt]);
   return { ...(state.key === key ? state : { data: null, error: '', busy: !!path }), retry: () => setAttempt(n => n + 1) };

@@ -11,14 +11,15 @@ function routes(connection, models, store, practice, ai, importRecommendation) {
   router.post('/resumes/upload', authenticated, require('./middleware/upload.middleware')(), wrap(resumes.upload));
   router.get('/resumes/:id', authenticated, wrap(resumes.get));
   router.delete('/resumes/:id', authenticated, wrap(resumes.delete));
-  router.get('/capabilities', authenticated, (_req,res) => res.json({ aiAvailable: ai.enabled, provider: process.env.NODE_ENV === 'test' && process.env.INTERVIEW_PROVIDER_FIXTURE === 'true' ? 'Synthetic test provider' : 'Groq', model: ai.model }));
-  router.get('/interviews', authenticated, wrap(async (req,res) => res.json(await practice.listInterviews(req.identity))));
+  router.get('/capabilities', authenticated, (_req,res) => res.json({ aiAvailable: ai.enabled, provider: process.env.NODE_ENV === 'test' && process.env.INTERVIEW_PROVIDER_FIXTURE === 'true' ? 'Synthetic test provider' : ai.provider||'groq', model: ai.model, curatedPractice:true, streaming:false, voice:false, resumeRetentionDays:30, capabilities:ai.capabilities }));
+  router.get('/interviews', authenticated, wrap(async (req,res) => res.json(await practice.listInterviews(req.identity,req.query))));
   router.post('/interviews', authenticated, wrap(async (req,res) => res.status(201).json({ interview: await practice.create(req.identity,req.body) })));
   router.get('/interviews/:id', authenticated, wrap(async (req,res) => res.json({ interview: await practice.readInterview(req.identity,req.params.id) })));
   router.delete('/interviews/:id', authenticated, wrap(async (req,res) => res.json(await practice.removeInterview(req.identity,req.params.id))));
   router.post('/interviews/:id/learn-topics', authenticated, wrap(async (req,res) => res.json(await importRecommendation(req.identity,req.params.id,req.body))));
   router.post('/interviews/:id/generate', authenticated, wrap(async (req,res) => { const interview = await practice.generate(req.identity,req.params.id,req.body); res.status(interview.status === 'generating' ? 202 : 200).json({interview}); }));
-  router.get('/sessions', authenticated, wrap(async (req,res) => res.json(await practice.history(req.identity))));
+  router.post('/practice',authenticated,wrap(async(req,res)=>res.status(201).json({session:await practice.curated(req.identity,req.body)})));
+  router.get('/sessions', authenticated, wrap(async (req,res) => res.json(await practice.history(req.identity,req.query))));
   router.post('/sessions', authenticated, wrap(async (req,res) => res.status(201).json({session:await practice.start(req.identity,req.body)})));
   router.get('/sessions/:id', authenticated, wrap(async (req,res) => res.json({session:await practice.readSession(req.identity,req.params.id)})));
   router.put('/sessions/:id/answers/:questionId', authenticated, wrap(async (req,res) => res.json({session:await practice.saveAnswer(req.identity,req.params.id,req.params.questionId,req.body)})));

@@ -1,0 +1,163 @@
+{
+  "domains": [
+    {
+      "id": "dsa",
+      "label": "Data structures & algorithms",
+      "description": "Collections, traversal and algorithm cost."
+    },
+    {
+      "id": "web",
+      "label": "Web development",
+      "description": "Structure, style and browser requests."
+    },
+    {
+      "id": "ml",
+      "label": "Machine learning",
+      "description": "Data, training and honest evaluation."
+    },
+    {
+      "id": "backend",
+      "label": "Backend development",
+      "description": "Requests, validation and durable data."
+    },
+    {
+      "id": "devops",
+      "label": "DevOps",
+      "description": "Version control, automated checks and containers."
+    }
+  ],
+  "origins": [
+    "https://developer.mozilla.org",
+    "https://scikit-learn.org",
+    "https://www.postgresql.org",
+    "https://git-scm.com",
+    "https://docs.github.com",
+    "https://docs.docker.com"
+  ],
+  "equivalence": [
+    {
+      "domain": "dsa",
+      "slug": "arrays",
+      "canonicalId": "f44e1395-c7c9-4dbb-8290-6563fb514344",
+      "versions": [
+        "demo-v1",
+        "foundations-v1"
+      ]
+    },
+    {
+      "domain": "dsa",
+      "slug": "iteration",
+      "canonicalId": "7ae403c2-b540-41c1-8e91-e6433cb54e75",
+      "versions": [
+        "demo-v1",
+        "foundations-v1"
+      ]
+    },
+    {
+      "domain": "web",
+      "slug": "html",
+      "canonicalId": "fb61b17a-af8e-4f51-8c7a-3699c069171d",
+      "versions": [
+        "demo-v1",
+        "foundations-v1"
+      ]
+    },
+    {
+      "domain": "web",
+      "slug": "css",
+      "canonicalId": "ad3ea9a9-6e6e-41a0-8c20-cecd23a27e46",
+      "versions": [
+        "demo-v1",
+        "foundations-v1"
+      ]
+    },
+    {
+      "domain": "dsa",
+      "slug": "complexity",
+      "canonicalId": "6ac9f02f-49b4-447c-8ba9-b0af1c7750f4",
+      "versions": [
+        "foundations-v1"
+      ]
+    },
+    {
+      "domain": "web",
+      "slug": "http",
+      "canonicalId": "77ef7a2c-c4b1-463c-8c12-a23cadc4d5fb",
+      "versions": [
+        "foundations-v1"
+      ]
+    },
+    {
+      "domain": "ml",
+      "slug": "data",
+      "canonicalId": "80d83551-9867-48cd-8c13-2abb9858f35e",
+      "versions": [
+        "foundations-v1"
+      ]
+    },
+    {
+      "domain": "ml",
+      "slug": "training",
+      "canonicalId": "2de2a56b-5dec-47d3-8715-c87483ddf00e",
+      "versions": [
+        "foundations-v1"
+      ]
+    },
+    {
+      "domain": "ml",
+      "slug": "evaluation",
+      "canonicalId": "8bb4445c-dbe1-4c71-8ef0-57bcc1df2fa8",
+      "versions": [
+        "foundations-v1"
+      ]
+    },
+    {
+      "domain": "backend",
+      "slug": "requests",
+      "canonicalId": "6d3cb51e-9e46-4786-8ac1-a4931caa0493",
+      "versions": [
+        "foundations-v1"
+      ]
+    },
+    {
+      "domain": "backend",
+      "slug": "validation",
+      "canonicalId": "0c0273a0-ec20-41d1-84d4-1af48ec15067",
+      "versions": [
+        "foundations-v1"
+      ]
+    },
+    {
+      "domain": "backend",
+      "slug": "persistence",
+      "canonicalId": "92e48f32-82ed-4abc-89da-2d28d637ea1d",
+      "versions": [
+        "foundations-v1"
+      ]
+    },
+    {
+      "domain": "devops",
+      "slug": "git",
+      "canonicalId": "5e05462e-fe3c-43a3-87ca-6ac11ba7ed85",
+      "versions": [
+        "foundations-v1"
+      ]
+    },
+    {
+      "domain": "devops",
+      "slug": "ci",
+      "canonicalId": "eea14d6e-c2f4-4835-82c5-1bc6c33ebd43",
+      "versions": [
+        "foundations-v1"
+      ]
+    },
+    {
+      "domain": "devops",
+      "slug": "containers",
+      "canonicalId": "e9f148b9-db22-4c0e-82df-91a9af4e21a0",
+      "versions": [
+        "foundations-v1"
+      ]
+    }
+  ]
+}

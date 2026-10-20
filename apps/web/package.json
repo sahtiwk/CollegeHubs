@@ -10,10 +10,12 @@
   "dependencies": {
     "@react-oauth/google": "^0.12.2",
     "axios": "^1.13.5",
+    "highlight.js": "11.11.1",
     "lucide-react": "^0.460.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.30.3",
+    "shaders": "4.0.4",
     "socket.io-client": "^4.8.4"
   },
   "devDependencies": {

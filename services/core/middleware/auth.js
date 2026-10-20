@@ -16,7 +16,8 @@ const authenticate = async (req, res, next) => {
       return res.status(401).json({ error: 'User not found' });
     }
 
-    const hubId = user.membershipStatus === 'active' && user.hubId ? String(user.hubId) : null;
+    await require('../services/coreSessionService').assertAccess(decoded, user);
+    const hubId = require('../services/membershipPolicy').hasMembershipAuthority(user) ? String(user.hubId) : null;
     if (decoded.membershipVersion !== (user.membershipVersion || 0) || decoded.hubId !== hubId) {
       return res.status(401).json({ error: 'Membership changed. Please sign in again.' });
     }
@@ -24,6 +25,7 @@ const authenticate = async (req, res, next) => {
     req.user = user;
     next();
   } catch (err) {
+    if (err.status === 401) return res.status(401).json({ error: err.message, code: err.code });
     if (['JsonWebTokenError', 'TokenExpiredError', 'NotBeforeError'].includes(err.name)) {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }

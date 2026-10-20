@@ -3,13 +3,22 @@ const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema(
   {
+    sessionVersion: { type: Number, default: 0, min: 0, validate: Number.isInteger },
     // Identity
     googleSubject: { type: String, maxlength: 255, select: false },
+    googleLinkedEmail: { type: String, select: false },
+    googleLinkNonceHash: { type: String, select: false },
+    googleLinkExpiresAt: { type: Date, select: false },
+    pendingEmail: { type: String, default: null, select: false },
     emailVerifiedAt: { type: Date, default: null, select: false },
     hubId: { type: mongoose.Schema.Types.ObjectId, ref: 'Hub', default: null },
-    membershipStatus: { type: String, enum: ['unassigned', 'active', 'disabled'], default: 'unassigned' },
+    membershipStatus: { type: String, enum: ['unassigned', 'active', 'verification-pending', 'disabled'], default: 'unassigned' },
     membershipVerified: { type: Boolean, default: false },
-    verificationMethod: { type: String, enum: ['none', 'domain-claim', 'google'], default: 'none' },
+    verificationMethod: { type: String, enum: ['none', 'domain-claim', 'google', 'email'], default: 'none' },
+    emailVerificationMethod: { type: String, enum: ['none', 'google', 'email'], default: 'none', select: false },
+    membershipNoticeAt: { type: Date, default: null },
+    membershipCutoverAt: { type: Date, default: null },
+    verificationRate: { type: new mongoose.Schema({ windowStart: Date, count: Number, lastRequestedAt: Date }, { _id:false }), select:false },
     membershipVersion: { type: Number, default: 0, min: 0, validate: Number.isInteger },
     username: { type: String, required: true, unique: true, trim: true, lowercase: true },
     email: { type: String, required: true, unique: true, trim: true, lowercase: true },

@@ -1,5 +1,7 @@
 # P11.1 deployment runbook
 
+**Current transition status (20 October 2026):** TP11.1 local release preparation is underway; the richer transition checkout is not deployed. See [current evidence and remaining gates](tp11.1-evidence.md). Account observations and deployment IDs below are historical. Use retained migrations, not fresh-demo bootstrap, for an existing database.
+
 Status: P11.1 complete for the deployed password-login MVP slice (2026-10-10). P11.2 release demos remain next. See [P11.1 evidence](p11.1-evidence.md) for the exact hosted/local boundaries. P10 features remain separate development work.
 
 ## Account observations — 2026-10-10

@@ -1,3 +1,5 @@
+const {liveResume}=require('./resumeRetention');
+const {historyPage}=require('./historyPage');
 const { createHash, randomUUID } = require('node:crypto');
 const { fail, exact } = require('../errors');
 const { TYPES, RUBRIC, validateQuestions, evaluateReport } = require('./evaluationPolicy');
@@ -16,8 +18,8 @@ function createPracticeService(connection, models, ai, events) {
     const row = await Model.findOne({ ...scope(identity), _id: id }).session(session);
     if (!row) throw fail(404, 'NOT_FOUND'); return row;
   }
-  const interviewDto = row => ({ id: String(row._id), learnTopics: (row.learnTopics || []).map(t=>({nodeId:t.nodeId,label:t.label,version:t.version,reason:t.reason,asOf:t.asOf})), jobTitle: row.jobTitle, jobDescription: row.jobDescription, company: row.company || '', experienceLevel: row.experienceLevel || 'entry', questionTypes: row.questionTypes, resumeId: row.resumeId ? String(row.resumeId) : null, resumeUnavailable: row.resumeUnavailable, questionCount: 5, questions: publicQuestions(row.questions), status: row.status, lastError: row.lastError, retryAt: row.retryAt, leaseUntil: row.generationLeaseUntil, createdAt: row.createdAt });
-  const sessionDto = (row, at) => ({ id: String(row._id), interviewId: String(row.interviewId), jobTitle: row.jobTitle, questions: publicQuestions(row.questions), answers: row.answers.map(a => ({ questionId: a.questionId, answer: a.answer, skipped: a.skipped, revision: a.revision, savedAt: a.savedAt })), status: row.status, report: row.report, createdAt: row.createdAt, completedAt: row.completedAt || null, serverNow: at, elapsedSeconds: row.serverDurationSeconds ?? Math.max(0, Math.floor((+at - +row.createdAt) / 1000)), leaseUntil: row.evaluationLeaseUntil, retryAt: row.retryAt, lastError: row.lastError, deliveryStatus: row.deliveryStatus, receipt: row.receipt });
+  const interviewDto = row => ({ providerId:row.providerId,providerModel:row.providerModel,practiceMode:row.practiceMode,id: String(row._id), learnTopics: (row.learnTopics || []).map(t=>({...(t.domain?{domain:t.domain}:{}),nodeId:t.nodeId,label:t.label,version:t.version,reason:t.reason,asOf:t.asOf})), jobTitle: row.jobTitle, jobDescription: row.jobDescription, company: row.company || '', experienceLevel: row.experienceLevel || 'entry', questionTypes: row.questionTypes, resumeId: row.resumeId ? String(row.resumeId) : null, resumeUnavailable: row.resumeUnavailable, questionCount: 5, questions: publicQuestions(row.questions), status: row.status, lastError: row.lastError, retryAt: row.retryAt, leaseUntil: row.generationLeaseUntil, createdAt: row.createdAt });
+  const sessionDto = (row, at) => ({ providerId:row.providerId,providerModel:row.providerModel,practiceMode:row.practiceMode,id: String(row._id), interviewId: String(row.interviewId), jobTitle: row.jobTitle, questions: publicQuestions(row.questions), answers: row.answers.map(a => ({ questionId: a.questionId, answer: a.answer, skipped: a.skipped, revision: a.revision, savedAt: a.savedAt })), status: row.status, report: row.report, createdAt: row.createdAt, completedAt: row.completedAt || null, serverNow: at, elapsedSeconds: row.serverDurationSeconds ?? Math.max(0, Math.floor((+at - +row.createdAt) / 1000)), leaseUntil: row.evaluationLeaseUntil, retryAt: row.retryAt, lastError: row.lastError, deliveryStatus: row.deliveryStatus, receipt: row.receipt });
   async function recover(Model, identity, id, kind, at) {
     const generating = kind === 'generation', prefix = generating ? 'generation' : 'evaluation';
     await Model.updateOne({ ...scope(identity), _id: id, status: generating ? 'generating' : 'evaluating', [prefix + 'LeaseUntil']: { $lte: at } }, { $set: { status: prefix + '_failed', [prefix + 'Lease']: null, lastError: prefix.toUpperCase() + '_INTERRUPTED', retryAt: at } });
@@ -50,8 +52,8 @@ function createPracticeService(connection, models, ai, events) {
     const replay = async () => { const old = input.clientRequestId && await Interview.findOne({ ...scope(identity), clientRequestId: input.clientRequestId }).select('+creationHash'); if (old && old.creationHash !== creationHash) throw fail(409, 'DRAFT_CREATION_CONFLICT'); return old ? interviewDto(old) : null; };
     const old = await replay(); if (old) return old;
     try { return await transaction(async session => {
-      const resume = await Resume.findOneAndUpdate({ ...scope(identity), _id: input.resumeId }, { $inc: { referenceVersion: 1 } }, { session }); if (!resume) throw fail(404, 'NOT_FOUND');
-      if (await Interview.countDocuments(scope(identity)).session(session) >= 20) throw fail(409, 'DRAFT_LIMIT');
+      const resume = await Resume.findOneAndUpdate({ ...scope(identity), _id: input.resumeId, ...liveResume(await now()) }, { $inc: { referenceVersion: 1 } }, { session }); if (!resume) throw fail(404, 'NOT_FOUND');
+      if (await Interview.countDocuments({...scope(identity),status:{$ne:'completed'}}).session(session) >= 20) throw fail(409, 'DRAFT_LIMIT');
       const [row] = await Interview.create([{ ...scope(identity), ...values, ...(input.clientRequestId ? { clientRequestId: input.clientRequestId } : {}), creationHash }], { session }); return interviewDto(row);
     }); } catch (error) { if (error.code === 11000) { const existing = await replay(); if (existing) return existing; } throw error; }
   }
@@ -71,7 +73,7 @@ function createPracticeService(connection, models, ai, events) {
       if (+fresh.topicLeaseUntil > +at) throw fail(409, 'TOPICS_LOCKED', 'Topic import is in progress. Retry shortly.');
       if (fresh.questions.length || fresh.status === 'generating' && +fresh.generationLeaseUntil > +at) return fresh;
       if (+fresh.retryAt > +at) { const error = fail(429, 'AI_COOLDOWN'); error.retryAfter = Math.ceil((+fresh.retryAt - +at)/1000); throw error; }
-      const resume = fresh.resumeId && await Resume.findOneAndUpdate({ ...scope(identity), _id: fresh.resumeId }, { $inc: { referenceVersion: 1 } }, { session }).select('+extractedText');
+      const resume = fresh.resumeId && await Resume.findOneAndUpdate({ ...scope(identity), _id: fresh.resumeId, ...liveResume(await now()) }, { $inc: { referenceVersion: 1 } }, { session }).select('+extractedText');
       if (!resume || fresh.resumeUnavailable) throw fail(409, 'RESUME_UNAVAILABLE');
       await acquireBudget(keys, 'generation', token, at, session); resumeText = resume.extractedText;
       fresh.status = 'generating'; fresh.generationLease = token; fresh.generationLeaseUntil = new Date(+at + 30000); fresh.generationAttempts++; fresh.lastError = null; await fresh.save({ session }); return fresh;
@@ -85,8 +87,8 @@ function createPracticeService(connection, models, ai, events) {
       await transaction(async session => {
         const finishedAt = await now(), fresh = await owned(Interview, identity, id, session);
         if (fresh.status !== 'generating' || fresh.generationLease !== token || +fresh.generationLeaseUntil <= +finishedAt) throw fail(409, 'GENERATION_INTERRUPTED');
-        if (!fresh.resumeId || !await Resume.findOneAndUpdate({ ...scope(identity), _id: fresh.resumeId }, { $inc: { referenceVersion: 1 } }, { session })) throw fail(409, 'RESUME_UNAVAILABLE');
-        fresh.questions = questions; fresh.status = 'ready'; fresh.generationLease = null; fresh.lastError = null; await fresh.save({ session });
+        if (!fresh.resumeId || !await Resume.findOneAndUpdate({ ...scope(identity), _id: fresh.resumeId, ...liveResume(await now()) }, { $inc: { referenceVersion: 1 } }, { session })) throw fail(409, 'RESUME_UNAVAILABLE');
+        fresh.providerId=ai.provider||'groq';fresh.providerModel=ai.model;fresh.practiceMode=ai.rewardable===false;fresh.questions = questions; fresh.status = 'ready'; fresh.generationLease = null; fresh.lastError = null; await fresh.save({ session });
       });
       return await readInterview(identity,id);
     } catch (error) {
@@ -101,7 +103,7 @@ function createPracticeService(connection, models, ai, events) {
       if (interview.questions.length !== 5 || !['ready','in_progress','completed'].includes(interview.status)) throw fail(409, 'QUESTIONS_NOT_READY');
       // Shared parent write serializes start against draft deletion and concurrent starts.
       interview.status = 'in_progress'; await interview.save({ session });
-      const [row] = await Session.create([{ ...scope(identity), interviewId: interview._id, jobTitle: interview.jobTitle, questions: interview.questions.map(q => q.toObject()), answers: interview.questions.map(q => ({ questionId: q.id, answer: '', skipped: false, revision: 0 })), createdAt: at }], { session });
+      const [row] = await Session.create([{ ...scope(identity), interviewId: interview._id, providerId:interview.providerId,providerModel:interview.providerModel,practiceMode:interview.practiceMode,jobTitle: interview.jobTitle, questions: interview.questions.map(q => q.toObject()), answers: interview.questions.map(q => ({ questionId: q.id, answer: '', skipped: false, revision: 0 })), createdAt: at }], { session });
       return sessionDto(row, at);
     }); } catch (error) { if (error.code === 11000) { const row = await Session.findOne({ ...scope(identity), interviewId: input.interviewId }); if (row) return sessionDto(row, await now()); } throw error; }
   }
@@ -126,6 +128,15 @@ function createPracticeService(connection, models, ai, events) {
     let row = await owned(Session, identity, id); const at = await now();
     if (row.status === 'completed') { events.trigger(row.id); return sessionDto(row, at); }
     if (row.status === 'evaluating' && +row.evaluationLeaseUntil > +at) return sessionDto(row, at);
+    if(row.practiceMode)return transaction(async session=>{
+      const fresh=await owned(Session,identity,id,session);credential(identity,at);
+      if(fresh.status==='completed')return sessionDto(fresh,at);
+      if(fresh.status==='abandoned'||fresh.answers.some(a=>a.revision<1))throw fail(409,'ANSWERS_NOT_SAVED');
+      fresh.report={summary:'Ungraded self-review. Check whether each answer states a clear example, explains your reasoning and acknowledges a tradeoff. No score or Aura is awarded.',answers:fresh.questions.map(q=>({questionId:q.id,feedback:'Compare your answer with the question. Name one strength and one improvement; revise your explanation in your next practice session.'})),answeredCount:fresh.answers.filter(a=>!a.skipped&&a.answer.trim()).length,rubricVersion:'self-review-v1',providerId:fresh.providerId,providerModel:fresh.providerModel,ungraded:true,evaluatedAt:at};
+      fresh.status='completed';fresh.completedAt=at;fresh.deliveryStatus='none';await fresh.save({session});await Interview.updateOne({...scope(identity),_id:fresh.interviewId},{$set:{status:'completed'}},{session});return sessionDto(fresh,at);
+    });
+    if((row.providerId||'groq')!==(ai.provider||'groq')||row.providerModel!==ai.model)throw fail(409,'AI_PROVIDER_CHANGED');
+    if(ai.rewardable===false)throw fail(503,'AI_GRADING_UNSUPPORTED');
     ai.requireReady(); credential(identity, at, 30000);
     const token = randomUUID(), keys = await prepareBudget(identity, 'evaluation', at);
     row = await transaction(async session => {
@@ -146,7 +157,7 @@ function createPracticeService(connection, models, ai, events) {
         if (fresh.status !== 'evaluating' || fresh.evaluationLease !== token || +fresh.evaluationLeaseUntil <= +completedAt) throw fail(409, 'EVALUATION_INTERRUPTED');
         // Duration is frozen at evaluation request; provider latency cannot qualify an early completion.
         const duration = Math.max(0, Math.min(86400, Math.floor((+at - +fresh.createdAt)/1000)));
-        fresh.report = { ...report, providerModel: ai.model, evaluatedAt: completedAt }; fresh.status = 'completed'; fresh.completedAt = completedAt; fresh.serverDurationSeconds = duration; fresh.evaluationLease = null; fresh.lastError = null;
+        fresh.report = { ...report, providerId:ai.provider||'groq',providerModel: ai.model, evaluatedAt: completedAt }; fresh.status = 'completed'; fresh.completedAt = completedAt; fresh.serverDurationSeconds = duration; fresh.evaluationLease = null; fresh.lastError = null;
         fresh.event = { schemaVersion: 1, eventId: `interview:${fresh._id}:completed:v1`, userId: identity.user_id, hubId: identity.hub_id, source: 'interview', type: 'interview.completed', value: 1, occurredAt: completedAt.toISOString(), metadata: { sourceId: String(fresh._id), accessJti: identity.principal.jti, domainVersion: 'v1', rawScore: report.score, answeredCount: report.answeredCount, questionCount: 5, serverDurationSeconds: duration, rubricVersion: RUBRIC } };
         fresh.deliveryStatus = 'pending'; await fresh.save({ session });
         await Interview.updateOne({ ...scope(identity), _id: fresh.interviewId }, { $set: { status: 'completed' } }, { session });
@@ -157,8 +168,16 @@ function createPracticeService(connection, models, ai, events) {
     } finally { await releaseBudget(token, failure); }
   }
   async function removeInterview(identity, id) { await transaction(async session => { const row = await owned(Interview,identity,id,session); if (row.questions.length || row.status === 'generating' || await Session.exists({ ...scope(identity), interviewId: row._id }).session(session)) throw fail(409,'INTERVIEW_RETAINED'); await Interview.deleteOne({ ...scope(identity), _id: row._id },{session}); }); return { deleted: true }; }
-  const listInterviews = async identity => ({ items: (await Interview.find(scope(identity)).sort({ createdAt: -1, _id: -1 }).limit(20)).map(interviewDto) });
-  const history = async identity => { const at = await now(); return { items: (await Session.find(scope(identity)).sort({ createdAt: -1, _id: -1 }).limit(20)).map(row => ({ id: row.id, interviewId: String(row.interviewId), jobTitle: row.jobTitle, status: row.status, createdAt: row.createdAt, score: row.report?.score ?? null, deliveryStatus: row.deliveryStatus, receipt: row.receipt, serverNow: at })) }; };
-  return { create, readInterview, generate, start, readSession, saveAnswer, complete, removeInterview, listInterviews, history };
+  const listInterviews = (identity,query={}) => historyPage(Interview,scope(identity),query,interviewDto);
+  const history = async (identity,query={}) => { const at=await now(); return historyPage(Session,scope(identity),query,row=>({id:row.id,interviewId:String(row.interviewId),jobTitle:row.jobTitle,status:row.status,createdAt:row.createdAt,score:row.report?.score??null,ungraded:row.report?.ungraded||row.practiceMode,deliveryStatus:row.deliveryStatus,receipt:row.receipt,serverNow:at})); };
+  async function curated(identity,input){
+    if(!exact(input,[]))throw fail(400,'INVALID_BODY');
+    const interview=await transaction(async session=>{
+      credential(identity,await now());if(await Interview.countDocuments({...scope(identity),status:{$ne:'completed'}}).session(session)>=20)throw fail(409,'DRAFT_LIMIT');
+      const questions=validateQuestions({questions:['Explain a small project and one technical decision you made.','How would you investigate a bug you cannot reproduce yet?','Describe how you would test an input validation function.','Explain a tradeoff between a simple solution and a faster one.','How would you make an unfamiliar codebase easier to maintain?'].map(questionText=>({questionText,category:'technical',difficulty:'easy',expectedKeywords:['example','reasoning']}))},['technical']);
+      const [row]=await Interview.create([{...scope(identity),jobTitle:'Curated foundations practice',jobDescription:'Original offline practice. No resume or inference provider is used.',questionTypes:['technical'],experienceLevel:'entry',status:'ready',questions,providerId:'curated',providerModel:'curated-v1',practiceMode:true}],{session});return row;
+    });return start(identity,{interviewId:String(interview._id)});
+  }
+  return { curated, create, readInterview, generate, start, readSession, saveAnswer, complete, removeInterview, listInterviews, history };
 }
 module.exports = { createPracticeService };

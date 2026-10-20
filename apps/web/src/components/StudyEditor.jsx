@@ -1,11 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useAuth } from '../auth/AuthProvider';
+import { readDraft, writeDraft } from '../auth/drafts';
 import { useStudyRemaining } from './StudyTimer';
 export default function StudyEditor({ room, saved, clock, action, sync }) {
-  const [source, setSource] = useState(saved.source), [language, setLanguage] = useState(saved.revision ? saved.language : room.problem.allowedLanguages[0]);
-  const [baseline, setBaseline] = useState(saved);
-  const [base, setBase] = useState(saved.revision), [pending, setPending] = useState(null), [busy, setBusy] = useState(false), [error, setError] = useState(''), [conflict, setConflict] = useState(false);
+  const { user } = useAuth();
+  const key = [user._id, user.hubId, 'study', room._id].join(':');
+  const [recovered] = useState(() => readDraft(key));
+  const [source, setSource] = useState(recovered?.source ?? saved.source), [language, setLanguage] = useState(recovered?.language || (saved.revision ? saved.language : room.problem.allowedLanguages[0]));
+  const [baseline, setBaseline] = useState(recovered?.baseline || saved);
+  const [base, setBase] = useState(recovered?.base ?? saved.revision), [pending, setPending] = useState(recovered?.pending || null), [busy, setBusy] = useState(false), [error, setError] = useState(''), [conflict, setConflict] = useState(false);
   const remaining = useStudyRemaining(room.endAt, clock);
   const dirty = source !== baseline.source || (source !== '' && language !== baseline.language);
+  useEffect(() => { writeDraft(key, dirty || pending ? { source, language, baseline, base, pending } : null); }, [key, source, language, baseline, base, pending, dirty]);
   const frozen = room.status !== 'active' || !!saved.submittedAt || remaining === 0;
   const latest = useRef({ source, language, dirty }); latest.current = { source, language, dirty };
   useEffect(() => {
@@ -18,6 +24,7 @@ export default function StudyEditor({ room, saved, clock, action, sync }) {
   async function save() {
     const body = pending || { expectedRevision: base, revision: base + 1, source, language };
     if (new TextEncoder().encode(body.source).length > 32768) { setError('Source exceeds 32 KiB. Shorten it before saving.'); return; }
+    writeDraft(key, { source, language, baseline, base, pending: body });
     setPending(body); setBusy(true); setError('');
     try {
       const data = await action('draft', body), acknowledged = data.ownSolution;
@@ -39,8 +46,9 @@ export default function StudyEditor({ room, saved, clock, action, sync }) {
     finally { setBusy(false); }
   }
   function useSaved() { setSource(saved.source); setLanguage(saved.revision ? saved.language : room.problem.allowedLanguages[0]); setBase(saved.revision); setBaseline(saved); setConflict(false); setPending(null); setError(''); }
-  return <section className="card stack study-editor" aria-label="Your individual solution"><div className="section-heading"><h2>Your workspace</h2><span className="badge">{room.status === 'review' ? 'Sealed draft' : 'Private until close'}</span></div>
-    <p className="muted">Save your work explicitly. Only acknowledged drafts survive a reload or disconnect. Submitting freezes your saved draft.</p>
+  return <section className="card stack study-editor" aria-label="Your individual solution"><div className="section-heading"><div><p className="eyebrow">YOUR IDEAS / YOUR PACE</p><h2>Make the problem your own.</h2></div><span className="badge">{room.status === 'review' ? 'Sealed draft' : 'Private until close'}</span></div>
+    <p className="muted">Save your work explicitly. Unsaved text and retry revisions can be recovered in this tab for 24 hours after sign-in. Submitting freezes your saved draft.</p>
+    <div className="study-save-summary"><div><span className="eyebrow">IN THIS TAB</span><strong>{pending ? 'Awaiting confirmation' : dirty ? (frozen ? 'Local copy only' : 'Changes to save') : 'Up to date'}</strong><small>{pending ? 'Retry keeps the exact same text.' : dirty ? (frozen ? 'These edits cannot replace the final saved draft. You can still copy them.' : 'Your edits are not yet confirmed by the server.') : 'Your text matches the saved draft.'}</small></div><div><span className="eyebrow">SAVED WITH YOUR ROOM</span><strong>{saved.revision ? 'Revision ' + saved.revision : 'No saved solution yet'}</strong><small>{saved.submittedAt ? 'Submitted. Further changes are locked.' : saved.sealedAt ? 'Final draft. Available for review.' : saved.revision ? 'Confirmed by the server.' : 'Use Save draft when you are ready.'}</small></div></div>
     <label>Language<select value={language} onChange={event => setLanguage(event.target.value)} disabled={frozen || busy || !!pending || conflict}>{room.problem.allowedLanguages.map(item => <option key={item}>{item}</option>)}</select></label>
     <label>Your solution<textarea aria-label="Your solution" rows={14} spellCheck={false} value={source} readOnly={frozen || busy || !!pending || conflict} onChange={event => setSource(event.target.value)} /></label>
     <p role="status">{busy ? 'Waiting for confirmation...' : pending ? 'Save unconfirmed. Your text is still in this tab.' : dirty ? 'Unsaved changes. Your latest saved revision is ' + saved.revision + '.' : saved.submittedAt ? 'Submitted and frozen.' : saved.revision ? 'Saved revision ' + saved.revision + '.' : 'No saved draft yet.'}</p>

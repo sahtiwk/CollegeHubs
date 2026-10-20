@@ -2,7 +2,7 @@ const study = require('../services/studyService');
 const roomName = (hubId, roomId) => `hub:${hubId}:study:${roomId}`;
 function studyHandlers(socket, publish) {
   let busy = false;
-  const operations = { 'study:join': ['join', []], 'study:start': ['start', []], 'study:draft:save': ['save', ['expectedRevision', 'revision', 'source', 'language']], 'study:submit': ['submit', ['draftRevision']], 'study:sync': ['snapshot', []] };
+  const operations = { 'study:join': ['join', []], 'study:start': ['start', []], 'study:cancel': ['cancel', []], 'study:draft:save': ['save', ['expectedRevision', 'revision', 'source', 'language']], 'study:submit': ['submit', ['draftRevision']], 'study:sync': ['snapshot', []] };
   for (const [event, [method, allowed]] of Object.entries(operations)) socket.on(event, async (input, ack) => {
     if (typeof ack !== 'function') return;
     if (busy) return ack({ error: { code: 'BUSY', message: 'Wait for the pending study operation', retryable: true } });

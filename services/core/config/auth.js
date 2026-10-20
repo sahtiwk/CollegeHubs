@@ -10,13 +10,14 @@ if (!Number.isInteger(ttl) || ttl < 1 || ttl > 86400) {
   throw new Error('CORE_ACCESS_TTL_SECONDS must be an integer from 1 to 86400');
 }
 
-function generateToken(user) {
-  const active = user.membershipStatus === 'active' && Boolean(user.hubId);
+function generateToken(user, session = {}) {
+  if (process.env.CORE_SESSION_ENABLED === 'true' && !session.sid) throw new Error('Session binding required');
+  const active = require('../services/membershipPolicy').hasMembershipAuthority(user);
   return jwt.sign({ id: String(user._id), sub: String(user._id), username: user.username,
     hubId: active ? String(user.hubId) : null, scope: active ? ['core:workspace'] : ['core:onboarding'],
-    membershipVersion: user.membershipVersion || 0, jti: randomUUID(),
+    ...session, membershipVersion: user.membershipVersion || 0, jti: randomUUID(),
   }, secret, {
-    algorithm: 'HS256', issuer, audience, expiresIn: ttl,
+    algorithm: 'HS256', issuer, audience, expiresIn: session.sid ? Math.min(ttl, 900) : ttl,
   });
 }
 
@@ -32,6 +33,8 @@ function verifyToken(token) {
       claims.exp <= claims.iat || claims.exp - claims.iat > 86400) {
     throw new jwt.JsonWebTokenError('Invalid Core claims');
   }
+  if (claims.sid !== undefined && (!/^[a-f0-9]{24}$/.test(claims.sid) || !Number.isInteger(claims.sessionVersion) || claims.sessionVersion < 0 || claims.exp - claims.iat > 900)) throw new jwt.JsonWebTokenError('Invalid session claims');
+  if (process.env.CORE_SESSION_ENABLED === 'true' && !claims.sid) throw new jwt.JsonWebTokenError('Legacy access retired');
   return claims;
 }
 

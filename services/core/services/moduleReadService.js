@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { randomUUID } = require('node:crypto');
-const { countFields } = require('@collegehubs/contracts/module-read.cjs');
+const { countFields, summaryVersion, validateSummary } = require('@collegehubs/contracts/module-read.cjs');
 const budget = require('./optionalReadBudget');
 const unavailable = () => ({ status: 'unavailable', asOf: null });
 function createModuleReader(config, { env = process.env, fetcher = fetch, clock = Date.now } = {}) {
@@ -17,7 +17,7 @@ function createModuleReader(config, { env = process.env, fetcher = fetch, clock 
   }
   const cachedResult = row => row?.data && clock() - row.savedAt < 300000 ? { ...row.data, status: clock() - row.savedAt < 60000 ? 'ok' : 'stale' } : unavailable();
   async function read(name, owner, deadline) {
-    const key = [name, owner.userId, owner.hubId, owner.membershipVersion].join(':');
+    const key = [summaryVersion, name, owner.userId, owner.hubId, owner.membershipVersion].join(':');
     const previous = cache.get(key);
     if (previous && clock() < previous.retryAt) return cachedResult(previous);
     if (pending.has(key)) return pending.get(key);
@@ -35,11 +35,9 @@ function createModuleReader(config, { env = process.env, fetcher = fetch, clock 
           headers: { Authorization: 'Bearer ' + targets[name].key, 'X-Module-Read': token } });
         if (!response.ok || !response.body) throw new Error('unavailable');
         const reader = response.body.getReader(), chunks = []; let size = 0;
-        for (;;) { const part = await reader.read(); if (part.done) break; size += part.value.length; if (size > 2048) { await reader.cancel(); throw new Error('oversize'); } chunks.push(Buffer.from(part.value)); }
+        for (;;) { const part = await reader.read(); if (part.done) break; size += part.value.length; if (size > 4096) { await reader.cancel(); throw new Error('oversize'); } chunks.push(Buffer.from(part.value)); }
         const data = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-        const fields = countFields[name];
-        if (data.status !== 'ok' || typeof data.asOf !== 'string' || !Number.isFinite(Date.parse(data.asOf)) || Math.abs(clock()-Date.parse(data.asOf)) > 30000 ||
-            Object.keys(data).length !== fields.length+2 || fields.some(field => !Number.isSafeInteger(data[field]) || data[field] < 0)) throw new Error('invalid summary');
+        validateSummary(name,data,clock());
         cooldown.delete(name);
         cache.delete(key); cache.set(key, { data, savedAt: clock(), retryAt: clock()+60000 });
         return data;
@@ -60,8 +58,13 @@ function createModuleReader(config, { env = process.env, fetcher = fetch, clock 
     const deadline = clock()+800, names = Object.keys(countFields), modules = {};
     let index = 0;
     const worker = async () => { while (index < names.length) { const name = names[index++]; modules[name] = await read(name, owner, deadline); } };
-    await Promise.all([worker(), worker()]);
-    return { schemaVersion: 1, asOf: new Date(clock()).toISOString(), modules };
+    // Bound the aggregate even when a transport ignores abort or a shared read started earlier.
+    let aggregateTimer;
+    await Promise.race([Promise.all([worker(), worker()]),new Promise(resolve=>{aggregateTimer=setTimeout(resolve,Math.max(1,deadline-clock()));})]);
+    clearTimeout(aggregateTimer);
+    for(const name of names)if(!modules[name])modules[name]=cachedResult(cache.get([summaryVersion,name,owner.userId,owner.hubId,owner.membershipVersion].join(':')));
+
+    return { schemaVersion: summaryVersion, asOf: new Date(clock()).toISOString(), modules: {...modules} };
   }
   return { summary };
 }

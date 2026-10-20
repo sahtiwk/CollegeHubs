@@ -46,8 +46,8 @@ export function useStudyRoom(roomId, hubId) {
     } catch { update({ live: false }); }
     void sync();
     const timer = setInterval(recover, 5000);
-    window.addEventListener('focus', recover); document.addEventListener('visibilitychange', recover);
-    return () => { dead = true; abort.abort(); socket?.dispose(); clearInterval(timer); window.removeEventListener('focus', recover); document.removeEventListener('visibilitychange', recover); control.current = null; };
+    window.addEventListener('core-session', recover); window.addEventListener('focus', recover); document.addEventListener('visibilitychange', recover);
+    return () => { dead = true; abort.abort(); socket?.dispose(); clearInterval(timer); window.removeEventListener('core-session', recover); window.removeEventListener('focus', recover); document.removeEventListener('visibilitychange', recover); control.current = null; };
   }, [roomId, hubId]);
   return { ...state, sync: () => control.current?.sync(), action: (name, body) => control.current?.action(name, body) ?? Promise.reject(new Error('Room unavailable')) };
 }

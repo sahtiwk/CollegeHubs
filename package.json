@@ -11,21 +11,34 @@
     "packages/*"
   ],
   "scripts": {
+    "release:manifest": "node deploy/release-manifest.mjs",
+    "release:smoke": "node deploy/smoke.mjs",
+    "test:deployment": "node --test tests/guards/deployment.test.js",
     "dev": "node scripts/dev.mjs",
+    "test:identity": "node --test tests/identity/verification.test.js tests/identity/onboarding.test.js tests/identity/return-intent.test.js",
+    "test:migrations": "node --test tests/migrations/transition.test.js",
+    "test:design": "node --test tests/frontend/design-tokens.test.mjs",
+    "build:design-lab": "vite build --config tests/frontend/vite.design.config.mjs",
+    "preview:design-lab": "vite preview --config tests/frontend/vite.design.config.mjs",
+    "test:design-browser": "node tests/frontend/design-browser.cjs",
     "build": "npm run build --workspaces --if-present",
     "build:web": "npm run build -w @collegehubs/web",
     "build:core": "npm run build -w @collegehubs/core",
     "build:learn": "npm run build -w @collegehubs/learn",
-    "test:guards": "node --test tests/guards/hub-isolation.test.js tests/guards/module-grants.test.js tests/guards/aura-events.test.js tests/guards/study-room.test.js tests/guards/schedules.test.js",
+    "test:guards": "node --test tests/identity/core-sessions.test.js tests/identity/verification.test.js tests/identity/onboarding.test.js tests/identity/return-intent.test.js tests/guards/hub-isolation.test.js tests/guards/module-grants.test.js tests/guards/aura-events.test.js tests/guards/study-room.test.js tests/guards/schedules.test.js",
     "dev:web": "npm run dev -w @collegehubs/web",
     "dev:core": "npm run dev -w @collegehubs/core",
     "dev:arcade": "npm run dev -w @collegehubs/arcade",
     "dev:learn": "npm run dev -w @collegehubs/learn",
     "build:arcade": "npm run build -w @collegehubs/arcade",
     "build:interview": "npm run build -w @collegehubs/interview",
-    "dev:interview": "npm run dev -w @collegehubs/interview"
+    "dev:interview": "npm run dev -w @collegehubs/interview",
+    "test:sessions": "node --test tests/identity/core-sessions.test.js",
+    "test:session-browser": "node tests/identity/renewal-browser.cjs",
+    "test:landing": "node tests/e2e/landing.spec.cjs"
   },
   "devDependencies": {
+    "ical.js": "^2.2.1",
     "mongodb-memory-server": "^10.4.1"
   }
 }

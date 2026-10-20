@@ -15,7 +15,12 @@ async function start() {
   startupStage = 'application';
   const server = require('./app').createApp({ connection, models, config }).listen(process.env.PORT || 5002, () => console.log('Interview API listening'));
   server.requestTimeout = 20000; server.headersTimeout = 10000;
-  const close = () => { server.close(); void connection.close().finally(() => process.exit()); }; process.on('SIGTERM', close); process.on('SIGINT', close);
+  const retention = require('./services/resumeRetention').resumeRetention(connection,models);
+  let cleaning = false;
+  const cleanup = async () => { if(cleaning)return; cleaning=true; try{await retention.cleanup();}catch{console.error('Interview resume cleanup deferred');}finally{cleaning=false;} };
+  void cleanup();
+  const retentionTimer=setInterval(cleanup,60*60*1000);retentionTimer.unref();
+  const close = () => { clearInterval(retentionTimer); server.close(); void connection.close().finally(() => process.exit()); }; process.on('SIGTERM', close); process.on('SIGINT', close);
 }
 start().catch(error => {
   // Do not log error messages/stacks: driver errors can contain database credentials.

@@ -2,6 +2,8 @@
 
 Status: **P11.2 release package complete for the password-login MVP**, combining the dated feature demos, P11.1 hosted evidence and the new verification below. Coverage limits are explicit; this is not production/security certification.
 
+**TP0.1 status correction — 18 October 2026:** The P11.2 observations below are preserved as historical evidence. Their statements that P10 is unimplemented/deferred describe that earlier release slice and are superseded by [P10 hosted activation on 11 October](p10-hosted-evidence.md). P10.1 topic suggestions/import and P10.2 bounded module summaries are mounted in current source. [Transition baseline](transition-baseline.md) records the newly repeated local builds/guards; it does not revalidate hosted availability or repeat the earlier browser/load rehearsals.
+
 ## Release identity and scope
 
 Tier 2 password-login MVP: shared React/Vite frontend, Core community/Study/Aura/schedules, three ranked Arcade games, five-question Interview practice and seeded DSA/Web Learn with quizzes/mastery. P10.2 and P10.1 remain unimplemented. Google OAuth is excluded from the deployed scope.

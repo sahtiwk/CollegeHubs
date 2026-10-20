@@ -16,6 +16,7 @@ function rateLimit(context) {
 }
 async function authorize(claims) {
   if (!claims || claims.exp * 1000 <= Date.now()) fail(401, 'AUTH_EXPIRED', 'Sign in again');
+  await require('./coreSessionService').assertAccess(claims);
   const context = await requireHubAccess(claims);
   if (context.hubId !== claims.hubId || context.membershipVersion !== claims.membershipVersion) fail(401, 'MEMBERSHIP_CHANGED', 'Sign in again');
   return context;

@@ -1,11 +1,11 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
-const { generateToken } = require('../config/auth');
 const { userDto } = require('../utils/userDto');
 const { bodyObject, text, emailAddress, passwordValue, respondError, badInput } = require('../utils/validation');
 const { tryAssignMembership } = require('../services/hubProvisioning');
 const router = express.Router();
+router.get('/capabilities', (_req,res)=>res.json({google:require('../services/googleIdentity').capability(),mail:require('../services/verificationMail').capability()}));
 
 router.post('/register', async (req, res) => {
   try {
@@ -17,10 +17,11 @@ router.post('/register', async (req, res) => {
     if (await User.findOne({ $or: [{ email }, { username }] })) {
       return res.status(409).json({ error: 'Email or username already in use' });
     }
-    // The model save hook retains bcrypt cost 12.
+    // Save onboarding identity independently of mail. Request/consume proof is explicit;
+    // assignment cannot use an email domain alone. The model retains bcrypt cost 12.
     const user = await User.create({ username, email, password, auraPoints: 0 });
     const result = await tryAssignMembership(user);
-    res.status(201).json({ token: generateToken(result.user), user: await userDto(result.user, true), assignment: result.assignment });
+    res.status(201).json({ token: await require('../services/coreSessionService').issue(req, res, result.user), user: await userDto(result.user, true), assignment: result.assignment });
   } catch (err) {
     respondError(res, err, 'Server error during registration');
   }
@@ -35,7 +36,7 @@ router.post('/login', async (req, res) => {
     if (!user || !user.password || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-    res.json({ token: generateToken(user), user: await userDto(user, true) });
+    res.json({ token: await require('../services/coreSessionService').issue(req, res, user), user: await userDto(user, true) });
   } catch (err) {
     respondError(res, err, 'Server error during login');
   }

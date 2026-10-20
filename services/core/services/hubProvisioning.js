@@ -3,7 +3,7 @@ const College = require('../models/College');
 const Hub = require('../models/Hub');
 const Channel = require('../models/Channel');
 const User = require('../models/User');
-const { config, emailDomain, safeTheme } = require('../config/collegeRegistry');
+const { config, activeDomainFilter, safeTheme } = require('../config/collegeRegistry');
 
 async function transaction(work, connection = mongoose.connection) {
   // Concurrent first registrations can collide on unique upsert keys. Retry the entire transaction.
@@ -38,30 +38,35 @@ async function ensureHubForCollege(collegeId, session, connection = mongoose.con
   }
   return hub;
 }
-async function assignMembership(userId) {
-  return transaction(async session => {
-    const user = await User.findById(userId).select('+googleSubject +emailVerifiedAt').session(session);
+async function assignMembership(userId, activeSession) {
+  const work = async session => {
+    const user = await User.findById(userId).select('+googleSubject +emailVerifiedAt +emailVerificationMethod').session(session);
     if (!user) throw new Error('User no longer exists');
     // No self-service transfer or reactivation. Assigned/disabled users retain their current identity.
-    if (user.hubId || user.membershipStatus === 'disabled') return user;
-    const college = await College.findOne({ status: 'active', 'domains.normalizedDomain': emailDomain(user.email) }).session(session);
+    if (user.membershipStatus === 'disabled') return user;
+    if (!user.emailVerifiedAt || !['email','google'].includes(user.emailVerificationMethod)) return user;
+    const college = await College.findOne(activeDomainFilter(user.email)).session(session);
     if (!college) return user;
     const hub = await ensureHubForCollege(college._id, session);
+    if (user.hubId && String(user.hubId) !== String(hub._id)) throw new Error('College transfer requires review');
+    if (user.membershipStatus === 'active' && user.membershipVerified) return user;
     user.hubId = hub._id;
     user.college = college.name;
     user.membershipStatus = 'active';
-    user.membershipVerified = Boolean(user.googleSubject && user.emailVerifiedAt);
-    user.verificationMethod = user.membershipVerified ? 'google' : 'domain-claim';
+    user.membershipVerified = true;
+    user.verificationMethod = user.emailVerificationMethod;
     user.membershipVersion += 1;
     await user.save({ session });
     return user;
-  });
+  };
+  return activeSession ? work(activeSession) : transaction(work);
 }
 async function tryAssignMembership(user) {
   try {
     const assigned = await assignMembership(user._id);
     if (assigned.membershipStatus === 'disabled') return { user: assigned, assignment: { status: 'disabled', code: 'MEMBERSHIP_DISABLED', message: 'Membership is disabled. Contact your administrator.', retryable: false } };
-    return { user: assigned, assignment: assigned.hubId ? { status: 'assigned', retryable: false } : {
+    if (!assigned.emailVerifiedAt || !['email','google'].includes(assigned.emailVerificationMethod)) return { user: assigned, assignment: { status: 'verification-pending', code: 'EMAIL_VERIFICATION_REQUIRED', message: 'Verify your email before joining a college Hub.', retryable: false } };
+    return { user: assigned, assignment: assigned.membershipStatus === 'active' && assigned.membershipVerified ? { status: 'assigned', retryable: false } : {
       status: 'unassigned', code: 'COLLEGE_DOMAIN_NOT_CONFIGURED', message: 'Your college email domain is not configured. You can retry after it is added.', retryable: true,
     } };
   } catch {

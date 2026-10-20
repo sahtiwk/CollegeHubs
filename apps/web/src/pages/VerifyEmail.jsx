@@ -1,0 +1,41 @@
+import React, {useEffect,useState} from 'react';
+import {GoogleLogin} from '@react-oauth/google';
+import {Link,useLocation,useNavigate} from 'react-router-dom';
+import {useAuth} from '../auth/AuthProvider';
+import {returnIntent} from '../auth/returnIntent';
+import {useIdentityCapabilities} from '../hooks/useIdentityCapabilities';
+import api,{logout,saveSession,getSessionKey} from '../api';
+import {Button,Card,Field,Status} from '../components/ui';
+import '../styles/identity.css';
+let memoryProof=null;
+function captureProof(){
+ const hash=window.location.hash;
+ if(hash){const params=new URLSearchParams(hash.slice(1)),challengeId=params.get('challengeId'),token=params.get('token');
+  memoryProof=/^[a-f0-9]{24}$/i.test(challengeId||'')&&/^[A-Za-z0-9_-]{43}$/.test(token||'')?{challengeId,token}:null;
+  history.replaceState(null,'',window.location.pathname+window.location.search);
+ }
+ return memoryProof;
+}
+export default function VerifyEmail(){
+ const {user,loading,error,refresh}=useAuth(),navigate=useNavigate(),{googleEnabled}=useIdentityCapabilities();
+ const location=useLocation();
+ const [proof,setProof]=useState(()=>memoryProof),[email,setEmail]=useState(''),[message,setMessage]=useState(''),[failure,setFailure]=useState(''),[busy,setBusy]=useState(false),[nonce,setNonce]=useState(null),[retryAt,setRetryAt]=useState(0);
+ useEffect(()=>{if(location.hash)setProof(captureProof());},[location.hash]);
+ async function run(work){setBusy(true);setFailure('');setMessage('');const token=getSessionKey();try{await work(data=>{if(token!==getSessionKey())throw new Error('Sign-in changed.');saveSession(data);});}catch(err){setFailure(err.response?.data?.error||'Could not complete this step. Please retry.');}finally{setBusy(false);}}
+ async function request(){await run(async()=>{const {data}=await api.post('/auth/verification/request',{});setRetryAt(Date.now()+data.retryAfterSeconds*1000);setMessage(data.delivery==='local-capture'?'Verification captured in the private local mailbox. No real email was sent.':'Check your inbox for the verification email.');await refresh();});}
+ async function confirm(){await run(async commit=>{const {data}=await api.post('/auth/verification/consume',proof);commit(data);memoryProof=null;setProof(null);await refresh();setMessage('Email verified. Your saved work is still yours.');if(data.user.membershipStatus==='active'&&data.user.membershipVerified)navigate(returnIntent(data.user._id,true),{replace:true});});}
+ if(loading)return <main className="status-page" role="status">Loading your account…</main>;
+ if(!user)return <main className="status-page stack"><h1>Sign in to verify.</h1><p>{error||'Use the account that requested this email. Nothing changes until you confirm.'}</p><Link to="/login?verify=1">Sign in</Link><p className="muted">If you reload, reopen the verification email after signing in.</p></main>;
+ const disabled=user.membershipStatus==='disabled',pending=user.identity?.pendingEmail,verified=user.identity?.emailVerified,mail=user.identity?.mail;
+ return <main className="identity-page"><header><Link className="wordmark" to="/dashboard">CollegeHubs.</Link><button onClick={()=>{memoryProof=null;logout();}}>Sign out</button></header><div className="identity-heading"><p className="eyebrow">YOUR ACCOUNT / YOUR NEXT CHAPTER</p><h1>{disabled?'Let’s get you help.':pending?'One email. One last step.':verified?'Your identity, connected.':'Make it officially yours.'}</h1><p>Signed in as <strong>{user.email}</strong>. Your account and saved work stay together.</p></div>
+ {failure&&<Status tone="error" live>{failure}</Status>}{message&&<Status tone="success" live>{message}</Status>}
+ {disabled?<Card><h2>Membership is disabled</h2><p>Contact your college administrator. Email verification cannot reactivate a disabled membership.</p></Card>:<div className="identity-grid"><Card><p className="eyebrow">01 / EMAIL OWNERSHIP</p><h2>{pending?'Verify your new college email':verified?'Email ownership confirmed':'Check your college inbox'}</h2><p>{pending?`Verify ${pending} before it replaces your login email. Until then, keep signing in with ${user.email}.`:verified?'Mailbox ownership is confirmed. College eligibility is checked separately against the registry.':'We need proof that this email belongs to you before you can enter a college Hub.'}</p>
+ {!mail?.available&&<Status tone="warning">Email delivery is currently unavailable. Your account is saved; retry when delivery is restored.</Status>}
+ {(!verified||pending)&&<><Button busy={busy} disabled={!mail?.available} onClick={request}>{retryAt?'Resend verification email':'Send verification email'}</Button>{retryAt>0&&<p className="muted">Please wait at least one minute between requests. The server enforces the resend limit.</p>}</>}
+ {proof&&<div className="stack"><p>A verification link is ready. Confirm only if you requested this change for this account.</p><Button busy={busy} onClick={confirm}>Confirm email ownership</Button></div>}
+ {pending&&<Button variant="secondary" disabled={busy} onClick={()=>run(async()=>{await api.delete('/me/email-change');await refresh();setMessage('Email change cancelled. Your login email is unchanged.');})}>Cancel email change</Button>}
+ {verified&&!pending&&(user.membershipStatus==='active'&&user.membershipVerified?<Button onClick={()=>navigate(returnIntent(user._id,true),{replace:true})}>Continue to your workspace ↗</Button>:<><Status tone="warning">Your college domain is not configured for access. Verifying an email does not automatically register a college.</Status><Button disabled={busy} onClick={()=>run(async commit=>{const {data}=await api.post('/me/assignment/retry',{});commit(data);await refresh();setMessage(data.assignment?.message||'College assignment checked.');if(data.user.membershipStatus==='active'&&data.user.membershipVerified)navigate(returnIntent(data.user._id,true),{replace:true});})}>Check college eligibility again</Button></>)}
+ </Card><Card><p className="eyebrow">02 / ANOTHER COLLEGE EMAIL</p><h2>Same you. A different inbox.</h2><p>Use an address from a configured college. Existing members can change email within their current college; college transfers need administrator review.</p><form className="stack" onSubmit={e=>{e.preventDefault();run(async()=>{const {data}=await api.post('/me/email-change',{email});setRetryAt(Date.now()+data.retryAfterSeconds*1000);await refresh();setEmail('');setMessage(data.delivery==='local-capture'?'Replacement-email proof captured locally. Your login email has not changed.':'Check the new inbox. Your login email has not changed.');});}}><Field label="New college email" type="email" autoComplete="email" required maxLength={254} value={email} onChange={e=>setEmail(e.target.value)}/><Button type="submit" busy={busy} disabled={!mail?.available}>Verify a different email</Button></form></Card>
+ <Card><p className="eyebrow">03 / SIGN-IN OPTIONS</p><h2>{user.identity?.googleLinked?'Google is linked.':'Keep sign-in connected.'}</h2><p>Linking adds Google to this account. It never merges another account or changes your college membership.</p>{!user.identity?.googleLinked&&(googleEnabled?<><Button disabled={busy} onClick={()=>run(async()=>{const {data}=await api.post('/google/link/start',{});setNonce(data.nonce);})}>Start linking Google</Button>{nonce&&<div inert={busy?'':undefined}><GoogleLogin key={nonce} nonce={nonce} onSuccess={({credential})=>run(async commit=>{const {data}=await api.post('/google/link',{credential,nonce});commit(data);setNonce(null);await refresh();setMessage('Google linked to this account.');})} onError={()=>setFailure('Google sign-in failed. Start linking again.')}/></div>}</>:<p className="muted">Google linking is unavailable in this environment. Your existing sign-in method still works.</p>)}</Card>
+ <Card><p className="eyebrow">NEED A HAND?</p><h2>Your work stays yours.</h2><p>If an email already belongs to an account, sign in with that account’s existing method. Ask your administrator for recovery help if you cannot access it. We never combine accounts from matching email addresses.</p><p className="muted">A verification link expires after 30 minutes and works once. Reopen the email if you closed this page before confirming.</p></Card></div>}</main>;
+}

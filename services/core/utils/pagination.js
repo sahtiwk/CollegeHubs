@@ -21,7 +21,9 @@ function pageInput(query, kind, hubId) {
       if (expected.length !== supplied.length || !timingSafeEqual(expected, supplied)) throw new Error();
       const cursor = JSON.parse(Buffer.from(parts[0], 'base64url').toString());
       if (cursor.kind !== kind || cursor.hubId !== String(hubId) || !/^[a-f0-9]{24}$/.test(cursor.id)) throw new Error();
-      if (kind === 'posts') {
+      if (kind.startsWith('aura-history:')) {
+        after = { _id: { $lt: cursor.id } };
+      } else if (kind === 'posts') {
         if (typeof cursor.key !== 'string' || !Number.isFinite(Date.parse(cursor.key))) throw new Error();
         const date = new Date(cursor.key);
         after = { $or: [{ createdAt: { $lt: date } }, { createdAt: date, _id: { $gt: cursor.id } }] };

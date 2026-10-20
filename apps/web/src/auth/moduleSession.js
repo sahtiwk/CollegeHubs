@@ -1,14 +1,14 @@
-import api from '../api';
+import api, { getSessionKey } from '../api';
 import { sanitizeTheme } from '../features/learn/hubTheme.ts';
 import { moduleUrl } from './moduleUrls.ts';
 
 import { createSessionCoordinator } from './moduleSessionState';
-const coordinator = createSessionCoordinator(() => localStorage.getItem('socialstream_token'));
+const coordinator = createSessionCoordinator(getSessionKey);
 const identity = user => [user?._id, user?.hubId, user?.membershipVersion].join(':');
 const expired = dto => !dto || Date.parse(dto.expiresAt) <= Date.now() + 1000;
 /** @param {string} path @param {{method?: string, body?: unknown, signal?: AbortSignal, timeout?: number, csrf?: string}} options */
 export async function learnRequest(path, { method = 'GET', body, signal, timeout = 15000, csrf } = {}) {
-  if (!['/session', '/auth/start', '/auth/callback', '/logout', '/spike/graph', '/health/ready', '/dashboard/graph', '/dashboard/domains', '/dashboard/stats', '/dashboard/milestones', '/onboarding', '/onboarding/profile', '/learner/intake', '/learner/init-graph', '/recommendation', '/tutor/fast', '/profile/preferences', '/profile/path', '/quiz/attempts', '/quiz/next', '/quiz/answer', '/quiz/finalize', '/resources'].includes(path) && !/^\/(?:nodes|quiz\/attempts)\/[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(path)) throw new Error('Unknown Learn route');
+  if (!['/session', '/auth/start', '/auth/callback', '/logout', '/spike/graph', '/health/ready', '/dashboard/graph', '/dashboard/domains', '/dashboard/stats', '/dashboard/milestones', '/onboarding', '/onboarding/profile', '/learner/intake', '/learner/init-graph', '/recommendation', '/tutor/fast', '/profile/preferences', '/profile/path', '/profile/path/upgrade', '/remediation/review', '/quiz/attempts', '/quiz/next', '/quiz/answer', '/quiz/finalize', '/resources'].includes(path) && !/^\/(?:nodes|quiz\/attempts)\/[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(path)) throw new Error('Unknown Learn route');
   const response = await fetch(moduleUrl('/api' + path), { method, credentials: 'same-origin', redirect: 'error', cache: 'no-store',
     signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(timeout)]) : AbortSignal.timeout(timeout),
     headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...(csrf ? { 'X-CSRF-Token': csrf } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
@@ -26,8 +26,7 @@ export function clearModuleSession({ remote = false } = {}) {
   const old = coordinator.clear();
   if (remote && old?.csrfToken) fetch('/api/learn/logout', { method: 'POST', credentials: 'same-origin', keepalive: true, redirect: 'error', headers: { 'X-CSRF-Token': old.csrfToken } }).catch(() => {});
 }
-window.addEventListener('core-session', () => clearModuleSession({ remote: true }));
-window.addEventListener('storage', event => { if (!event.key || event.key === 'socialstream_token') clearModuleSession({ remote: true }); });
+window.addEventListener('core-identity', () => clearModuleSession({ remote: true }));
 
 /** @param {any} user @param {(message: string) => void} progress */
 export function ensureLearnSession(user, progress = () => {}) {

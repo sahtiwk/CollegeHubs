@@ -11,6 +11,8 @@ const { canonicalJson } = require('./auraEventService');
 const { digest, failure } = require('./moduleTokenService');
 const configured = require('../config/auraRules.v1.json');
 async function activate(config = configured) {
+  if (config.releaseStatus) throw new Error('Unreleased Aura rules cannot be activated');
+  require('@collegehubs/contracts/day-policy.cjs').assertPolicy(config);
   const rulesHash = digest(canonicalJson(config));
   let stored = await RuleSet.findOne({ version: config.version });
   if (!stored) {
@@ -26,6 +28,7 @@ async function score(fact, session) {
   const active = await RuleSet.findOne({ version: configured.version }).session(session);
   if (!active || new Date(fact.occurredAt) < active.activatedAt) return null;
   const rules = active.rules, rule = rules.types[fact.type];
+    require('@collegehubs/contracts/day-policy.cjs').assertPolicy(rules);
   if (!rule) return null;
   const payloadHash = digest(canonicalJson({ eventId: fact.eventId, businessKey: fact.businessKey, hubId: String(fact.hubId), userId: String(fact.userId), sourceId: String(fact.sourceId), type: fact.type, occurredAt: new Date(fact.occurredAt).toISOString() }));
   const previous = await Event.findOne({ eventId: fact.eventId }).session(session);
@@ -37,7 +40,7 @@ async function score(fact, session) {
   const user = await User.exists({ _id: fact.userId, hubId: fact.hubId, membershipStatus: 'active' }).session(session);
   const hub = await Hub.findOne({ _id: fact.hubId, hubId: fact.hubId, status: 'active' }).session(session);
   const qualified = !!user && !!hub && !!await College.exists({ _id: hub.collegeId, status: 'active' }).session(session);
-  const dayKey = new Intl.DateTimeFormat('en-CA', { timeZone: rules.timezone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(fact.occurredAt));
+  const dayKey = require('@collegehubs/contracts/day-policy.cjs').dayKey(fact.occurredAt);
   const day = { userId: fact.userId, dayKey, timezonePolicyVersion: rules.timezonePolicyVersion };
   let counter = await Counter.findOne(day).session(session);
   if (!counter) counter = new Counter({ ...day, hubId: fact.hubId });

@@ -31,5 +31,5 @@ function apiGateway(env) {
 export default defineConfig(({ mode }) => {
   const vars = { ...loadEnv(mode, process.cwd(), ''), ...process.env };
   const env = { ...vars, CORE_API_ORIGIN: vars.CORE_API_ORIGIN || 'http://127.0.0.1:5000', LEARN_API_ORIGIN: vars.LEARN_API_ORIGIN || 'http://127.0.0.1:5003', ARCADE_API_ORIGIN: vars.ARCADE_API_ORIGIN || 'http://127.0.0.1:5001', INTERVIEW_API_ORIGIN: vars.INTERVIEW_API_ORIGIN || 'http://127.0.0.1:5002' };
-  return { plugins: [react(), apiGateway(env)], optimizeDeps: { include: ['@collegehubs/contracts/channel.cjs'] }, resolve: { dedupe: ['react', 'react-dom'] }, server: { port: 5173, strictPort: true }, preview: { port: 5173, strictPort: true } };
+  return { worker: { format: 'es' }, plugins: [react(), apiGateway(env)], optimizeDeps: { include: ['@collegehubs/contracts/channel.cjs'] }, resolve: { dedupe: ['react', 'react-dom'] }, server: { port: 5173, strictPort: true }, preview: { port: 5173, strictPort: true } };
 });

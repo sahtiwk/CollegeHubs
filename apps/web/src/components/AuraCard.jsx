@@ -20,12 +20,15 @@ export default function AuraCard() {
     {busy && <p role="status">Loading your Aura…</p>}
     {error && <p className="error" role="alert">{error}</p>}
     {data && <>
+      <p className="aura-title">{data.title}</p>
+      <details><summary>Rank title milestones</summary><ul>{data.titles?.map(title => <li key={title.name}>{title.name}: {title.minimum} total Aura</li>)}</ul><p>Your title follows your recorded total, not a legacy profile field.</p></details>
       <dl className="aura-stats"><div><dt>Total Aura</dt><dd>{data.total}</dd></div><div><dt>Engagement</dt><dd>{data.engagement}</dd></div><div><dt>External bonus</dt><dd>{data.externalBonus}</dd></div><div><dt>Current streak</dt><dd>{data.streak.currentStreak} <small>{data.streak.currentStreak === 1 ? 'day' : 'days'}</small></dd></div></dl>
-      <p className="muted">{data.streak.activeToday ? 'You have contributed today.' : 'No qualifying contribution today yet.'} One shared activity day across sources, using India time. External bonuses are not enabled.</p>
+      <p className="muted">{data.streak.activeToday ? 'You have contributed today.' : 'No qualifying contribution today yet.'} One shared activity day across sources, using India time. Provider availability and ownership checks appear in Your external progress.</p>
       {!!data.pending && <p role="status">{data.pending} saved study completion{data.pending === 1 ? '' : 's'} pending. Refresh after processing.</p>}
       {!!data.inactive && <p className="muted">{data.inactive} earlier contribution{data.inactive === 1 ? '' : 's'} recorded without scoring. Previous activity is not awarded retroactively.</p>}
       <details><summary>How Aura is counted</summary>{data.scoring.status === 'active' ? <><ul>{Object.entries(data.scoring.types).map(([type, rule]) => <li key={type}>{auraLabels[type] || type}: {rule.weight} Aura, up to {rule.countCap} per day.</li>)}</ul><p className="muted">Native contribution daily limit: {data.scoring.dailyCap}. Duplicate contributions do not earn again. Eligible activity still counts toward your streak after reaching a cap.</p></> : <p>Scoring is not active. Contributions remain saved.</p>}</details>
       <AuraTicker receipts={data.recent} />
+      <Link to="/progress">See badges and full reward history</Link>
       <Link to="/leaderboard">See your college ranking →</Link>
     </>}
   </section>;

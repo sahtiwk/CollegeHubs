@@ -20,7 +20,7 @@ router.get('/:id', route(req => { study.fields(req.query, []); return study.snap
 router.get('/:id/reviews', route(req => { study.fields(req.query, []); return study.reviews(req.auth, req.params.id); }));
 router.post('/:id/reviews', route(req => study.review(req.auth, req.params.id, req.body), 200, true));
 router.get('/:id/submissions', route(req => { study.fields(req.query, []); return study.submissions(req.auth, req.params.id); }));
-for (const [path, method] of [['join', 'join'], ['start', 'start'], ['draft', 'save'], ['submit', 'submit']]) {
+for (const [path, method] of [['join', 'join'], ['start', 'start'], ['cancel', 'cancel'], ['draft', 'save'], ['submit', 'submit']]) {
   router.post('/:id/' + path, route(req => study[method](req.auth, req.params.id, req.body), 200, true));
 }
 module.exports = router;

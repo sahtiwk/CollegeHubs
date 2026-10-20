@@ -13,7 +13,7 @@ module.exports=(Interview,config,fetcher=fetch)=>async(identity,id,body)=>{
     const topics=validateTopics(response.data.topics);if(!topics.length)throw Error('Empty recommendation');
     const saved=await Interview.findOneAndUpdate({...owner,_id:id,topicLease:lease,topicLeaseUntil:{$gt:new Date()},status:{$in:['draft','generation_failed']},'questions.0':{$exists:false}},{$set:{learnTopics:topics,topicLease:null,topicLeaseUntil:new Date(0)}},{new:true});
     if(!saved)throw fail(409,'TOPICS_LOCKED','Import could not finish. Select topics again.');
-    return {topics:saved.learnTopics.map(t=>({nodeId:t.nodeId,label:t.label,version:t.version,reason:t.reason,asOf:t.asOf}))};
+    return {topics:saved.learnTopics.map(t=>({...(t.domain?{domain:t.domain}:{}),nodeId:t.nodeId,label:t.label,version:t.version,reason:t.reason,asOf:t.asOf}))};
   }catch(error){if(error.status)throw error;throw fail(503,'SUGGESTIONS_UNAVAILABLE','Import could not finish. Select topics again or continue without them.');}
   finally{await Interview.updateOne({...owner,_id:id,topicLease:lease},{$set:{topicLease:null,topicLeaseUntil:new Date(0)}});}
 };

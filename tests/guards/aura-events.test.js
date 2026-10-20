@@ -68,7 +68,7 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
     const college = await models.College.create({ name: 'G3 Fixture', slug: dbName.replaceAll('_', '-'), status: 'active', timezone: 'Asia/Kolkata',
       domains: [{ normalizedDomain: 'g3.example.test', verifiedAt: new Date(), evidenceRef: 'synthetic fixture' }] });
     const hub = await models.Hub.create({ name: college.name, slug: college.slug, collegeId: college.id, themeTokens: theme, themeVersion: 1, timezone: college.timezone });
-    const user = await models.User.create({ username: 'g3-user', email: 'g3@g3.example.test', password: opaque(), hubId: hub.id, membershipStatus: 'active', membershipVersion: 1 });
+    const user = await models.User.create({ username: 'g3-user', email: 'g3@g3.example.test', password: opaque(), hubId: hub.id, membershipStatus: 'active', membershipVerified: true, verificationMethod: 'email', emailVerificationMethod: 'email', emailVerifiedAt: new Date(), membershipVersion: 1 });
     const keys = {}, credentials = {}, bindings = {};
     const occurredAt = new Date().toISOString();
     for (const source of ['arcade', 'interview', 'learn']) {
@@ -91,7 +91,7 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
       const answers = require('../../services/core/services/answerService');
       const claims = require('../../services/core/config/auth').verifyToken(require('../../services/core/config/auth').generateToken(user));
       const channel = await models.Channel.create({ hubId: hub.id, slug: 'native-fixture', title: 'Native fixture', defaultSetVersion: 1 });
-      const recipient = await models.User.create({ username: 'g3-peer', email: 'peer@g3.example.test', password: opaque(), hubId: hub.id, membershipStatus: 'active', membershipVersion: 1 });
+      const recipient = await models.User.create({ username: 'g3-peer', email: 'peer@g3.example.test', password: opaque(), hubId: hub.id, membershipStatus: 'active', membershipVerified: true, verificationMethod: 'email', emailVerificationMethod: 'email', emailVerifiedAt: new Date(), membershipVersion: 1 });
       const peerClaims = require('../../services/core/config/auth').verifyToken(require('../../services/core/config/auth').generateToken(recipient));
       // Transaction seam fixture only: P6 owns real weights/caps/ledger rules.
       const applyNativeFact = async (fact, session) => {
@@ -132,7 +132,7 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
     await t.test('P5.2 study completion pending recovery commits one fact and fixture award', async () => {
       const study = require('../../services/core/services/studyService');
       const facts = require('../../services/core/services/studyFactService');
-      const participant = await models.User.create({ username: 'g3-study-peer', email: 'study-peer@g3.example.test', password: opaque(), hubId: hub.id, membershipStatus: 'active', membershipVersion: 1 });
+      const participant = await models.User.create({ username: 'g3-study-peer', email: 'study-peer@g3.example.test', password: opaque(), hubId: hub.id, membershipStatus: 'active', membershipVerified: true, verificationMethod: 'email', emailVerificationMethod: 'email', emailVerifiedAt: new Date(), membershipVersion: 1 });
       const room = await models.StudyRoom.create({ hubId: hub.id, channelId: new mongoose.Types.ObjectId(), hostId: user.id, clientRoomId: randomUUID(), problemId: new mongoose.Types.ObjectId(), problem: { title: 'Fixture' }, durationMinutes: 5, participantIds: [user.id, participant.id], status: 'active', startAt: new Date(Date.now() - 300000), endAt: new Date(Date.now() - 1000) });
       const [nonempty, empty] = await models.StudySolution.create([{ hubId: hub.id, roomId: room.id, userId: participant.id, source: 'acknowledged fixture source', language: 'python', revision: 1, savedAt: new Date(Date.now() - 3000) }, { hubId: hub.id, roomId: room.id, userId: user.id, source: '   ', revision: 1, savedAt: new Date(Date.now() - 3000) }]);
       await study.closeDue(room.id);
@@ -159,7 +159,7 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
     await t.test('P6.1 native fixture totals 50, prospective activation, caps and shared day', async () => {
       const scorer = require('../../services/core/services/nativeAuraService');
       const native = require('../../services/core/services/nativeFactService');
-      const owner = await models.User.create({ username: 'native-rules-user', email: 'rules@g3.example.test', password: opaque(), hubId: hub.id, membershipStatus: 'active', membershipVersion: 1 });
+      const owner = await models.User.create({ username: 'native-rules-user', email: 'rules@g3.example.test', password: opaque(), hubId: hub.id, membershipStatus: 'active', membershipVerified: true, verificationMethod: 'email', emailVerificationMethod: 'email', emailVerifiedAt: new Date(), membershipVersion: 1 });
       const fact = async (type, text = randomUUID(), at = new Date()) => native.transaction(session => native.record({ message: { _id: new mongoose.Types.ObjectId(), hubId: hub.id, authorId: owner.id, createdAt: at, text, url: 'https://example.test/' + text }, type }, session));
       const old = await fact('code.shared'); assert.equal(old.status, 'rules_inactive');
       await scorer.activate(); const active = await models.AuraRuleSet.findOne({ version: 'native-v1' });
@@ -196,7 +196,7 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
       const first = await reads.leaderboard({ hubId: hub.id, userId: owner.id }, { limit: '1' });
       assert.equal(first.ownRank.auraPoints, 100);
       const generated = [];
-      for (let i = 0; i < 55; i++) generated.push({ _id: new mongoose.Types.ObjectId(), username: 'rank-peer-' + i, email: 'rank-' + i + '@g3.example.test', hubId: hub._id, membershipStatus: 'active', membershipVersion: 1 });
+      for (let i = 0; i < 55; i++) generated.push({ _id: new mongoose.Types.ObjectId(), username: 'rank-peer-' + i, email: 'rank-' + i + '@g3.example.test', hubId: hub._id, membershipStatus: 'active', membershipVerified: true, verificationMethod: 'email', emailVerificationMethod: 'email', emailVerifiedAt: new Date(), membershipVersion: 1 });
       await models.User.collection.insertMany(generated);
       await models.AuraBalance.insertMany(generated.map(row => ({ hubId: hub.id, userId: row._id, engagement: 200, externalBonus: 0, total: 200, asOf: new Date() })));
       const ranked = await reads.leaderboard({ hubId: hub.id, userId: owner.id }, { limit: '50' });
@@ -340,7 +340,7 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
       assert.ok(['localhost','127.0.0.1'].includes(url.hostname));assert.match(url.pathname,/^\/collegehubs_demo_learn_/);
       const pool=new Pool({connectionString:url.toString()});
       const {learnerService}=await import('../../services/learn/src/services/learnerService.ts'),{attemptService}=await import('../../services/learn/src/services/attemptService.ts'),{coreEvents}=await import('../../services/learn/src/services/coreEvents.ts');
-      const learner=await models.User.create({username:'learn-'+randomUUID(),email:randomUUID()+'@g3.example.test',password:opaque(),hubId:hub.id,membershipStatus:'active',membershipVersion:1});
+      const learner=await models.User.create({username:'learn-'+randomUUID(),email:randomUUID()+'@g3.example.test',password:opaque(),hubId:hub.id,membershipStatus:'active',membershipVerified:true,verificationMethod:'email',emailVerificationMethod:'email',emailVerifiedAt:new Date(),membershipVersion:1});
       const binding=await models.ModuleGrant.create({userId:learner.id,hubId:hub.id,module:'learn',grantHash:digest(opaque()),stateHash:digest(opaque()),returnPath:'/learn',membershipVersion:1,themeVersion:1,expiresAt:new Date(Date.now()+60000),consumedAt:new Date(),accessJti:randomUUID(),accessExpiresAt:new Date(Date.now()+900000),retainUntil:new Date(Date.now()+30*86400000)});
       const owner={hubId:hub.id,userId:learner.id},learning=learnerService(pool),quiz=attemptService(pool),config={origin:'http://localhost:5173',secure:false,core:'http://127.0.0.1:'+server.address().port,serviceKey:keys.learn};
       try{
@@ -361,6 +361,82 @@ test('G3: transactional receipt, caps, principal and recovery boundaries', { ski
         await restarted.reconcile(owner,attempt.id);assert.deepEqual((await quiz.get(owner,attempt.id)).result,result.result);
         await assert.rejects(pool.query("UPDATE learn_event SET status='pending' WHERE event_id=$1",[ids[0]]),/Immutable/);
       }finally{await pool.end();}
+    });
+    await t.test('TP7.1 prospective rules retain historical policy and accept only the frozen Spot-the-Bug version', async () => {
+      const activate = require('../../services/core/services/nativeAuraService').activate;
+      const oldRules = require('../../services/core/config/auraRules.arcade.v2.json');
+      const newRules = require('../../services/core/config/auraRules.arcade.v3.json');
+      const old = await activate(oldRules);
+      // Explicit times in this disposable database make the boundary deterministic.
+      const boundary = new Date();
+      await models.AuraRuleSet.collection.updateOne({ _id: old._id }, { $set: { activatedAt: new Date(+boundary - 1000) } });
+      const current = await activate(newRules);
+      await models.AuraRuleSet.collection.updateOne({ _id: current._id }, { $set: { activatedAt: boundary } });
+      const real = createAuraEventService();
+      const player = await models.User.create({ username: 'spot-'+randomUUID(), email: randomUUID()+'@g3.example.test', password: opaque(), hubId: hub.id, membershipStatus: 'active', membershipVerified: true, verificationMethod: 'email', emailVerificationMethod: 'email', emailVerifiedAt: new Date(), membershipVersion: 1 });
+      const grant = await models.ModuleGrant.create({ userId: player.id, hubId: hub.id, module: 'arcade', grantHash: digest(opaque()), stateHash: digest(opaque()), returnPath: '/arcade', membershipVersion: 1, themeVersion: 1, expiresAt: new Date(Date.now()+60000), consumedAt: new Date(+boundary-2000), accessJti: randomUUID(), accessExpiresAt: new Date(Date.now()+900000), retainUntil: new Date(Date.now()+86400000) });
+      const spotEvent = metadata => { const e = event('arcade', { ...metadata, accessJti: grant.accessJti }); return { ...e, userId: player.id }; };
+      const historic = { ...spotEvent({ rulesVersion: 'numberguess-v1' }), occurredAt: new Date(+boundary - 500).toISOString() };
+      assert.equal((await real.ingest(credentials.arcade, historic)).body.receipt.weightVersion, oldRules.version);
+      const spot = { ...spotEvent({ gameId: 'spotbug', rulesVersion: 'spotbug-v1' }), occurredAt: boundary.toISOString() };
+      const result = await real.ingest(credentials.arcade, spot);
+      assert.equal(result.body.receipt.weightVersion, newRules.version);
+      assert.equal(result.body.receipt.awardedAura, 5);
+      assert.deepEqual((await real.ingest(credentials.arcade, spot)).body.receipt, result.body.receipt);
+      await assert.rejects(real.ingest(credentials.arcade, { ...spot, occurredAt: new Date(+boundary - 500).toISOString() }), { code: 'AURA_RULES_INACTIVE' });
+      await assert.rejects(real.ingest(credentials.arcade, { ...spot, metadata: { ...spot.metadata, rulesVersion: 'spotbug-v2' } }), { code: 'AURA_RULES_INACTIVE' });
+      const dailyRules = require('../../services/core/config/auraRules.arcade.v4.json');
+      const dailyActive = await activate(dailyRules);
+      const dailyInfo = require('../../packages/contracts/arcade-daily.cjs').definition(dailyActive.activatedAt);
+      const sourceId = randomUUID();
+      const daily = { ...spot, eventId:'arcade:'+sourceId+':completed:v1', type:'arcade.daily_completed', occurredAt:dailyActive.activatedAt.toISOString(), metadata:{ sourceId, accessJti:grant.accessJti,domainVersion:'v1', challengeId:dailyInfo.challengeId,challengeDay:dailyInfo.challengeDay,rulesVersion:'daily-v1',outcome:'success',serverDurationSeconds:30 } };
+      const credential = {...credentials.arcade.toObject(),eventTypes:['arcade.game_completed','arcade.daily_completed']};
+      const results = await Promise.all([real.ingest(credential,daily),real.ingest(credential,daily)]);
+      assert.equal(results[0].body.receipt.awardedAura,15);assert.deepEqual(results[0].body.receipt,results[1].body.receipt);
+      const alias = {...daily,eventId:'arcade:'+randomUUID()+':completed:v1'};
+      assert.equal((await real.ingest(credential,alias)).body.status,'duplicate');
+      assert.equal(await models.DailyActivity.countDocuments({userId:player.id}),1);
+      assert.equal((await models.AuraBalance.findOne({userId:player.id})).total,25);
+      await assert.rejects(real.ingest(credential,{...daily,metadata:{...daily.metadata,challengeId:'forged'}}),{code:'AURA_RULES_INACTIVE'});
+      const ordinary = {...spotEvent({gameId:'sorting',rulesVersion:'sorting-v1'}),occurredAt:dailyActive.activatedAt.toISOString()};
+      assert.equal((await real.ingest(credential,ordinary)).body.receipt.awardedAura,5);
+      const capped = {...spotEvent({gameId:'mathamplitude',rulesVersion:'mathamplitude-v1'}),occurredAt:dailyActive.activatedAt.toISOString()};
+      assert.equal((await real.ingest(credential,capped)).body.receipt.awardedAura,0);
+      assert.equal((await models.AuraBalance.findOne({userId:player.id})).total,30);
+      for (let daysBack=1;daysBack<=6;daysBack++) {
+        const at = new Date(+dailyActive.activatedAt-daysBack*86400000);
+        await models.DailyActivity.create({userId:player.id,hubId:hub.id,dayKey:require('../../packages/contracts/day-policy.cjs').dayKey(at),timezonePolicyVersion:1,firstOccurredAt:at,qualifyingSources:['arcade']});
+      }
+      await require('../../services/core/services/achievementService').project(mongoose.connection.db,{userId:player._id,hubId:hub._id});
+      assert.ok(await mongoose.connection.db.collection('achievementawards').findOne({userId:player._id,badgeId:'consistent-learner'}));
+
+
+    });
+    await t.test('TP8.1 canonical curriculum receipts are prospective and duplicate mastery cannot farm',async()=>{
+      const activate=require('../../services/core/services/nativeAuraService').activate;
+      const active=await activate(require('../../services/core/config/auraRules.learn.v2.json'));
+      const learner=await models.User.create({username:'foundations-'+randomUUID(),email:randomUUID()+'@g3.example.test',password:opaque(),hubId:hub.id,membershipStatus:'active',membershipVerified:true,verificationMethod:'email',emailVerificationMethod:'email',emailVerifiedAt:new Date(),membershipVersion:1});
+      const grant=await models.ModuleGrant.create({userId:learner.id,hubId:hub.id,module:'learn',grantHash:digest(opaque()),stateHash:digest(opaque()),returnPath:'/learn',membershipVersion:1,themeVersion:1,expiresAt:new Date(Date.now()+60000),consumedAt:new Date(+active.activatedAt-1000),accessJti:randomUUID(),accessExpiresAt:new Date(Date.now()+900000),retainUntil:new Date(Date.now()+86400000)});
+      const nodeId=require('../../packages/contracts/learn-curricula.json').equivalence.find(n=>n.domain==='ml').canonicalId;
+      const fact={schemaVersion:1,eventId:'learn:'+randomUUID()+':mastered:v1',userId:learner.id,hubId:hub.id,source:'learn',type:'learn.node_mastered',value:1,occurredAt:active.activatedAt.toISOString(),metadata:{sourceId:nodeId+':foundations-v1',accessJti:grant.accessJti,domainVersion:'v1',nodeId,curriculumVersion:'foundations-v1',masteryMethod:'checkpoint'}};
+      const service=createAuraEventService();
+      await assert.rejects(service.ingest(credentials.learn,{...fact,occurredAt:new Date(+active.activatedAt-1).toISOString()}),{code:'AURA_RULES_INACTIVE'});
+      assert.equal((await service.ingest(credentials.learn,fact)).body.receipt.awardedAura,15);
+      const alias={...fact,eventId:'learn:'+randomUUID()+':mastered:v1'};
+      assert.equal((await service.ingest(credentials.learn,alias)).body.status,'duplicate');
+      const foreign=randomUUID();await assert.rejects(service.ingest(credentials.learn,{...fact,metadata:{...fact.metadata,nodeId:foreign,sourceId:foreign+':foundations-v1'}}),{code:'AURA_RULES_INACTIVE'});
+      assert.equal((await models.AuraBalance.findOne({userId:learner.id})).total,15);
+      const pathRules=await activate(require('../../services/core/config/auraRules.learn.paths.v1.json'));
+      const path={...fact,eventId:'learn:'+randomUUID()+':path:v1',type:'learn.path_completed',occurredAt:pathRules.activatedAt.toISOString(),metadata:{sourceId:'foundations:ml:foundations-v1',pathId:'foundations:ml',curriculumVersion:'foundations-v1',domainVersion:'v1',accessJti:grant.accessJti,requiredNodeCount:3,completedNodeCount:3}};
+      const scoped={service:'learn',eventTypes:['learn.path_completed']};
+      await assert.rejects(service.ingest(scoped,{...path,occurredAt:new Date(+pathRules.activatedAt-1).toISOString()}),{code:'AURA_RULES_INACTIVE'});
+      await assert.rejects(service.ingest({service:'learn',eventTypes:[]},path),{code:'EVENT_SCOPE_FORBIDDEN'});
+      const receipt=(await service.ingest(scoped,path)).body.receipt;assert.equal(receipt.awardedAura,30);
+      assert.deepEqual((await service.ingest(scoped,path)).body.receipt,receipt);
+      assert.deepEqual((await service.ingest(scoped,{...path,eventId:randomUUID()})).body.receipt,receipt);
+      for(const domain of ['dsa','web','backend'])await service.ingest(scoped,{...path,eventId:randomUUID(),metadata:{...path.metadata,pathId:'foundations:'+domain,sourceId:'foundations:'+domain+':foundations-v1'}});
+      assert.equal((await models.AuraBalance.findOne({userId:learner.id})).total,100);
+      await assert.rejects(service.ingest(scoped,{...path,eventId:randomUUID(),metadata:{...path.metadata,requiredNodeCount:4,completedNodeCount:4}}),{code:'INVALID_EVENT'});
     });
     await t.test('malformed JSON and oversized bodies use bounded contract errors; throttling supplies Retry-After', async () => {
       const url = 'http://127.0.0.1:' + server.address().port + '/api/aura/events';
@@ -451,7 +527,7 @@ test('G3: Sorting requires a complete bounded comparison/swap trace and complexi
 
 test('G3: P9.2 grades frozen answers on the server at exact thresholds', async () => {
   const {validateCurriculum,curriculum,bank}=await import('../../services/learn/src/services/plannerAgent.ts');
-  assert.deepEqual(validateCurriculum(),{nodes:4,questions:60,version:'demo-v1'});
+  assert.deepEqual(validateCurriculum(),{nodes:15,questions:225,version:'foundations-v1'});
   const cycle=structuredClone(curriculum);cycle.nodes[0].prerequisites=[cycle.nodes[1].slug];assert.throws(()=>validateCurriculum(cycle,bank),/cycle/);
   const missing=structuredClone(curriculum);missing.nodes[1].prerequisites=['missing'];assert.throws(()=>validateCurriculum(missing,bank));
   const draft=structuredClone(bank);draft.review.status='draft';assert.throws(()=>validateCurriculum(curriculum,draft));
