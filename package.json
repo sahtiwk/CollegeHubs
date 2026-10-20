@@ -15,7 +15,7 @@
     "release:smoke": "node deploy/smoke.mjs",
     "test:deployment": "node --test tests/guards/deployment.test.js",
     "dev": "node scripts/dev.mjs",
-    "test:identity": "node --test tests/identity/verification.test.js tests/identity/onboarding.test.js tests/identity/return-intent.test.js",
+    "test:identity": "node --test tests/identity/verification-mail.test.js tests/identity/verification.test.js tests/identity/onboarding.test.js tests/identity/return-intent.test.js",
     "test:migrations": "node --test tests/migrations/transition.test.js",
     "test:design": "node --test tests/frontend/design-tokens.test.mjs",
     "build:design-lab": "vite build --config tests/frontend/vite.design.config.mjs",

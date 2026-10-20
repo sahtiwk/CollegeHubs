@@ -44,6 +44,10 @@ services:
         sync: false
       - key: VERIFICATION_MAIL_MODE
         sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: VERIFICATION_MAIL_FROM
+        sync: false
       - key: LEARN_API_ORIGIN
         sync: false
       - key: ARCADE_API_ORIGIN
