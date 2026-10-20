@@ -1,0 +1,106 @@
+{
+  "releasedAt": "2026-10-20",
+  "status": "deployed",
+  "apiCommit": "781b5290521a891760d2da050f1033614d5c0982",
+  "frontendCommit": "eb2e298c4f6c2df5c2ff64899c3990f5bbe99d56",
+  "sourceDigest": "8fbaab8fb3f39e096264e36dc79da42206597a578ab913b792ff299ccef41621",
+  "localArtifactDigest": "98b80ffd28191acf8dc623c0d99b043648482f77b672bcd89c01e41fc088f46d",
+  "servedAssets": [
+    {
+      "asset": "/assets/index-DESkcUG6.js",
+      "sha256": "552ceb51ff4fdd6a1102849d679d46a6b07d77e5b47ded60d527d89e4d16bf6e",
+      "bytes": 257336,
+      "localMatch": true
+    },
+    {
+      "asset": "/assets/index-K2FAGofk.css",
+      "sha256": "cd5f52e41f141b0944f605b30fe550025cc71e3e2020e2c30020e666e3800cf3",
+      "bytes": 43880,
+      "localMatch": true
+    }
+  ],
+  "privacyMatchesApprovedSource": true,
+  "deploymentIds": {
+    "core": "dep-dbblkdtg1s2s739cv4cg",
+    "learn": "dep-dbblm6s9v7es73fl7hpg",
+    "arcade": "dep-dbblmbg473hc73cp9jsg",
+    "interview": "dep-dbblmhou01pc73e74dv0",
+    "pages": "fe97b31d-f033-4aeb-aa01-af02abd89b55"
+  },
+  "migrations": [
+    {
+      "file": "services/core/migrations/0001_baseline.js",
+      "sha256": "660a4e559268c4856ee596e362007481d31288fc68be38942e36bbfa1fc0ec6d"
+    },
+    {
+      "file": "services/core/migrations/0002_membership_notice.js",
+      "sha256": "c84638ee2bc36276aec1bb17131c0145c8cbde922b98d6c621dfb427dfa84f3b"
+    },
+    {
+      "file": "services/core/migrations/0003_core_sessions.js",
+      "sha256": "43bd94758d09974a282ae4fa8cdb40f1db3d5586ffe6c3c1ee2fb60647bed7f3"
+    },
+    {
+      "file": "services/core/migrations/0004_achievements.js",
+      "sha256": "0e2eb25072649e065f2c026c7534a08f62e5dc1deddc11037f0c5d16355b4af2"
+    },
+    {
+      "file": "services/learn/src/db/migrations/0001_baseline.sql",
+      "sha256": "00186c8f8b7526e79fb3d40a7d966df904c43386b8efe4010644d1388bef740f"
+    },
+    {
+      "file": "services/learn/src/db/migrations/0002_delivery_attention.sql",
+      "sha256": "94f8971e4f984de398dadcf763d7abe80ec689a6896e2c5d205528d50def3cf1"
+    },
+    {
+      "file": "services/learn/src/db/migrations/0003_versioned_curricula.sql",
+      "sha256": "52bfd3547a1ba20b22dc14f69b230ffc1f0f3557450789e99f2131f85cf088ff"
+    },
+    {
+      "file": "services/learn/src/db/migrations/0004_path_completion.sql",
+      "sha256": "15797a46b2046a2d9075dfdef4e8300f58998d5b31710c362fd552d8f5fda95c"
+    },
+    {
+      "file": "services/learn/src/db/migrations/0005_contextual_tutor.sql",
+      "sha256": "735c3e37a1de17d2bedf81c8edbf3dd19d9a4fe18923759bc676d12e600be5d9"
+    }
+  ],
+  "configuration": {
+    "node": "24.12.0",
+    "pagesProductionBranch": "codex/tp11-release",
+    "pagesPreviewBuilds": false,
+    "pagesFailMode": "closed",
+    "coreSessions": true,
+    "mailMode": "unavailable",
+    "googlePublishingStatus": "production",
+    "googleOrigin": "https://collegehubs.pages.dev",
+    "legacyNoticeUntil": "2026-11-19T23:59:59+05:30",
+    "providerFlags": "existing values preserved"
+  },
+  "plans": {
+    "render": "four Free services; Hobby workspace, no card",
+    "pages": "Free",
+    "atlas": "Free",
+    "neon": "Free"
+  },
+  "rollback": {
+    "learnCommit": "d3b270b7869343066c8db18047eb37d672a80c02",
+    "learnDeployment": "dep-dbbll3rbc2fs73bjvlc0",
+    "previousApiCommit": "d585a1dbc15954c9c95825b8acf8acb0d61fb1b1",
+    "previousPagesDeployment": "36cc26f6-7756-473a-babf-d03c659a0d39",
+    "instructions": "docs/transition-restore.md"
+  },
+  "checks": {
+    "anonymousSmoke": "15/15",
+    "authenticatedTransport": "passed",
+    "deploymentTests": "2/2",
+    "retainedMigrationSuite": "10/10",
+    "historicalLearnReadRollback": "passed"
+  },
+  "limits": [
+    "Google production configuration and rendered button verified; a real Google account consent/login was not completed in this verification.",
+    "Email sending unavailable; supported college Workspace identity is required for Google-based membership proof.",
+    "Cold-start timing not measured; recorded readiness timings are warm observations.",
+    "Dependency audit advisories remain; this deployment is not a vulnerability clearance."
+  ]
+}

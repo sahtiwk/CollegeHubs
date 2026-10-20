@@ -1179,7 +1179,7 @@ and hosted rollout remain operator/release work.
 
 ### TP11.1. Free-host rollout, configuration and restore rehearsal
 
-**Status: in progress (20 October 2026), not deployed.** Local restore rehearsal passed 10 tests; configuration, bounded pools, manifest and anonymous smoke tooling are prepared. Existing-host smoke passed 11/15 with four direct readiness timeouts. Current account plans, retained hosted backup, compatible rollback artifact and deployment IDs still require hosting access. See [TP11.1 evidence](docs/tp11.1-evidence.md).
+**Status: complete (20 October 2026).** Deployed to existing free Pages/Render hosts after actual retained-data backup, copied upgrade/restore and compatible Learn rollback rehearsal. Hosted smoke passed 15/15; authenticated cookies, three module handoffs, origin/replay/CSRF rejection and direct Core WebSocket passed. Published entry assets match the local build. Google is in production; mail remains unavailable, and real Google-account login remains an explicit TP11.2 acceptance case. See [TP11.1 evidence](docs/tp11.1-evidence.md) and [release manifest](docs/tp11.1-release-manifest.json).
 
 **1. Goal:** Deploy compatible changes safely using existing free resources.
 
