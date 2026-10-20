@@ -1,6 +1,10 @@
 # Verification email delivery
 
-Status: adapter implemented; hosted activation awaits Brevo onboarding, sender verification and transactional-email access. Production remains in `unavailable` mode until those steps are complete.
+Status: activated on 20 October 2026. Core revision `90980bb4c263bd022527a307fe60feed0eaa3491` is live in Render deployment `dep-dbbr1uon74is739ekdg0`. The signed-in production account response reports `{available:true,mode:"brevo"}`; readiness and login both returned HTTP 200. The public privacy notice includes Brevo.
+
+The verified CollegeHubs sender uses the operator's signup email. A restricted key with only Transactional email access is stored in Core's server environment. It expires 20 October 2027, or after 90 days unused. The key is excluded from Git and web assets.
+
+The operator-approved test message received HTTP 201 and a subsequent Brevo `delivered` event. This confirms acceptance by the recipient's mail server, not inbox placement or that the person opened it. No account verification was fabricated by the test. A real user's signed-in verification-link consumption remains a manual acceptance check. All 11 targeted mail, identity and deployment tests passed; Core's build passed.
 
 Core alone needs these server environment settings:
 
