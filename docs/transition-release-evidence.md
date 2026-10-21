@@ -22,7 +22,7 @@ TP11.1 deployment/restore checks remain historical evidence. Subsequent changes:
 | LeetCode statistics/contests | Contests available through Clist; direct statistics/bonus remain disabled pending supported access and ownership proof |
 | Clist contests | Approved free account configured privately; hosted fetch and UI passed with 14 contests, including four LeetCode contests |
 | Local inference | Pinned model/runtime installed with owner approval; warm schema probes passed, cold first request timed out. Grading/public-host certification remains blocked |
-| Interview streaming and voice | Bounded streaming and on-device voice implemented locally; real local/Groq stream probes passed. Hosted rollout and spoken microphone acceptance pending |
+| Interview streaming and voice | Bounded streaming and on-device voice implemented locally; real local/Groq stream probes passed. Chrome spoken dictation passed by owner report; Vivaldi returned no transcript. Hosted rollout pending |
 | Optional GPU visual | Real Intel rendering/device-loss and frame/interaction samples passed; oversized chunk and unmeasured memory/lower-end matrix keep static default |
 | Dependency advisories | Explicit full npm audit reports zero advisories after local upgrades; broader visual checks and deployment pending |
 | E0–E10, failure/security checks | Integrated fixture: 177 passed, zero failed/skipped. This does not substitute for remaining hosted/load gates |
