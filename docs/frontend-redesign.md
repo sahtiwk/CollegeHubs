@@ -275,3 +275,7 @@ this revision; the earlier 108-test backend result was not rerun for this visual
 change. Shared tokens update the app palette; the editorial compositions and
 sample journeys remain in the isolated catalogue until the feature tickets.
 No remote assets or new packages were introduced by the redesign.
+
+## Optional feature follow-up - 21 October 2026
+
+See [optional feature validation](optional-features-validation.md) for real GPU rendering/device-loss evidence, pinned local-model warm/cold measurements, bounded feedback streaming and on-device voice implementation. This supersedes earlier statements that no runtime, streaming route or voice controls exist. It does not certify local grading, hosted streaming or completed microphone acceptance.

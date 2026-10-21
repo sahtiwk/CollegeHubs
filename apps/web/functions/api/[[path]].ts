@@ -21,6 +21,7 @@ export async function proxyApi(request: Request, env: Bindings, fetcher: typeof 
       if (value) { const selected = value.split(';').map(item => item.trim()).filter(item => (module ? ['ch_' + module + '_state', 'ch_' + module + '_session'] : ['ch_core_refresh']).includes(item.split('=')[0])).join('; '); if (selected) headers.set(name, selected); }
     } else if (value) headers.set(name, value);
   }
+  const feedback = request.method === 'POST' && /^\/api\/interview\/sessions\/[a-f0-9]{24}\/answers\/[a-f0-9-]{36}\/feedback$/.test(incoming.pathname);
   const upload = request.method === 'POST' && incoming.pathname === '/api/interview/resumes/upload';
   let overflow = false;
   let body: Uint8Array | ReadableStream<Uint8Array> | undefined;
@@ -39,7 +40,8 @@ export async function proxyApi(request: Request, env: Bindings, fetcher: typeof 
     if (overflow) return json(413, 'BODY_TOO_LARGE');
     if (response.status >= 300 && response.status < 400) return json(502, 'UPSTREAM_REDIRECT_REJECTED');
     const calendarExport = request.method === 'GET' && /^\/api\/hubs\/[a-f0-9]{24}\/calendar\/export\.ics$/.test(incoming.pathname) && response.status === 200 && response.headers.get('content-type')?.split(';')[0].trim().toLowerCase() === 'text/calendar';
-    if (!calendarExport && !response.headers.get('content-type')?.includes('application/json') && response.status !== 204) return json(502, 'UPSTREAM_NOT_JSON');
+    const feedbackStream = feedback && response.status === 200 && response.headers.get('content-type')?.split(';')[0].trim() === 'application/x-ndjson';
+    if (!feedbackStream && !calendarExport && !response.headers.get('content-type')?.includes('application/json') && response.status !== 204) return json(502, 'UPSTREAM_NOT_JSON');
     const forwarded = new Headers({ 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
     if (calendarExport) forwarded.set('Content-Disposition', 'attachment; filename="collegehubs-calendar.ics"');
     for (const name of ['content-type', 'retry-after', ...(module ? [] : ['x-core-csrf'])]) { const value = response.headers.get(name); if (value) forwarded.set(name, value); }

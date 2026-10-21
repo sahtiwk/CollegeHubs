@@ -23,7 +23,10 @@ function apiGateway(env) {
         res.statusCode = result.status;
         for (const [key, value] of result.headers) if (key !== 'set-cookie') res.setHeader(key, value);
         if (result.headers.getSetCookie().length) res.setHeader('Set-Cookie', result.headers.getSetCookie());
-        res.end(Buffer.from(await result.arrayBuffer()));
+        if (result.headers.get('content-type')?.includes('application/x-ndjson') && result.body) {
+          for await (const chunk of result.body) { if (abort.signal.aborted) break; if (!res.write(Buffer.from(chunk))) await new Promise(resolve => {res.once('drain',resolve);res.once('close',resolve);}); }
+          res.end();
+        } else res.end(Buffer.from(await result.arrayBuffer()));
       } catch { res.writeHead(503, { 'Content-Type': 'application/json' }); res.end('{"error":{"code":"GATEWAY_UNAVAILABLE"}}'); }
     });
   }

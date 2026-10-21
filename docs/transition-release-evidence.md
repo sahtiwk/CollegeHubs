@@ -21,9 +21,9 @@ TP11.1 deployment/restore checks remain historical evidence. Subsequent changes:
 | Codeforces binding and bonuses | Live ownership and rating 1297 accepted; 2594 external Aura applied, repeat reconciliation delta 0 |
 | LeetCode statistics/contests | Contests available through Clist; direct statistics/bonus remain disabled pending supported access and ownership proof |
 | Clist contests | Approved free account configured privately; hosted fetch and UI passed with 14 contests, including four LeetCode contests |
-| Local inference | Hardware capacity recorded; runtime/model benchmark and grading quality gate pending |
-| Interview streaming and voice | Optional-off; implementation and free-host acceptance pending |
-| Optional GPU visual | Oversized optional chunk; real device-loss/latency/memory checks pending |
+| Local inference | Pinned model/runtime installed with owner approval; warm schema probes passed, cold first request timed out. Grading/public-host certification remains blocked |
+| Interview streaming and voice | Bounded streaming and on-device voice implemented locally; real local/Groq stream probes passed. Hosted rollout and spoken microphone acceptance pending |
+| Optional GPU visual | Real Intel rendering/device-loss and frame/interaction samples passed; oversized chunk and unmeasured memory/lower-end matrix keep static default |
 | Dependency advisories | Explicit full npm audit reports zero advisories after local upgrades; broader visual checks and deployment pending |
 | E0–E10, failure/security checks | Integrated fixture: 177 passed, zero failed/skipped. This does not substitute for remaining hosted/load gates |
 | Performance/load/cold starts | Declared workloads and percentile measurements pending |

@@ -98,3 +98,7 @@ they can be enabled. They may never finalize reports or award Aura.
 
 Only disposable local databases and synthetic resumes were used. No production
 deployment, live provider request or retained user-data cleanup was performed.
+
+## Optional feature follow-up - 21 October 2026
+
+See [optional feature validation](optional-features-validation.md) for real GPU rendering/device-loss evidence, pinned local-model warm/cold measurements, bounded feedback streaming and on-device voice implementation. This supersedes earlier statements that no runtime, streaming route or voice controls exist. It does not certify local grading, hosted streaming or completed microphone acceptance.

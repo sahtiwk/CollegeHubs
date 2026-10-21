@@ -16,6 +16,21 @@ export async function interviewRequest(path: string, { method = 'GET', body, csr
   const data = await response.json(); if (!response.ok) throw new InterviewError(data.error?.code, response.status); return data;
 }
 export function clearInterviewSession(remote = false) { const old = coordinator.clear(); if (remote && old?.csrfToken) fetch('/api/interview/logout', { method: 'POST', credentials: 'same-origin', redirect: 'error', keepalive: true, headers: { 'X-CSRF-Token': old.csrfToken } }).catch(() => {}); }
+export async function streamFeedback(path:string, revision:number, csrf:string, signal:AbortSignal, onText:(text:string)=>void) {
+  if(!/^\/sessions\/[a-f0-9]{24}\/answers\/[a-f0-9-]{36}\/feedback$/.test(path))throw new InterviewError('INVALID_PATH',400);
+  const requestId=crypto.randomUUID();
+  const response=await fetch('/api/interview'+path,{method:'POST',credentials:'same-origin',redirect:'error',cache:'no-store',signal:AbortSignal.any([signal,AbortSignal.timeout(16000)]),headers:{'Content-Type':'application/json','X-CSRF-Token':csrf},body:JSON.stringify({revision,requestId})});
+  if(!response.ok){const value=await response.json();throw new InterviewError(value.error?.code,response.status);}
+  if(!response.headers.get('content-type')?.includes('application/x-ndjson')||!response.body)throw new InterviewError('INVALID_RESPONSE');
+  const reader=response.body.getReader(),decoder=new TextDecoder();let buffer='',sequence=0,size=0,done=false,total=0;
+  try{for(;;){const part=await reader.read();if(part.done)break;size+=part.value.length;if(size>131072)throw Error();buffer+=decoder.decode(part.value,{stream:true});let end;
+    while((end=buffer.indexOf('\n'))>=0){const event=JSON.parse(buffer.slice(0,end));buffer=buffer.slice(end+1);if(signal.aborted||done||event.requestId!==requestId||event.sequence!==sequence++)throw Error();
+      if(event.type==='done')done=true;
+      else if(event.type==='delta'&&typeof event.text==='string'){total+=event.text.length;if(total>4000)throw Error();onText(event.text);}
+      else throw Error();
+    }
+  }if(!done||buffer.trim())throw Error();}finally{await reader.cancel().catch(()=>{});}
+}
 window.addEventListener('core-identity', () => clearInterviewSession(true));
 export function ensureInterviewSession(user: { _id: string; hubId: string; membershipVersion: number }, progress: (text:string)=>void): Promise<InterviewSession> {
   const checked = (dto: InterviewSession) => { if (dto.userId !== user._id || dto.hubId !== user.hubId || dto.membershipVersion !== user.membershipVersion || Date.parse(dto.expiresAt) <= Date.now()+35000) throw new InterviewError('INTERVIEW_SESSION_REQUIRED',401); sanitizeTheme(dto.theme,dto.hubId,dto.theme.themeVersion); return dto; };

@@ -1,0 +1,101 @@
+{
+  "date": "2026-10-21",
+  "hardware": "i5-13450HX; RTX 5050 Laptop GPU 8151 MiB; browser selected Intel gen-12lp for decorative shader",
+  "artifacts": [
+    {
+      "file": "runtime.zip",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11669/llama-b11669-bin-win-vulkan-x64.zip",
+      "sha256": "2c07574e7bde71321cb785282b20cc821e951132149eeceeea32ddebdbf0598e",
+      "bytes": 32182350
+    },
+    {
+      "file": "model.gguf",
+      "url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/91cad51170dc346986eccefdc2dd33a9da36ead9/qwen2.5-1.5b-instruct-q4_k_m.gguf",
+      "sha256": "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e",
+      "bytes": 1117320736
+    },
+    {
+      "file": "MODEL-LICENSE",
+      "url": "https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/raw/91cad51170dc346986eccefdc2dd33a9da36ead9/LICENSE",
+      "sha256": "832dd9e00a68dd83b3c3fb9f5588dad7dcf337a0db50f7d9483f310cd292e92e",
+      "bytes": 11343
+    },
+    {
+      "file": "RUNTIME-LICENSE",
+      "url": "https://raw.githubusercontent.com/ggml-org/llama.cpp/b11669/LICENSE",
+      "sha256": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d",
+      "bytes": 1078
+    }
+  ],
+  "cold": {
+    "model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "provider": "local",
+    "rewardable": false,
+    "qualityGate": "not-approved",
+    "measurements": [
+      {
+        "resumeCharacters": 500,
+        "valid": false,
+        "error": "AI_TIMEOUT",
+        "latencyMs": 20011
+      },
+      {
+        "resumeCharacters": 8000,
+        "valid": true,
+        "latencyMs": 3926,
+        "clientRssDelta": 667648
+      },
+      {
+        "answerCharacters": 10000,
+        "valid": true,
+        "latencyMs": 888
+      }
+    ],
+    "note": "Client memory is not inference-server or GPU memory. No grading quality or hosted availability is certified."
+  },
+  "warm": {
+    "model": "Qwen/Qwen2.5-1.5B-Instruct",
+    "provider": "local",
+    "rewardable": false,
+    "qualityGate": "not-approved",
+    "measurements": [
+      {
+        "resumeCharacters": 500,
+        "valid": true,
+        "latencyMs": 1934,
+        "clientRssDelta": 6508544
+      },
+      {
+        "resumeCharacters": 8000,
+        "valid": true,
+        "latencyMs": 1832,
+        "clientRssDelta": 229376
+      },
+      {
+        "answerCharacters": 10000,
+        "valid": true,
+        "latencyMs": 338
+      }
+    ],
+    "note": "Client memory is not inference-server or GPU memory. No grading quality or hosted availability is certified."
+  },
+  "gateway": {
+    "elapsedMs": 530.0949,
+    "events": 4,
+    "text": "Strength: The answer provides a clear and concise approach to testing an input validation function.\nImprovement: The answer could benefit from adding more specific examples or scenarios to illustrate how the testing would be conducted. For instance, providing examples of what would happen if the input was too short or too long could help clarify the testing process.",
+    "authorizationChecks": 3,
+    "reportUnchanged": true
+  },
+  "gpu": {
+    "adapter": "Intel gen-12lp",
+    "canvas": "480x280",
+    "frameSamples": 180,
+    "frameIntervalP95Ms": 6.3,
+    "frameIntervalMaxMs": 6.8,
+    "interactionSampleMs": 4.5,
+    "realDeviceDestroyFallback": true,
+    "remainingCanvasAfterLoss": 0,
+    "memoryBudget": "Not measured; no universal GPU certification claimed"
+  },
+  "gate": "Local opt-in ungraded experiment only. Cold timeout and lack of quality corpus prevent grading/public-host certification."
+}

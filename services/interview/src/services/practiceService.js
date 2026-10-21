@@ -178,6 +178,27 @@ function createPracticeService(connection, models, ai, events) {
       const [row]=await Interview.create([{...scope(identity),jobTitle:'Curated foundations practice',jobDescription:'Original offline practice. No resume or inference provider is used.',questionTypes:['technical'],experienceLevel:'entry',status:'ready',questions,providerId:'curated',providerModel:'curated-v1',practiceMode:true}],{session});return row;
     });return start(identity,{interviewId:String(interview._id)});
   }
-  return { curated, create, readInterview, generate, start, readSession, saveAnswer, complete, removeInterview, listInterviews, history };
+  async function feedback(identity,id,questionId,input,{signal,onText,reauthorize}) {
+    if(!exact(input,['revision','requestId'])||!Number.isSafeInteger(input.revision)||input.revision<1||!uuid.test(input.requestId||''))throw fail(400,'INVALID_BODY');
+    if(!ai.streaming)throw fail(503,'AI_UNAVAILABLE');
+    const check=async()=>{
+      signal.throwIfAborted();await reauthorize();credential(identity,await now());
+      const row=await owned(Session,identity,id);
+      if(!['active','evaluation_failed'].includes(row.status))throw fail(409,'ANSWERS_LOCKED');
+      if(row.providerId!==ai.provider||row.providerModel!==ai.model)throw fail(409,'AI_PROVIDER_CHANGED');
+      const question=row.questions.find(q=>q.id===questionId),answer=row.answers.find(a=>a.questionId===questionId);
+      if(!question||!answer)throw fail(404,'NOT_FOUND');
+      if(answer.revision!==input.revision||answer.skipped||!answer.answer.trim())throw fail(409,'ANSWER_REVISION_CONFLICT');
+      return {question:question.questionText,answer:answer.answer};
+    };
+    const context=await check(),at=await now();credential(identity,at,15000);
+    const token=randomUUID(),keys=await prepareBudget(identity,'feedback',at);
+    await transaction(session=>acquireBudget(keys,'feedback',token,at,session));
+    let failure;
+    try{await ai.feedback(context,{signal,onText:async text=>{await check();signal.throwIfAborted();await onText(text);}});await check();}
+    catch(error){failure=error;throw error;}
+    finally{await releaseBudget(token,failure);}
+  }
+  return { feedback, curated, create, readInterview, generate, start, readSession, saveAnswer, complete, removeInterview, listInterviews, history };
 }
 module.exports = { createPracticeService };

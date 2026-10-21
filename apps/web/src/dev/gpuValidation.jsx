@@ -1,0 +1,12 @@
+// Development-only diagnostic entry; excluded from the production build.
+import React,{useEffect,useRef,useState} from 'react';
+import {createRoot} from 'react-dom/client';
+import ShaderBackdrop from '../components/visual/ShaderBackdrop';
+let device,record={};
+async function load(){const engine=await import('../components/visual/shaderEngine');return {mountShader:async(canvas,gpu,onError)=>{device=gpu.device;record.adapter={vendor:gpu.adapter.info?.vendor,architecture:gpu.adapter.info?.architecture,device:gpu.adapter.info?.device,description:gpu.adapter.info?.description};const instance=await engine.mountShader(canvas,gpu,onError);return {...instance,pause(){record.pauses=(record.pauses||0)+1;instance.pause();},resume(){record.resumes=(record.resumes||0)+1;instance.resume();},destroy(){record.destroyed=(record.destroyed||0)+1;instance.destroy();}};}};}
+function App(){const [enabled,setEnabled]=useState(false),[output,setOutput]=useState(''),[latency,setLatency]=useState(''),ref=useRef(null);
+ useEffect(()=>{const interval=setInterval(()=>setOutput(JSON.stringify({effect:ref.current?.querySelector('[data-effect]')?.dataset.effect,canvasCount:ref.current?.querySelectorAll('canvas').length,...record},null,2)),500);return()=>clearInterval(interval);},[]);
+ async function measure(){const samples=[];let previous=performance.now();for(let i=0;i<180;i++)await new Promise(resolve=>requestAnimationFrame(now=>{samples.push(now-previous);previous=now;resolve();}));samples.sort((a,b)=>a-b);record.frames={samples:samples.length,p95Ms:samples[Math.floor(samples.length*.95)],maxMs:Math.max(...samples)};}
+ return <main style={{fontFamily:'system-ui',padding:30}}><h1>Local GPU validation</h1><p>Real optional shader. Static fallback remains readable.</p><button onClick={()=>{record={};setEnabled(true);}}>Start GPU effect</button> <button onClick={()=>setEnabled(false)}>Disable effect</button> <button onClick={()=>device?.destroy()}>Destroy GPU device</button> <button onClick={measure}>Measure 180 frames</button> <button onClick={()=>{const start=performance.now();requestAnimationFrame(()=>setLatency((performance.now()-start).toFixed(2)+' ms'));}}>Check interaction latency</button><p>{latency}</p><div ref={ref} style={{width:480,height:280,background:'linear-gradient(45deg,#334,#abc)'}}><ShaderBackdrop enabled={enabled} load={load}/></div><pre aria-label="GPU results">{output}</pre><div style={{height:1300}}>Scroll down to pause the decorative canvas.</div></main>;
+}
+createRoot(document.getElementById('root')).render(<App/>);

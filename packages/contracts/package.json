@@ -13,6 +13,7 @@
     "./day-policy.cjs": "./day-policy.cjs",
     "./delivery-policy.cjs": "./delivery-policy.cjs",
     "./learn-curricula.json": "./learn-curricula.json",
-    "./inference.cjs": "./inference.cjs"
+    "./inference.cjs": "./inference.cjs",
+    "./feedback-stream.cjs": "./feedback-stream.cjs"
   }
 }

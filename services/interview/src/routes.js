@@ -11,7 +11,7 @@ function routes(connection, models, store, practice, ai, importRecommendation) {
   router.post('/resumes/upload', authenticated, require('./middleware/upload.middleware')(), wrap(resumes.upload));
   router.get('/resumes/:id', authenticated, wrap(resumes.get));
   router.delete('/resumes/:id', authenticated, wrap(resumes.delete));
-  router.get('/capabilities', authenticated, (_req,res) => res.json({ aiAvailable: ai.enabled, provider: process.env.NODE_ENV === 'test' && process.env.INTERVIEW_PROVIDER_FIXTURE === 'true' ? 'Synthetic test provider' : ai.provider||'groq', model: ai.model, curatedPractice:true, streaming:false, voice:false, resumeRetentionDays:30, capabilities:ai.capabilities }));
+  router.get('/capabilities', authenticated, (_req,res) => res.json({ aiAvailable: ai.enabled, provider: process.env.NODE_ENV === 'test' && process.env.INTERVIEW_PROVIDER_FIXTURE === 'true' ? 'Synthetic test provider' : ai.provider||'groq', model: ai.model, curatedPractice:true, streaming:!!ai.streaming, voice:true, resumeRetentionDays:30, capabilities:ai.capabilities }));
   router.get('/interviews', authenticated, wrap(async (req,res) => res.json(await practice.listInterviews(req.identity,req.query))));
   router.post('/interviews', authenticated, wrap(async (req,res) => res.status(201).json({ interview: await practice.create(req.identity,req.body) })));
   router.get('/interviews/:id', authenticated, wrap(async (req,res) => res.json({ interview: await practice.readInterview(req.identity,req.params.id) })));
@@ -23,6 +23,17 @@ function routes(connection, models, store, practice, ai, importRecommendation) {
   router.post('/sessions', authenticated, wrap(async (req,res) => res.status(201).json({session:await practice.start(req.identity,req.body)})));
   router.get('/sessions/:id', authenticated, wrap(async (req,res) => res.json({session:await practice.readSession(req.identity,req.params.id)})));
   router.put('/sessions/:id/answers/:questionId', authenticated, wrap(async (req,res) => res.json({session:await practice.saveAnswer(req.identity,req.params.id,req.params.questionId,req.body)})));
+  router.post('/sessions/:id/answers/:questionId/feedback',authenticated,async(req,res,next)=>{
+    const controller=new AbortController(),signal=AbortSignal.any([controller.signal,AbortSignal.timeout(14000)]);
+    res.once('close',()=>controller.abort());let sequence=0;
+    const send=(type,extra={})=>{
+      signal.throwIfAborted();
+      if(!res.headersSent){res.status(200).set({'Content-Type':'application/x-ndjson','X-Content-Type-Options':'nosniff','Cache-Control':'no-store'});res.flushHeaders();}
+      if(!res.write(JSON.stringify({requestId:req.body.requestId,sequence:sequence++,type,...extra})+'\n')){controller.abort();throw fail(503,'STREAM_BACKPRESSURE');}
+    };
+    try{await practice.feedback(req.identity,req.params.id,req.params.questionId,req.body,{signal,reauthorize:()=>store.get(cookie(req,'session')),onText:text=>send('delta',{text})});send('done');res.end();}
+    catch(error){if(!res.headersSent)return next(error);if(!res.destroyed){res.end(JSON.stringify({requestId:req.body.requestId,sequence:sequence++,type:'error',code:'FEEDBACK_INTERRUPTED'})+'\n');}}
+  });
   router.post('/sessions/:id/complete', authenticated, wrap(async (req,res) => { const session=await practice.complete(req.identity,req.params.id,req.body);res.status(session.status === 'evaluating' ? 202 : 200).json({session}); }));
   return router;
 }

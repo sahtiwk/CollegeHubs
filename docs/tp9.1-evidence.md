@@ -107,3 +107,7 @@ provider-disabled owned practice with immutable self-review and no reward event.
 
 No retained user database was migrated, no deployment was performed, and no live
 Groq grading or local model quality certification is claimed.
+
+## Optional feature follow-up - 21 October 2026
+
+See [optional feature validation](optional-features-validation.md) for real GPU rendering/device-loss evidence, pinned local-model warm/cold measurements, bounded feedback streaming and on-device voice implementation. This supersedes earlier statements that no runtime, streaming route or voice controls exist. It does not certify local grading, hosted streaming or completed microphone acceptance.
