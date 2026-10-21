@@ -4,13 +4,15 @@ import { useSchedule, scheduleTime } from '../hooks/useSchedule';
 import ScheduleMonth, { indiaDay, onDay, monthRange } from './ScheduleMonth';
 import '../styles/schedules.css';
 export default function ContestSchedule({ compact = false }) {
-  const { data, error, busy, retry } = useSchedule('/contests');
+  const [source,setSource]=useState('codeforces');
+  const { data, error, busy, retry } = useSchedule(source==='clist'?'/contests?provider=clist':'/contests');
   const [view,setView]=useState('list'),[month,setMonth]=useState(()=>indiaDay(new Date()).slice(0,7)),[selected,setSelected]=useState('');
   const range=monthRange(month),monthItems=(data?.items||[]).filter(i=>new Date(i.startsAt)<new Date(range.to+'T00:00:00+05:30')&&new Date(i.endsAt)>new Date(range.from+'T00:00:00+05:30'));
   const visible=view==='calendar'&&!compact?(selected?monthItems.filter(i=>onDay(i,selected)):monthItems):(data?.items||[]);
   return <section className="card stack contest-calendar" aria-label="Contest schedules">
     <p className="eyebrow">Practice / beyond campus</p><div className="schedule-heading"><h2>Coding contests</h2><button disabled={busy} onClick={retry}>Check schedules</button></div>
-    {!compact&&<p className="muted">Codeforces coverage only. Clist and LeetCode schedules are unavailable until permitted API access is verified.</p>}
+    {!compact&&<p className="muted">Choose Codeforces, or Clist coverage for LeetCode, AtCoder and CodeChef. Clist shows up to 100 upcoming or running contests; confirm details at the source.</p>}
+    <label>Schedule source<select value={source} onChange={e=>{setSource(e.target.value);setSelected('');}}><option value="codeforces">Codeforces</option><option value="clist">Clist · LeetCode, AtCoder, CodeChef</option></select></label>
     {!compact&&<div className="schedule-toolbar"><div className="schedule-switch"><button aria-pressed={view==='list'} onClick={()=>setView('list')}>List</button><button aria-pressed={view==='calendar'} onClick={()=>setView('calendar')}>Calendar</button></div>{view==='calendar'&&<label>Contest month<input type="month" value={month} onChange={e=>{if(/^\d{4}-(0[1-9]|1[0-2])$/.test(e.target.value)){setMonth(e.target.value);setSelected('');}}}/></label>}</div>}
     {busy && <p role="status">Loading cached schedulesâ€¦</p>}
     {error && <p className="error" role="alert">{error}</p>}

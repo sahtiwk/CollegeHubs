@@ -3,14 +3,16 @@ const Contest = require('../models/Contest'), CalendarEvent = require('../models
 const Channel = require('../models/Channel'), Hub = require('../models/Hub');
 const provider = require('./providerRefresh');
 const { accessError } = require('./hubAccess');
-async function contests({ trigger = provider.refresh, now = new Date() } = {}) {
-  const row = await Contest.findOne({ provider: 'codeforces' }).maxTimeMS(2000).lean();
+const clist = require('../integrations/clist');
+const clistRefresh = provider.createProviderRefresh({provider:'clist',load:clist.fetchContests,enabled:()=>provider.enabled()&&clist.enabled()});
+async function contests({ source = 'codeforces', trigger = source==='clist'?clistRefresh.refresh:provider.refresh, now = new Date() } = {}) {
+  const row = await Contest.findOne({ provider: source }).maxTimeMS(2000).lean();
   // Request-triggered best effort only. Reading the cache never waits for the network.
   Promise.resolve().then(() => trigger()).catch(() => {});
   const fetchedAt = row?.fetchedAt || null;
   const stale = !!fetchedAt && (!!row.lastError || +now - +fetchedAt >= provider.FRESH_MS);
-  return { provider: 'Codeforces', sourceUrl: 'https://codeforces.com/contests', provenance: row?.provenance || 'provider', fetchedAt, stale,
-    status: !fetchedAt ? 'unavailable' : stale ? 'stale' : 'ok', refreshEnabled: provider.enabled(), nextAttemptAt: row?.nextAttemptAt || null,
+  return { provider: source==='clist'?'Clist':'Codeforces', sourceUrl: source==='clist'?'https://clist.by':'https://codeforces.com/contests', provenance: row?.provenance || 'provider', fetchedAt, stale,
+    status: !fetchedAt ? 'unavailable' : stale ? 'stale' : 'ok', refreshEnabled: provider.enabled()&&(source!=='clist'||clist.enabled()), nextAttemptAt: row?.nextAttemptAt || null,
     items: (row?.items || []).filter(item => +item.endsAt > +now).slice(0, 100).map(({ providerId, title, startsAt, endsAt, url }) => ({ providerId, title, startsAt, endsAt, url })) };
 }
 async function calendar(context, query = {}, options = {}) {

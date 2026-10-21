@@ -72,5 +72,16 @@ test('G1/G3: persisted schedules and scoped academic seeds survive provider fail
       const result = await schedule.contests({ trigger: () => { started = true; return new Promise(() => {}); }, now: new Date('2027-01-01') });
       assert.equal(started, true); assert.equal(result.items.length, 0); assert.ok(result.fetchedAt);
     });
+    await t.test('Clist leases and failures cannot replace the Codeforces cache',async()=>{
+      const before=await Contest.findOne({provider:'codeforces'}).lean();
+      const rows=[{providerId:'12',title:'Clist fixture',startsAt:new Date('2026-10-25'),endsAt:new Date('2026-10-26'),url:'https://leetcode.com/contest/example/'}];
+      let calls=0;const refresh=createProviderRefresh({provider:'clist',enabled:()=>true,load:async()=>{calls++;return rows;}});
+      await Promise.all([refresh.refresh(),refresh.refresh()]);assert.equal(calls,1);
+      assert.equal((await schedule.contests({source:'clist',trigger:()=>{},now:new Date('2026-10-21')})).items[0].providerId,'12');
+      await Contest.updateOne({provider:'clist'},{$set:{nextAttemptAt:new Date(0)}});
+      await createProviderRefresh({provider:'clist',enabled:()=>true,load:async()=>{throw Error('offline');}}).refresh();
+      assert.equal((await schedule.contests({source:'clist',trigger:()=>{},now:new Date('2026-10-21')})).status,'stale');
+      assert.deepEqual(await Contest.findOne({provider:'codeforces'}).lean(),before);
+    });
   } finally { if (mongoose.connection.name === dbName) await mongoose.connection.dropDatabase(); await mongoose.disconnect(); }
 });

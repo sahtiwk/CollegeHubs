@@ -7,6 +7,6 @@ function config(env=process.env) {
 function capabilities(){const flags=config();return [
   {provider:'codeforces',name:'Codeforces',enabled:flags.codeforces,bonusEnabled:flags.bonus,sourceUrl:'https://codeforces.com',reason:flags.codeforces?'Ownership review required before statistics refresh.':'Statistics linking is disabled by this installation. Contest schedules are independent.'},
   {provider:'leetcode',name:'LeetCode',enabled:false,bonusEnabled:false,sourceUrl:'https://leetcode.com',reason:'Permitted statistics/contest API access and ownership proof are not established. No scraping or self-reported scores.'},
-  {provider:'clist',name:'Clist',enabled:false,bonusEnabled:false,sourceUrl:'https://clist.by',reason:'API credentials and free-account eligibility have not been verified. Additional contest coverage is unavailable.'}
+  {provider:'clist',name:'Clist',enabled:false,bonusEnabled:false,sourceUrl:'https://clist.by',reason:'Contest schedules are available separately when configured. Clist does not award profile bonuses.'}
 ];}
 module.exports={config,capabilities};
