@@ -18,9 +18,9 @@ TP11.1 deployment/restore checks remain historical evidence. Subsequent changes:
 | Google sign-in and explicit linking | Accepted and closed by owner; user completed Google sign-in and live UI reports linked. Separate live explicit-link journey is not claimed |
 | Academic events | Two official CVR IV B.Tech date windows imported live with all-day version-2 boundaries; Google Calendar file import previously passed 2/2 |
 | Google Calendar integration | Deployed and enabled; owner completed consent. First hosted sync succeeded and both date windows are visible in the separate Google calendar. Second hosted sync succeeded without an extra Google event; update/cancellation/disconnect guards have local test coverage |
-| Codeforces binding and bonuses | Live owner challenge verified for supplied handle; statistics refresh and bonus acceptance remain pending |
-| LeetCode statistics/contests | Permitted access and ownership method unresolved; do not substitute scraping |
-| Clist contests | Free-account/API access and live acceptance pending |
+| Codeforces binding and bonuses | Live ownership and rating 1297 accepted; 2594 external Aura applied, repeat reconciliation delta 0 |
+| LeetCode statistics/contests | Contests available through Clist; direct statistics/bonus remain disabled pending supported access and ownership proof |
+| Clist contests | Approved free account configured privately; hosted fetch and UI passed with 14 contests, including four LeetCode contests |
 | Local inference | Hardware capacity recorded; runtime/model benchmark and grading quality gate pending |
 | Interview streaming and voice | Optional-off; implementation and free-host acceptance pending |
 | Optional GPU visual | Oversized optional chunk; real device-loss/latency/memory checks pending |
@@ -74,3 +74,9 @@ Real Google Calendar acceptance — 21 October 2026: owner completed the consent
 Repeat-sync acceptance: the hosted worker completed another full pass at `2026-10-21T05:38:48.779Z`, with no error. After reloading Google Calendar, the examination window still appears once in the managed calendar (alongside the separate earlier file-import copy). CollegeHubs displays the new full-sync time after reload.
 
 Coding platform rollout preparation — 21 October: real Codeforces statistics refreshed on the hosted service for verified `sahtiwk`: current rating 1297, fetched `2026-10-21T05:45:21.701Z`. Expected external bonus is 2594 under the existing current-rating formula; activation/reconciliation is pending. Eleven external-account tests passed. Owner approved Clist Google sign-in, free registration, and private API key storage/use. Authenticated documented Clist v4 API returned HTTP 200 and 14 contests across LeetCode, AtCoder and CodeChef (four LeetCode contests). New bounded adapter keeps credentials in the Authorization header, rejects unsafe URLs, assumes documented unformatted UTC dates, and stores independent leased provider snapshots. API/UI source selection added; Web/Core builds passed, 20 targeted tests plus the new provider-isolation test passed with no failures/skips. LeetCode direct statistics remain blocked: no supported statistics/ownership access established and current terms prohibit scraping (https://leetcode.com/terms/). Clist supplies schedules only; no LeetCode score or ownership is inferred from them.
+
+## Coding platform hosted acceptance - 21 October 2026
+
+Core source `31c06b4bf50cbc005e566c9000fad3ebab2dae05` deployed successfully as `dep-dbc567tg1s2s7393j8ag`. Approved Clist credentials and the external bonus flag are configured privately. The live progress UI shows verified sahtiwk, rating 1297 and external/total Aura 2594, with engagement unchanged at zero. A guarded operator transaction reconciled the fresh hosted snapshot against the unchanged verified binding and membership; repeating it applied delta zero. This is reconciliation acceptance, not a claim that a second provider refresh occurred. Evidence: `.local/tp111/codeforces-bonus-first-application.json`, `codeforces-bonus-acceptance.json`, and `codeforces-live-bonus.png`.
+
+Hosted Clist fetch succeeded at `2026-10-21T10:24:47.052Z`: 14 saved contests, no error. Browser source selection and Check schedules displayed those contests with source links and local times, including four LeetCode contests. Evidence: `.local/tp111/clist-hosted-schedules.png`. Direct LeetCode statistics, ownership and bonus remain unavailable; schedules do not establish those capabilities.

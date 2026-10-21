@@ -58,3 +58,9 @@ remain pending. Test-only statistics enablement used a disposable fixture proces
 with bonus disabled. See [operations](external-progress.md) for the exact review
 command and separate activation criteria. Carry unavailable features into TP11's
 exception register; this is not a claim of full multi-provider coverage.
+
+## Hosted follow-up - 21 October 2026
+
+This supersedes the earlier rollout limitations for Codeforces and Clist. Core revision `31c06b4` is live with Codeforces statistics and bonuses enabled. Real owner proof passed for sahtiwk; hosted rating is 1297. Guarded reconciliation awarded 2594 external Aura; a repeat applied zero, and the live UI confirms it. Engagement was unchanged.
+
+Approved free Clist API access is configured privately. The bounded v4 adapter and independent leased cache fetched 14 contests on the hosted service at 10:24:47 UTC; the live source selector displays LeetCode, AtCoder and CodeChef schedules. Twenty targeted tests passed before adding the provider-isolation guard; the final schedule suite passed all eight tests, yielding 21 relevant passing cases across the three suites. Web and Core builds passed. Direct LeetCode statistics and bonus remain disabled pending supported access and ownership proof. See the release evidence and capability matrix for current scope.
