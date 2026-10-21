@@ -1,0 +1,42 @@
+[
+  {
+    "key": "cvr-iv-btech-2026-27-sem1-practical",
+    "hubSlug": "cvr",
+    "channelSlugs": [
+      "dsa",
+      "web-development",
+      "machine-learning",
+      "competitive-programming"
+    ],
+    "title": "IV B.Tech: Semester I practical examinations and preparation holidays",
+    "startsAt": "2026-10-22T00:00:00+05:30",
+    "endsAt": "2026-10-29T00:00:00+05:30",
+    "provenance": "official_reviewed",
+    "sourceUrl": "https://cvr.ac.in/home4/files/academic%20calendars/B.Tech./Academic%20Calendar%20for%20IV%20B.Tech.%20I%20&%20II%20Semesters%202026-27.pdf",
+    "sourceRef": "CVR/DA/June/2026, 02 June 2026, IV B.Tech 2026-27, p.1. Date window only; consult college for exact times.",
+    "allDay": true,
+    "version": 2,
+    "timezone": "Asia/Kolkata",
+    "reviewedAt": "2026-10-20T19:36:52+00:00"
+  },
+  {
+    "key": "cvr-iv-btech-2026-27-sem1-end",
+    "hubSlug": "cvr",
+    "channelSlugs": [
+      "dsa",
+      "web-development",
+      "machine-learning",
+      "competitive-programming"
+    ],
+    "title": "IV B.Tech: Semester I main and supplementary examinations",
+    "startsAt": "2026-10-29T00:00:00+05:30",
+    "endsAt": "2026-11-11T00:00:00+05:30",
+    "provenance": "official_reviewed",
+    "sourceUrl": "https://cvr.ac.in/home4/files/academic%20calendars/B.Tech./Academic%20Calendar%20for%20IV%20B.Tech.%20I%20&%20II%20Semesters%202026-27.pdf",
+    "sourceRef": "CVR/DA/June/2026, 02 June 2026, IV B.Tech 2026-27, p.1. Date window only; consult college for exact times.",
+    "allDay": true,
+    "version": 2,
+    "timezone": "Asia/Kolkata",
+    "reviewedAt": "2026-10-20T19:36:52+00:00"
+  }
+]

@@ -18,6 +18,9 @@ async function start() {
     await model.createIndexes();
   }));
   await require('./services/nativeAuraService').activate();
+  const calendarConnection = require('./models/GoogleCalendarConnection');
+  await calendarConnection.createCollection();
+  await calendarConnection.createIndexes();
   if (require('./config/modules').moduleConfig().enabled.includes('arcade')) await require('./services/nativeAuraService').activate(require('./config/auraRules.arcade.v1.json'));
   if (require('./config/modules').moduleConfig().enabled.includes('arcade')) await require('./services/nativeAuraService').activate(require('./config/auraRules.arcade.v2.json'));
   if (require('./config/modules').moduleConfig().enabled.includes('arcade')) await require('./services/nativeAuraService').activate(require('./config/auraRules.arcade.v3.json'));
@@ -31,15 +34,18 @@ async function start() {
   const server = app.listen(process.env.PORT || 5000, capture ? '127.0.0.1' : undefined, () => console.log('Core API listening'));
   const io = require('./realtime').attachRealtime(server, app);
   const stopReconciliation = require('./services/reconciliationCoordinator').createCoordinator().start();
+  const stopCalendar = require('./services/googleCalendarSync').startWorker();
   server.on('error', async () => {
     console.error('Core API listener failed');
     stopReconciliation();
+    stopCalendar();
     await stopDeadlines();
     await mongoose.disconnect();
     process.exitCode = 1;
   });
   const shutdown = async () => {
     stopReconciliation();
+    stopCalendar();
     const timeout = setTimeout(() => process.exit(1), 10000);
     timeout.unref();
     await stopDeadlines();

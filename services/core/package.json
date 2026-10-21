@@ -4,7 +4,7 @@
   "private": true,
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js",
+    "dev": "node --watch index.js",
     "membership:cutover": "node scripts/membershipCutover.js",
     "migrate": "node scripts/migrate.js",
     "start": "node index.js",
@@ -22,12 +22,9 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.19.2",
-    "google-auth-library": "^9.15.1",
+    "google-auth-library": "^11.3.1",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.10.0",
     "socket.io": "^4.8.4"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.9"
   }
 }

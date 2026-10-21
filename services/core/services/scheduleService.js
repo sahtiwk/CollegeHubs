@@ -21,7 +21,7 @@ async function calendar(context, query = {}, options = {}) {
   const rows = await CalendarEvent.find(page.after ? { $and: [page.filter, page.after] } : page.filter).sort({ startsAt: 1, _id: 1 }).limit(limit + 1).maxTimeMS(2000).lean();
   if (options.exporting && rows.length > limit) throw accessError(422, 'EXPORT_RANGE_TOO_LARGE', 'Choose a smaller range to export at most 500 events');
   const items = rows.slice(0, limit).map(row => ({ _id: row._id, title: row.title, startsAt: row.startsAt, endsAt: row.endsAt,
-    seededAt: row.seededAt, updatedAt: row.updatedAt || row.seededAt, provenance: row.provenance,
+    seededAt: row.seededAt, updatedAt: row.updatedAt || row.seededAt, provenance: row.provenance, allDay: !!row.allDay, status: row.status || 'confirmed',
     sourceRef: row.sourceRef || 'Demonstration sample; not a college announcement', sourceUrl: row.sourceUrl || null,
     version: row.version || 1, timezone: row.timezone || 'Asia/Kolkata', reviewedAt: row.reviewedAt || null,
     past: +row.endsAt <= +(options.now || new Date()) }));

@@ -23,7 +23,7 @@ async function main() {
   // Optional four isolated browser-storage origins for the manual P11.2 Core rehearsal.
   // Module handoff remains bound to the primary origin; these do not relax production CORS.
   const fourBrowsers = process.env.P112_FOUR_BROWSERS === 'true';
-  Object.assign(process.env, { JWT_SECRET: 'p32-local-disposable-core-secret', ALLOWED_ORIGINS: origin + ',http://127.0.0.1:5182' + (fourBrowsers ? ',http://localhost:5187,http://127.0.0.1:5187' : ''), APP_ORIGIN: origin, ENABLE_MODULES: 'learn,arcade,interview', NODE_ENV: 'test', VERIFICATION_MAIL_MODE: 'capture',
+  Object.assign(process.env, { CORE_SESSION_ENABLED: 'true', JWT_SECRET: 'p32-local-disposable-core-secret', ALLOWED_ORIGINS: origin + ',http://127.0.0.1:5182' + (fourBrowsers ? ',http://localhost:5187,http://127.0.0.1:5187' : ''), APP_ORIGIN: origin, ENABLE_MODULES: 'learn,arcade,interview', NODE_ENV: 'test', VERIFICATION_MAIL_MODE: 'capture',
     CORE_MODULE_PRIVATE_KEY: keys.privateKey, CORE_MODULE_KEY_ID: 'p32-key', CORE_MODULE_PUBLIC_KEYS: JSON.stringify({ 'p32-key': keys.publicKey }), MONGO_URI: repl.getUri('collegehubs_demo_p32') });
   mongoose.set('autoCreate', false).set('autoIndex', false);
   await mongoose.connect(process.env.MONGO_URI);

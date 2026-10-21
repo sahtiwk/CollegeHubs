@@ -15,7 +15,7 @@ export async function proxyApi(request: Request, env: Bindings, fetcher: typeof 
   upstream.pathname = incoming.pathname; upstream.search = incoming.search;
   const headers = new Headers();
   // Never accept an upstream URL/header from the caller. Do not send a Core bearer to a module.
-  for (const name of ['content-type', 'accept', 'origin', 'cookie', ...(module ? ['x-csrf-token'] : ['authorization', 'x-core-csrf'])]) {
+  for (const name of ['content-type', 'accept', 'origin', 'cookie', ...(module ? ['x-csrf-token'] : ['authorization', 'x-core-csrf', 'x-requested-with'])]) {
     const value = request.headers.get(name);
     if (name === 'cookie') {
       if (value) { const selected = value.split(';').map(item => item.trim()).filter(item => (module ? ['ch_' + module + '_state', 'ch_' + module + '_session'] : ['ch_core_refresh']).includes(item.split('=')[0])).join('; '); if (selected) headers.set(name, selected); }

@@ -23,7 +23,7 @@ function createApp({ connection = mongoose.connection, auraRules = null } = {}) 
     }
     next();
   });
-  app.use(cors({ origin: allowedOrigins, methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization', 'X-Core-CSRF'], exposedHeaders: ['X-Core-CSRF'], credentials: true }));
+  app.use(cors({ origin: allowedOrigins, methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization', 'X-Core-CSRF', 'X-Requested-With'], exposedHeaders: ['X-Core-CSRF'], credentials: true }));
   app.use(express.json({ limit: '64kb' }));
 
 
@@ -75,6 +75,7 @@ function createApp({ connection = mongoose.connection, auraRules = null } = {}) 
   app.use('/api', require('./routes/moduleProgressRoutes')(modules));
   app.use('/api', require('./routes/recommendationRoutes')(modules));
   app.use('/api', require('./routes/calendarRoutes'));
+  app.use('/api/me/calendar-sync', require('./routes/googleCalendarRoutes'));
   app.use('/api/me', require('./routes/meRoutes'));
   app.use('/api/me/external-accounts', require('./routes/externalAccountRoutes'));
   app.use('/api/hubs', require('./routes/hubRoutes'));

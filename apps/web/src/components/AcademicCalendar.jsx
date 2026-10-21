@@ -4,6 +4,7 @@ import { useSchedule, scheduleTime } from '../hooks/useSchedule';
 import api from '../api';
 import ScheduleMonth,{indiaDay,monthRange,onDay} from './ScheduleMonth';
 import '../styles/schedules.css';
+import GoogleCalendarSync from './GoogleCalendarSync';
 export default function AcademicCalendar({channelId:fixedChannel}) {
   const {user}=useAuth(),[selection,setSelection]=useState(''),[month,setMonth]=useState(()=>indiaDay(new Date()).slice(0,7));
   const channels=useSchedule(fixedChannel?null:'/hubs/'+user.hubId+'/channels'),choices=channels.data?.items||[];
@@ -14,7 +15,7 @@ export default function AcademicCalendar({channelId:fixedChannel}) {
       <label>Calendar month<input type="month" value={month} min="1900-01" max="2100-12" onChange={e=>{if(/^(19|20|21)\d{2}-(0[1-9]|1[0-2])$/.test(e.target.value))setMonth(e.target.value);}}/></label></div>
     {channels.error&&<p role="alert">{channels.error} <button onClick={channels.retry}>Retry channels</button></p>}
     {channels.busy&&<p role="status">Loading channels…</p>}
-    {channelId&&<CalendarResults key={user.hubId+channelId+month} hubId={user.hubId} channelId={channelId} month={month}/>}
+    {channelId&&<><GoogleCalendarSync key={user.hubId+channelId} channelId={channelId}/><CalendarResults key={user.hubId+channelId+month} hubId={user.hubId} channelId={channelId} month={month}/></>}
   </section>;
 }
 function CalendarResults({hubId,channelId,month}) {
@@ -32,8 +33,8 @@ function CalendarResults({hubId,channelId,month}) {
     {calendar.busy&&<p role="status">Loading calendar…</p>}{calendar.error&&<p role="alert">{calendar.error} <button onClick={calendar.retry}>Retry calendar</button></p>}
     {view==='calendar'&&<ScheduleMonth month={month} items={items} selected={selected} onSelect={setSelected}/>}
     <ul className="schedule-events">{visible.map(item=><li key={item._id}><div className="schedule-date" aria-hidden="true">{indiaDay(item.startsAt).slice(8)}<small>{new Intl.DateTimeFormat('en',{timeZone:'Asia/Kolkata',month:'short'}).format(new Date(item.startsAt))}</small></div><div>
-      <span className="schedule-badge">{item.provenance==='official_reviewed'?'Source reviewed':'Sample'}</span>{item.past&&<small>Past event</small>}<h3>{item.title}</h3>
-      <p><time dateTime={item.startsAt}>{scheduleTime(item.startsAt)}</time> – <time dateTime={item.endsAt}>{scheduleTime(item.endsAt)}</time> IST</p>
+      <span className="schedule-badge">{item.provenance==='official_reviewed'?'Source reviewed':'Sample'}</span>{item.status==='cancelled'&&<strong>Cancelled</strong>}{item.past&&<small>Past event</small>}<h3>{item.title}</h3>
+      {item.allDay ? <p>All day · <time dateTime={indiaDay(item.startsAt)}>{indiaDay(item.startsAt)}</time> – <time dateTime={indiaDay(new Date(+new Date(item.endsAt)-1))}>{indiaDay(new Date(+new Date(item.endsAt)-1))}</time></p> : <p><time dateTime={item.startsAt}>{scheduleTime(item.startsAt)}</time> – <time dateTime={item.endsAt}>{scheduleTime(item.endsAt)}</time> IST</p>}
       <p className="schedule-source">{item.sourceUrl?<a href={item.sourceUrl} target="_blank" rel="noreferrer">{item.sourceRef}</a>:item.sourceRef} · Version {item.version}</p>
       {item.reviewedAt&&<small className="muted">Reviewed {scheduleTime(item.reviewedAt)} IST · Source timezone: {item.timezone}</small>}
     </div></li>)}</ul>
