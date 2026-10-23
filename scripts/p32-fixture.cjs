@@ -8,6 +8,9 @@ const { MongoMemoryReplSet } = require('mongodb-memory-server');
 const mongoose = require('mongoose');
 const { Pool } = require('pg');
 const root = resolve(__dirname, '..');
+// The browser requires sessions; older API guards deliberately test bearer compatibility.
+// This switch applies only to this disposable fixture, never service defaults.
+const bearerGuards = process.argv.includes('--bearer-guards');
 async function main() {
   const url = new URL(process.env.GUARD_LEARN_DATABASE_URL || '');
   if (!['127.0.0.1', 'localhost'].includes(url.hostname) || !/^\/collegehubs_demo_learn_[a-z0-9_]+$/.test(url.pathname)) throw new Error('Requires explicit disposable local PostgreSQL');
@@ -23,7 +26,7 @@ async function main() {
   // Optional four isolated browser-storage origins for the manual P11.2 Core rehearsal.
   // Module handoff remains bound to the primary origin; these do not relax production CORS.
   const fourBrowsers = process.env.P112_FOUR_BROWSERS === 'true';
-  Object.assign(process.env, { CORE_SESSION_ENABLED: 'true', JWT_SECRET: 'p32-local-disposable-core-secret', ALLOWED_ORIGINS: origin + ',http://127.0.0.1:5182' + (fourBrowsers ? ',http://localhost:5187,http://127.0.0.1:5187' : ''), APP_ORIGIN: origin, ENABLE_MODULES: 'learn,arcade,interview', NODE_ENV: 'test', VERIFICATION_MAIL_MODE: 'capture',
+  Object.assign(process.env, { CORE_SESSION_ENABLED: bearerGuards ? 'false' : 'true', JWT_SECRET: 'p32-local-disposable-core-secret', ALLOWED_ORIGINS: origin + ',http://127.0.0.1:5182' + (fourBrowsers ? ',http://localhost:5187,http://127.0.0.1:5187' : ''), APP_ORIGIN: origin, ENABLE_MODULES: 'learn,arcade,interview', NODE_ENV: 'test', VERIFICATION_MAIL_MODE: 'capture',
     CORE_MODULE_PRIVATE_KEY: keys.privateKey, CORE_MODULE_KEY_ID: 'p32-key', CORE_MODULE_PUBLIC_KEYS: JSON.stringify({ 'p32-key': keys.publicKey }), MONGO_URI: repl.getUri('collegehubs_demo_p32') });
   mongoose.set('autoCreate', false).set('autoIndex', false);
   await mongoose.connect(process.env.MONGO_URI);
@@ -60,6 +63,7 @@ async function main() {
   if (fourBrowsers) child('apps/web', ['../../node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '5187', '--strictPort'], { CORE_API_ORIGIN: 'http://127.0.0.1:5183', LEARN_API_ORIGIN: 'http://127.0.0.1:5184', ARCADE_API_ORIGIN: 'http://127.0.0.1:5185', INTERVIEW_API_ORIGIN: 'http://127.0.0.1:5186', VITE_GOOGLE_CLIENT_ID: '', VITE_CORE_SOCKET_ORIGIN: 'http://localhost:5183' });
   let guardRunning = false;
   async function guards() {
+    if (!bearerGuards) { console.error('Restart with --bearer-guards for the API compatibility suite. Browser checks use the default session fixture; session security has its own tests.'); return; }
     if (guardRunning) { console.log("Guard run already in progress"); return; }
     guardRunning = true;
     try {

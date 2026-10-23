@@ -12,3 +12,15 @@ coverage/
 *.log
 .local/
 vercel.staging.json
+# Local deliverables, browser reports, credentials, and database backups
+/outputs/
+/playwright-report/
+/test-results/
+*.pem
+*.key
+*.p12
+*.pfx
+*.dump
+*.bson
+.DS_Store
+Thumbs.db

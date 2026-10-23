@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-check:
+    name: Build and self-contained checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.12.0'
+          cache: npm
+      - name: Install workspaces
+        run: npm ci
+      - name: Build all workspaces
+        run: npm run build
+      - name: Check identity and mailbox verification
+        run: npm run test:identity
+      - name: Check session rotation and revocation
+        run: npm run test:sessions
+      - name: Check design accessibility tokens
+        run: npm run test:design
+      - name: Check deployment boundaries
+        run: npm run test:deployment
