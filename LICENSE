@@ -4,7 +4,7 @@ Copyright (c) 2026 CollegeHubs contributors
 
 Scope: This license applies to original CollegeHubs-owned work only. It does
 not relicense third-party source, adaptations, dependencies, fonts or media.
-The exceptions and distribution boundaries in THIRD_PARTY.md and
+The exceptions and distribution boundaries in docs/THIRD_PARTY.md and
 docs/open-source-manifest.md are part of this scope declaration.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

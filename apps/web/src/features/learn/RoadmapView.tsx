@@ -1,4 +1,4 @@
-// Ported from supplied MargaAI RoadmapView. See THIRD_PARTY.md.
+// Ported from supplied MargaAI RoadmapView. See docs/THIRD_PARTY.md.
 import React, { useMemo, useState } from 'react';
 export type RoadmapNode = { id: string; label: string; category: string; status: string; description: string };
 export type GraphData = { nodes: RoadmapNode[]; links: { source: string | { id: string }; target: string | { id: string } }[] };

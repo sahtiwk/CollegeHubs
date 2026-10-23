@@ -1,5 +1,5 @@
 // Domain flow adapted from MargaAI LearnerStateService/ProfilerAgent,
-// RetrieverAgent and TutorAgent; see THIRD_PARTY.md and docs/learn.md.
+// RetrieverAgent and TutorAgent; see docs/THIRD_PARTY.md and docs/learn.md.
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { owned } from '../db/index.ts';

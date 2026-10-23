@@ -6,7 +6,7 @@ It is not imported into the production browser or server bundles.
 
 The imported applications remain in their legacy reference directories with their original manifests, lockfiles and notices. Reuse rights are settled under decision D1 in `implementation_plan_mvp.md`; this file preserves attribution and does not replace dependency or media notices.
 
-TP0.1 distribution scope (18 October 2026): the root [LICENSE](LICENSE) covers original project-owned work only. See the [source/distribution manifest](docs/open-source-manifest.md) and [locked dependency inventory](docs/transition-dependencies.md). Arcade's rights restriction and Learn's unspecified upstream license remain exceptions; neither is relabeled MIT. No unrestricted whole-repository distribution is implied.
+TP0.1 distribution scope (18 October 2026): the root [LICENSE](../LICENSE) covers original project-owned work only. See the [source/distribution manifest](open-source-manifest.md) and [locked dependency inventory](transition-dependencies.md). Arcade's rights restriction and Learn's unspecified upstream license remain exceptions; neither is relabeled MIT. No unrestricted whole-repository distribution is implied.
 
 ## CollegeHubs Interview / AI-Interviewer-main
 
@@ -50,7 +50,7 @@ Retain each package's dependency licenses and notices when distributing it. Repo
 
 P3.2 ports the MargaAI RoadmapView topological layout into the shared frontend, and its P3.1 SQL/session boundary into the Learn API. The remaining source is retained for later phases.
 
-P9.1 adapts the MargaAI dashboard, onboarding, node-reading and learning-preferences journeys to `apps/web/src/features/learn/pages/`. `services/learn/src/services/learnerService.ts` adapts LearnerStateService's idempotent root initialization, ProfilerAgent's self-rating intake, RetrieverAgent's linked-resource selection and TutorAgent's fast template guidance. Authentication, SQL ownership, validation, reset and resource authorization are rewritten for Core subjects and Hubs. Next/Clerk rendering, arbitrary generation, vector retrieval and local Aura/streak engines are not imported. See [the retained route inventory](docs/learn.md).
+P9.1 adapts the MargaAI dashboard, onboarding, node-reading and learning-preferences journeys to `apps/web/src/features/learn/pages/`. `services/learn/src/services/learnerService.ts` adapts LearnerStateService's idempotent root initialization, ProfilerAgent's self-rating intake, RetrieverAgent's linked-resource selection and TutorAgent's fast template guidance. Authentication, SQL ownership, validation, reset and resource authorization are rewritten for Core subjects and Hubs. Next/Clerk rendering, arbitrary generation, vector retrieval and local Aura/streak engines are not imported. See [the retained route inventory](learn.md).
 
 P9.2 adapts the quiz journey and NodePopover into that same React feature; PlannerAgent, AssessmentService, QuizAgent, ProgressAgent and the Wikipedia roadmap fallback are reworked in `services/learn/src/services/`. Questions/answers, immutable attempts, unlocks and delivery are server-owned. The 60 `demo-v1` questions and explanations are original CollegeHubs content with an explicitly recorded Codex content/key review. MDN readings remain attributed links; the optional Wikipedia result links to the article, contributor history and license and does not reproduce its body. The question bank is not a calibrated or human-certified assessment.
 
@@ -61,7 +61,7 @@ The P9.1 starter reading catalog links to MDN Web Docs, credited to MDN contribu
 The isolated design catalogue uses `shaders@4.0.4` (MIT), with added dependencies
 `typegpu@0.12.3` (MIT), `tinyest@0.3.4` (MIT), `typed-binary@4.3.3` (MIT), and
 `tsover-runtime@0.0.7` (Apache-2.0). Exact upstream license texts are retained in
-[docs/licenses](docs/licenses). See the [source and feasibility review](docs/frontend-redesign.md)
+[docs/licenses](licenses). See the [source and feasibility review](frontend-redesign.md)
 for version provenance, telemetry opt-out, composition and distribution scope.
 The normal app does not import the prototype. Fonts now use a system stack;
 the former Google Fonts stylesheet request has been removed.
@@ -70,7 +70,7 @@ the former Google Fonts stylesheet request has been removed.
 
 `highlight.js@11.11.1` is distributed under BSD-3-Clause, copyright 2006 Ivan
 Sagalaev. The exact installed license is retained in
-[docs/licenses/highlight.js-11.11.1-LICENSE.txt](docs/licenses/highlight.js-11.11.1-LICENSE.txt)
+[docs/licenses/highlight.js-11.11.1-LICENSE.txt](licenses/highlight.js-11.11.1-LICENSE.txt)
 and included in the web build at `/notices/highlight.js-LICENSE.txt`.
 Only the core and nine explicitly selected grammar modules are loaded, inside a
 terminable worker. No CDN, automatic language discovery or user code execution

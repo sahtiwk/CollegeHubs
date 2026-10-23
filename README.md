@@ -195,6 +195,6 @@ Google authentication, verification email, Calendar sync, AI assistance, externa
 | [Release record](docs/transition-release-evidence.md) | Dated acceptance results and current limitations |
 | [Migration and restore](docs/transition-restore.md) | Preserving data through schema changes |
 | [Contributing](CONTRIBUTING.md) | Contribution and validation expectations |
-| [Security](SECURITY.md) | Reporting a vulnerability privately |
+| [Security](docs/SECURITY.md) | Reporting a vulnerability privately |
 
 License terms are described in [LICENSE](LICENSE).

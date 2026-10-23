@@ -5,7 +5,7 @@ Curated sessions save an ungraded self-review without a score or reward event.
 Local generated sessions are also ungraded. Existing graded sessions retain their
 provider/model binding and saved reports remain readable with inference disabled.
 
-The independent `services/interview` Express/Mongo service and shared `/interview` React feature adapt the supplied AI-Interviewer resume flow. The original MIT notice remains in [THIRD_PARTY](../THIRD_PARTY.md). P8.2 adds five-question Groq practice, durable answers, immutable reports and Core receipts. There is no active local User/auth/admin/jobs/socket stack.
+The independent `services/interview` Express/Mongo service and shared `/interview` React feature adapt the supplied AI-Interviewer resume flow. The original MIT notice remains in [THIRD_PARTY](THIRD_PARTY.md). P8.2 adds five-question Groq practice, durable answers, immutable reports and Core receipts. There is no active local User/auth/admin/jobs/socket stack.
 
 See [TP9.2 lifecycle, pagination and optional transport decisions](tp9.2-evidence.md). Streaming and voice remain explicitly off.
 

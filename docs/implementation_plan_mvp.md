@@ -510,7 +510,7 @@ Goal: synchronized individual solving, durable drafts and post-close comparison.
 
 ### P5.1. Authoritative lifecycle and atomic close
 
-**Local status (2026-10-02): PASS.** Core models/seed, scoped HTTP/socket lifecycle, DB-time draft fences, atomic sealing, startup/due recovery and safe-stop flag are implemented. G1-G4: 72 passing tests, zero skips; web/Core/Learn builds pass. Real process-kill recovery and pre-close privacy are verified. See [P5.1 evidence](docs/p5.1-evidence.md) and [Study Room contracts](docs/study-rooms.md). P5.2 delivery is recorded below; live Aura remains P6-gated.
+**Local status (2026-10-02): PASS.** Core models/seed, scoped HTTP/socket lifecycle, DB-time draft fences, atomic sealing, startup/due recovery and safe-stop flag are implemented. G1-G4: 72 passing tests, zero skips; web/Core/Learn builds pass. Real process-kill recovery and pre-close privacy are verified. See [P5.1 evidence](p5.1-evidence.md) and [Study Room contracts](study-rooms.md). P5.2 delivery is recorded below; live Aura remains P6-gated.
 
 **Scope:** waiting/join/start/save/submit/review; no co-editing/judge. **Prerequisite:** P4. **Guards:** G1/G4 first. **Effort:** 2–3 days.
 
@@ -522,7 +522,7 @@ Goal: synchronized individual solving, durable drafts and post-close comparison.
 
 ### P5.2. Solve, reconnect, compare and review
 
-**Local status (2026-10-02): PASS.** Shared-shell lobby/editor/server-time countdown, explicit durable saves and conflicts, mobile comparison, immutable peer reviews and recoverable completion facts are implemented. G1-G4: 74 passing tests, zero skips; web/Core/Learn builds pass. A real five-minute two-user browser session closed once, recovered through Core restart, and retained reviews through reload. See [P5.2 evidence](docs/p5.2-evidence.md). Live Aura remains P6-gated.
+**Local status (2026-10-02): PASS.** Shared-shell lobby/editor/server-time countdown, explicit durable saves and conflicts, mobile comparison, immutable peer reviews and recoverable completion facts are implemented. G1-G4: 74 passing tests, zero skips; web/Core/Learn builds pass. A real five-minute two-user browser session closed once, recovered through Core restart, and retained reviews through reload. See [P5.2 evidence](p5.2-evidence.md). Live Aura remains P6-gated.
 
 **Scope:** shared-shell editor/timer/save state/comparison/reviews and native award facts. **Prerequisite:** P5.1. **Guards:** G1/G3/G4. **Effort:** 1–2 days.
 
@@ -538,7 +538,7 @@ Goal: canonical rewards and truthful useful schedules. Entry: P4/P5/P2.2. Read A
 
 ### P6.1. Canonical scoring, shared day and college rank
 
-**Local status (2026-10-02): PASS.** Prospective native rules, transactional receipts/caps/balances, shared activity days, canonical profile totals, own-rank pagination and themed Aura UI are implemented. G1–G4: 76 passing tests, zero skips; web/Core/Learn builds pass. A real five-minute Study completion plus accepted answer/code/resource produced exactly 50 engagement. See [Aura contracts](docs/aura.md) and [P6.1 evidence](docs/p6.1-evidence.md). Module scoring/external bonuses remain disabled; P6.2 is not started.
+**Local status (2026-10-02): PASS.** Prospective native rules, transactional receipts/caps/balances, shared activity days, canonical profile totals, own-rank pagination and themed Aura UI are implemented. G1–G4: 76 passing tests, zero skips; web/Core/Learn builds pass. A real five-minute Study completion plus accepted answer/code/resource produced exactly 50 engagement. See [Aura contracts](aura.md) and [P6.1 evidence](p6.1-evidence.md). Module scoring/external bonuses remain disabled; P6.2 is not started.
 
 **Scope:** A7 weights/caps/streak/recent receipts/rank, no badges or historical migration. **Prerequisite:** P5.2/P2.2. **Guards:** G1/G3. **Effort:** 1–2 days.
 
@@ -551,7 +551,7 @@ Goal: canonical rewards and truthful useful schedules. Entry: P4/P5/P2.2. Read A
 
 ### P6.2. Free schedules, channel calendar and honest dashboard
 
-**Local status (2026-10-03): PASS.** Codeforces cache/lease/cooldown, scoped sample calendar seeds and shared schedule UI are implemented. G1–G4 plus schedule guards: 83 passed, zero skips; all workspace builds pass. Demo6 preserved five real cached contests and fetchedAt through a provider timeout while chat/draft/Aura succeeded. See [provider contracts](docs/providers.md) and [P6.2 evidence](docs/p6.2-evidence.md). Clist and Google export remain disabled; academic dates are explicitly sample data.
+**Local status (2026-10-03): PASS.** Codeforces cache/lease/cooldown, scoped sample calendar seeds and shared schedule UI are implemented. G1–G4 plus schedule guards: 83 passed, zero skips; all workspace builds pass. Demo6 preserved five real cached contests and fetchedAt through a provider timeout while chat/draft/Aura succeeded. See [provider contracts](providers.md) and [P6.2 evidence](p6.2-evidence.md). Clist and Google export remain disabled; academic dates are explicitly sample data.
 
 **Scope:** cached schedules and seeded academic events; no external-stat bonus or Google export. **Prerequisite:** P6.1. **Guards:** G1/G3. **Effort:** 1–2 days.
 
@@ -568,7 +568,7 @@ Goal: two reused validated games plus one sorting game inside the same UI. Entry
 
 ### P7.1. Independent Arcade API and NumberGuess port
 
-**Local status (2026-10-06): PASS.** Independent Arcade process/own Mongo connection, A3 bootstrap, private server target, ordered transactional guesses, immutable pending completion and bounded recovery are implemented. NumberGuess uses the existing frontend shell, auth and Hub palette. Core activates only NumberGuess's first qualifying daily win (5 Aura); repeated wins receive zero. G1-G4 plus schedule guards: 85 passed, zero skips; all workspace builds and isolated Arcade deployment build pass. Core-outage recovery, Arcade-stop/Core usability, mobile/keyboard, deep-link reload and two-Hub isolation are verified. See [Arcade contracts](docs/arcade.md) and [P7.1 evidence](docs/p7.1-evidence.md). Hosted account/DB permissions and deployment remain P11-gated; P7.2 is not started.
+**Local status (2026-10-06): PASS.** Independent Arcade process/own Mongo connection, A3 bootstrap, private server target, ordered transactional guesses, immutable pending completion and bounded recovery are implemented. NumberGuess uses the existing frontend shell, auth and Hub palette. Core activates only NumberGuess's first qualifying daily win (5 Aura); repeated wins receive zero. G1-G4 plus schedule guards: 85 passed, zero skips; all workspace builds and isolated Arcade deployment build pass. Core-outage recovery, Arcade-stop/Core usability, mobile/keyboard, deep-link reload and two-Hub isolation are verified. See [Arcade contracts](arcade.md) and [P7.1 evidence](p7.1-evidence.md). Hosted account/DB permissions and deployment remain P11-gated; P7.2 is not started.
 
 **Scope:** real server validation/session/event and one integrated game. **Prerequisite:** P3.2/P6.1. **Guards:** G1/G2/G3 first. **Effort:** 2–3 days.
 
@@ -582,7 +582,7 @@ Goal: two reused validated games plus one sorting game inside the same UI. Entry
 
 ### P7.2. MathAmplitude, sorting and catalogue
 
-**Local status (2026-10-07): PASS.** MathAmplitude is ported with private questions, ordered answer ledger, server 60-second deadline and minimum qualification. Sorting validates the complete bounded bubble-sort trace and complexity choice. A shared pure manifest drives catalogue/API availability and lazy game selection; exactly three games are ranked, other legacy games remain unavailable. Core retains the P7.1 policy and adds prospective `arcade-three-games-v1`; shared counters/receipts are preserved. Guards: 87 passed, zero skips; all workspace builds and isolated Arcade deployment build pass. Demo5 Arcade branch, first-win/repeat receipts, outage recovery, mobile/keyboard, deep links and two-Hub isolation are verified. See [P7.2 evidence](docs/p7.2-evidence.md) and [Arcade contracts](docs/arcade.md). Hosted verification remains P11-gated.
+**Local status (2026-10-07): PASS.** MathAmplitude is ported with private questions, ordered answer ledger, server 60-second deadline and minimum qualification. Sorting validates the complete bounded bubble-sort trace and complexity choice. A shared pure manifest drives catalogue/API availability and lazy game selection; exactly three games are ranked, other legacy games remain unavailable. Core retains the P7.1 policy and adds prospective `arcade-three-games-v1`; shared counters/receipts are preserved. Guards: 87 passed, zero skips; all workspace builds and isolated Arcade deployment build pass. Demo5 Arcade branch, first-win/repeat receipts, outage recovery, mobile/keyboard, deep links and two-Hub isolation are verified. See [P7.2 evidence](p7.2-evidence.md) and [Arcade contracts](arcade.md). Hosted verification remains P11-gated.
 
 **Scope:** exactly three rewarded games; other games only if explicitly safe/casual. **Prerequisite:** P7.1. **Guards:** G1/G3. **Effort:** 2–3 days.
 
@@ -599,7 +599,7 @@ Goal: reuse PDF → questions → saved answers → evaluation → report in the
 
 ### P8.1. Backend extraction, scoped identity and text-only PDF
 
-**Local status (2026-10-07): PASS.** Independent Interview service/A3 handoff/own Mongo readiness, Core-subject+Hub models and text-only resume API/UI are integrated. PDF-only 5 MiB uploads use a bounded worker, 20 pages/8,000 characters, explicit malformed/encrypted/empty/timeout errors and no original storage/URL. Owned transactional attachment/deletion, report text exclusion, retired-route404 and no retired provider keys are verified. The gateway streams only the bounded upload; the shared lazy feature uses existing login/shell/theme. Guards: 90 passed, zero failures/skips; all workspace builds and isolated Interview production build/parser pass. Manual mobile/two-theme/deep-link/upload/review/delete and Core/Interview outage checks pass. See [P8.1 evidence](docs/p8.1-evidence.md) and [Interview contracts](docs/interview.md). P8.2 remains pending; hosted verification is P11-gated.
+**Local status (2026-10-07): PASS.** Independent Interview service/A3 handoff/own Mongo readiness, Core-subject+Hub models and text-only resume API/UI are integrated. PDF-only 5 MiB uploads use a bounded worker, 20 pages/8,000 characters, explicit malformed/encrypted/empty/timeout errors and no original storage/URL. Owned transactional attachment/deletion, report text exclusion, retired-route404 and no retired provider keys are verified. The gateway streams only the bounded upload; the shared lazy feature uses existing login/shell/theme. Guards: 90 passed, zero failures/skips; all workspace builds and isolated Interview production build/parser pass. Manual mobile/two-theme/deep-link/upload/review/delete and Core/Interview outage checks pass. See [P8.1 evidence](p8.1-evidence.md) and [Interview contracts](interview.md). P8.2 remains pending; hosted verification is P11-gated.
 
 **Scope:** lean standalone API and upload/list/delete UI, no admin/jobs/local auth. **Prerequisite:** P3.2 and separate empty Interview DB. **Guards:** G1/G2. **Effort:** 2–3 days.
 
@@ -613,7 +613,7 @@ Goal: reuse PDF → questions → saved answers → evaluation → report in the
 
 ### P8.2. Questions, saved answers, immutable report and receipt
 
-**Local status (2026-10-07): PASS.** Shared-shell setup/practice/history/report routes now use real Groq Free structured output, five frozen questions, revisioned saved answers, leased evaluation and one immutable report/event. Generation and evaluation failures remain retryable; Core independently confirms capped Aura through durable delivery. The real synthetic Demo5 produced an 86/100 report with Core offline, then confirmed 28 Aura after recovery. All 93 guards pass with zero failures/skips, all workspace builds and the isolated Interview production build pass. Mobile/theme/reload checks pass. See [P8.2 evidence](docs/p8.2-evidence.md) and [Interview operation](docs/interview.md). Hosted acceptance remains P11-gated; current P9.1 status is recorded below.
+**Local status (2026-10-07): PASS.** Shared-shell setup/practice/history/report routes now use real Groq Free structured output, five frozen questions, revisioned saved answers, leased evaluation and one immutable report/event. Generation and evaluation failures remain retryable; Core independently confirms capped Aura through durable delivery. The real synthetic Demo5 produced an 86/100 report with Core offline, then confirmed 28 Aura after recovery. All 93 guards pass with zero failures/skips, all workspace builds and the isolated Interview production build pass. Mobile/theme/reload checks pass. See [P8.2 evidence](p8.2-evidence.md) and [Interview operation](interview.md). Hosted acceptance remains P11-gated; current P9.1 status is recorded below.
 
 **Scope:** five-question REST journey with real free-provider evaluation, no voice/socket streaming. **Prerequisite:** P8.1/P6.1 and verified free provider. **Guards:** G1/G3. **Effort:** 2–3 days.
 
@@ -630,7 +630,7 @@ Goal: preserve graph/resources and server-assessed DSA/Web journeys, using the u
 
 ### P9.1. Full scoped API extraction and learner pages
 
-**Status (2026-10-07): implemented; automated/API PASS, visual acceptance pending.** Fresh SQL schema v1, scoped DSA/Web enrollment/graph/resource/preferences APIs and shared-shell learner pages are implemented. All 98 guards pass with zero failures/skips; all workspace builds and the isolated Learn deployment build pass. Fresh bootstrap/refusal, Core-ledger preservation, real gateway reads, Learn restart and SQL outage isolation are verified. Browser desktop/mobile/theme/navigation checks could not run because the browser tool could not verify its admin-enforced policy; this is not full manual acceptance. See [P9.1 evidence](docs/p9.1-evidence.md) and [Learn route/setup inventory](docs/learn.md). Assessment remains P9.2-gated; no hosted PASS is claimed.
+**Status (2026-10-07): implemented; automated/API PASS, visual acceptance pending.** Fresh SQL schema v1, scoped DSA/Web enrollment/graph/resource/preferences APIs and shared-shell learner pages are implemented. All 98 guards pass with zero failures/skips; all workspace builds and the isolated Learn deployment build pass. Fresh bootstrap/refusal, Core-ledger preservation, real gateway reads, Learn restart and SQL outage isolation are verified. Browser desktop/mobile/theme/navigation checks could not run because the browser tool could not verify its admin-enforced policy; this is not full manual acceptance. See [P9.1 evidence](p9.1-evidence.md) and [Learn route/setup inventory](learn.md). Assessment remains P9.2-gated; no hosted PASS is claimed.
 
 **Scope:** retained identity/enrollment/graph/resource APIs and pages; grading routes stay gated until P9.2. **Prerequisite:** P3.2 local gate and dedicated Learn DB. **Guards:** G1/G2. **Effort:** 2–4 days.
 
@@ -644,7 +644,7 @@ Goal: preserve graph/resources and server-assessed DSA/Web journeys, using the u
 
 ### P9.2. Seeded graph, server assessment and completion facts
 
-**Local status (2026-10-08): PASS.** Schema v2, four seeded topics/60 reviewed practice questions, owned frozen checkpoint/test-out attempts, immutable server results, prerequisite unlocks and first-completion facts are implemented. Reset cannot repeat rewards. Shared-shell quiz/history/resources and accessible graph/list use the Hub theme. All101 guards pass with zero failures/skips; workspace and isolated Learn deployment builds pass. Desktop/mobile, saved-answer restart, real Core outage/recovery and exactly20 confirmed Aura are verified. See [P9.2 evidence](docs/p9.2-evidence.md) and [Learn contracts](docs/learn.md). Hosted verification remains P11-gated.
+**Local status (2026-10-08): PASS.** Schema v2, four seeded topics/60 reviewed practice questions, owned frozen checkpoint/test-out attempts, immutable server results, prerequisite unlocks and first-completion facts are implemented. Reset cannot repeat rewards. Shared-shell quiz/history/resources and accessible graph/list use the Hub theme. All101 guards pass with zero failures/skips; workspace and isolated Learn deployment builds pass. Desktop/mobile, saved-answer restart, real Core outage/recovery and exactly20 confirmed Aura are verified. See [P9.2 evidence](p9.2-evidence.md) and [Learn contracts](learn.md). Hosted verification remains P11-gated.
 
 **Scope:** DSA/Web graph/list/resources, checkpoint/test-out/theta, quiz/mastery events; no extra domains/path award/remedial generator. **Prerequisite:** P9.1/P6.1. **Guards:** G1/G3. **Effort:** 3–5 days; split below this ID if larger.
 

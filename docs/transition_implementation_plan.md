@@ -423,7 +423,7 @@ All tasks and acceptance below are [PROPOSED]. Existing-file edits are named wit
 
 ### TP1.1. Verification challenges and retained membership cutover
 
-**Status:** Implemented locally on 2026-10-19. See [identity verification and rollout evidence](docs/identity-verification.md). Production delivery and hosted cutover remain gated because no permitted mail transport is configured; guided verification screens are TP1.2.
+**Status:** Implemented locally on 2026-10-19. See [identity verification and rollout evidence](identity-verification.md). Production delivery and hosted cutover remain gated because no permitted mail transport is configured; guided verification screens are TP1.2.
 
 **1. Goal:** Replace domain claims with possession proof for new verified membership.
 
@@ -456,7 +456,7 @@ All tasks and acceptance below are [PROPOSED]. Existing-file edits are named wit
 
 ### TP1.2. Google linking, alternate email and clear onboarding UI
 
-**Status:** Implemented and locally verified on 2026-10-19. See [identity verification and onboarding evidence](docs/identity-verification.md). Real Google account sign-in/console settings and production mail delivery remain unverified; capability gates report configuration honestly.
+**Status:** Implemented and locally verified on 2026-10-19. See [identity verification and onboarding evidence](identity-verification.md). Real Google account sign-in/console settings and production mail delivery remain unverified; capability gates report configuration honestly.
 
 **1. Goal:** Make identity recovery and college eligibility understandable without creating merge or transfer shortcuts.
 
@@ -497,7 +497,7 @@ All tasks and acceptance below are [PROPOSED]. Existing-file edits are named wit
 
 ### TP2.1. Rotating refresh families and gateway cookie support
 
-**Implementation status:** Server/gateway implementation complete behind `CORE_SESSION_ENABLED` (default off). See [session contract and cutover](docs/core-sessions.md). Browser memory-only credentials and production activation remain TP2.2.
+**Implementation status:** Server/gateway implementation complete behind `CORE_SESSION_ENABLED` (default off). See [session contract and cutover](core-sessions.md). Browser memory-only credentials and production activation remain TP2.2.
 
 **1. Goal:** Add revocable Core sessions with short memory-held access credentials.
 
@@ -530,7 +530,7 @@ All tasks and acceptance below are [PROPOSED]. Existing-file edits are named wit
 
 ### TP2.2. Client renewal, socket expiry and abuse limits
 
-**Implementation status:** Implemented locally. See [browser session recovery](docs/browser-session-recovery.md) for memory-only bootstrap, renewal, draft recovery, abuse limits and deployment constraints. Production cutover requires session mode on all Core instances.
+**Implementation status:** Implemented locally. See [browser session recovery](browser-session-recovery.md) for memory-only bootstrap, renewal, draft recovery, abuse limits and deployment constraints. Production cutover requires session mode on all Core instances.
 
 **1. Goal:** Preserve saved work through normal expiry and reject abusive auth traffic.
 
@@ -571,7 +571,7 @@ All tasks and acceptance below are [PROPOSED]. Existing-file edits are named wit
 
 ### TP3.1. Semantic tokens, navigation specification and shader feasibility
 
-**Status:** Implemented and locally verified on 2026-10-19. See [design specification and evidence](docs/frontend-redesign.md). Static CSS is the selected default; the optional shader exceeds the bundle budget and real GPU rendering remains unverified.
+**Status:** Implemented and locally verified on 2026-10-19. See [design specification and evidence](frontend-redesign.md). Static CSS is the selected default; the optional shader exceeds the bundle budget and real GPU rendering remains unverified.
 
 **1. Goal:** Establish one visual system for public and protected experiences.
 
@@ -604,7 +604,7 @@ All tasks and acceptance below are [PROPOSED]. Existing-file edits are named wit
 
 ### TP3.2. Public landing, interactive previews and intent-preserving entry
 
-**Implementation status:** Implemented locally; see [landing evidence](docs/public-landing.md). Public samples require no API, protected home is `/dashboard`, and original preview assets and notices are included. Hosted metadata URL and device/network performance acceptance remain deployment checks.
+**Implementation status:** Implemented locally; see [landing evidence](public-landing.md). Public samples require no API, protected home is `/dashboard`, and original preview assets and notices are included. Hosted metadata URL and device/network performance acceptance remain deployment checks.
 
 **1. Goal:** Show product value immediately and route visitors to a useful first action.
 
@@ -648,7 +648,7 @@ All tasks and acceptance below are [PROPOSED]. Existing-file edits are named wit
 **Implementation status:** Complete locally (2026-10-19). Task-oriented editorial
 home/channels, explicit saved/search/retry states and lazy allowlisted grammar
 highlighting are implemented. Production build, workspace/session browser checks
-and all 126 regression checks pass. See [implementation and evidence](docs/workspace-redesign.md).
+and all 126 regression checks pass. See [implementation and evidence](workspace-redesign.md).
 Physical mobile keyboard verification remains a device-level release check.
 
 **1. Goal:** Replace the current feed-first shell with task-oriented navigation and readable conversations.
@@ -687,7 +687,7 @@ cancellation, atomic start/cancel exclusion, explicit save-state presentation,
 participant states and mobile comparison selection are implemented. Explicit
 saving is retained. Production build, two-person offline/expiry browser checks,
 session recovery checks and the full regression suite pass. See
-[TP4.2 evidence](docs/tp4.2-evidence.md) and [Study contract](docs/study-rooms.md).
+[TP4.2 evidence](tp4.2-evidence.md) and [Study contract](study-rooms.md).
 Physical mobile keyboard and hosted deployment checks remain release verification.
 
 **1. Goal:** Complete the original waiting-room workflow and improve timed study usability.
@@ -732,9 +732,9 @@ Physical mobile keyboard and hosted deployment checks remain release verificatio
 **Implementation status:** Complete locally (2026-10-19). Canonical titles, four
 evidence-backed non-point badges, resumable additive backfill, owner-bound reward
 history and the protected Progress page are implemented. Policy criteria and
-continuity decisions are explicit in [Aura policy](docs/aura-transition-policy.md).
+continuity decisions are explicit in [Aura policy](aura-transition-policy.md).
 Build, browser checks, 129 regression checks and nine migration/restore checks
-pass. See [TP5.1 evidence](docs/tp5.1-evidence.md). Retained production migration
+pass. See [TP5.1 evidence](tp5.1-evidence.md). Retained production migration
 and hosted rollout remain operator/release work.
 
 **1. Goal:** Complete gamification using authoritative existing facts.
@@ -768,7 +768,7 @@ and hosted rollout remain operator/release work.
 
 ### TP5.2. Version-compatible events, reconciliation and shared-day policy
 
-**Status:** Implemented and locally verified on 2026-10-19. Existing regression (129), new recovery (10), and migration/restore (10) tests pass, along with browser status checks and builds. See [TP5.2 evidence](docs/tp5.2-evidence.md). Daily/path scoring remains inactive until TP7/TP8 producer acceptance; production rollout is not performed.
+**Status:** Implemented and locally verified on 2026-10-19. Existing regression (129), new recovery (10), and migration/restore (10) tests pass, along with browser status checks and builds. See [TP5.2 evidence](tp5.2-evidence.md). Daily/path scoring remains inactive until TP7/TP8 producer acceptance; production rollout is not performed.
 
 **1. Goal:** Prepare reward infrastructure for new games/paths and prevent stranded results.
 
@@ -809,7 +809,7 @@ and hosted rollout remain operator/release work.
 
 ### TP6.1. Academic provenance, calendar redesign and export
 
-**Status:** Implemented and locally verified on 2026-10-19. 139 existing regression and seven new calendar tests pass, plus Chrome download/mobile checks and the web build. See [TP6.1 evidence](docs/tp6.1-evidence.md). Real college-source import, external calendar-client UI import, production rollout and conditional Google synchronization remain unverified/pending; ICS download and independent parser import are verified.
+**Status:** Implemented and locally verified on 2026-10-19. 139 existing regression and seven new calendar tests pass, plus Chrome download/mobile checks and the web build. See [TP6.1 evidence](tp6.1-evidence.md). Real college-source import, external calendar-client UI import, production rollout and conditional Google synchronization remain unverified/pending; ICS download and independent parser import are verified.
 
 **1. Goal:** Move from sample-only calendar to reviewed academic events and portable personal scheduling.
 
@@ -842,7 +842,7 @@ and hosted rollout remain operator/release work.
 
 ### TP6.2. Additional contest sources and verified statistics
 
-**Status:** Available scope implemented and locally verified on 2026-10-20. Codeforces ownership review, statistics, gated bonus replacement and UI are implemented; default flags remain off pending real-owner acceptance. LeetCode statistics/contests and Clist contests remain blocked by documented access/free-eligibility gates, with no scraping fallback. See [capability matrix](docs/provider-capability-matrix.md) and [TP6.2 evidence](docs/tp6.2-evidence.md): 155 regression tests, final 11 focused checks, Chrome flow and build pass. No production rollout performed.
+**Status:** Available scope implemented and locally verified on 2026-10-20. Codeforces ownership review, statistics, gated bonus replacement and UI are implemented; default flags remain off pending real-owner acceptance. LeetCode statistics/contests and Clist contests remain blocked by documented access/free-eligibility gates, with no scraping fallback. See [capability matrix](provider-capability-matrix.md) and [TP6.2 evidence](tp6.2-evidence.md): 155 regression tests, final 11 focused checks, Chrome flow and build pass. No production rollout performed.
 
 **1. Goal:** Restore full-plan external integrations where lawful free access and ownership evidence are available.
 
@@ -883,7 +883,7 @@ and hosted rollout remain operator/release work.
 
 ### TP7.1. Spot-the-bug game and versioned content
 
-**Status:** Implemented and locally verified on 2026-10-20. 161 regression tests pass, along with the web build, private-content bundle check, and Chrome mobile keyboard/reload/completion flow with a real +5 Core receipt. See [TP7.1 evidence](docs/tp7.1-evidence.md). Production rollout is not performed.
+**Status:** Implemented and locally verified on 2026-10-20. 161 regression tests pass, along with the web build, private-content bundle check, and Chrome mobile keyboard/reload/completion flow with a real +5 Core receipt. See [TP7.1 evidence](tp7.1-evidence.md). Production rollout is not performed.
 
 **1. Goal:** Add a short educational game with a trustworthy completion signal.
 
@@ -916,7 +916,7 @@ and hosted rollout remain operator/release work.
 
 ### TP7.2. Daily challenge, catalogue redesign and selective casual reuse
 
-**Status:** Implemented and locally verified on 2026-10-20. Daily publication/one-attempt rules, +15 replacement receipts, catalogue and shared game redesign are complete. 163 regression tests pass, plus focused badge/midnight checks, builds and Chrome completion of all four ranked games and daily. No optional casual game released or production rollout performed. See [TP7.2 evidence](docs/tp7.2-evidence.md).
+**Status:** Implemented and locally verified on 2026-10-20. Daily publication/one-attempt rules, +15 replacement receipts, catalogue and shared game redesign are complete. 163 regression tests pass, plus focused badge/midnight checks, builds and Chrome completion of all four ranked games and daily. No optional casual game released or production rollout performed. See [TP7.2 evidence](tp7.2-evidence.md).
 
 **1. Goal:** Provide a meaningful daily activity and an uncluttered game destination.
 
@@ -957,7 +957,7 @@ and hosted rollout remain operator/release work.
 
 ### TP8.1. Generalize curriculum/schema and publish five domains
 
-**Status: complete (2026-10-20, local acceptance).** Five versioned paths, preserved history, explicit upgrades and canonical reward deduplication implemented. See [TP8.1 evidence](docs/tp8.1-evidence.md) for builds, migration/restore tests, browser acceptance and the isolated PDF timeout/retest.
+**Status: complete (2026-10-20, local acceptance).** Five versioned paths, preserved history, explicit upgrades and canonical reward deduplication implemented. See [TP8.1 evidence](tp8.1-evidence.md) for builds, migration/restore tests, browser acceptance and the isolated PDF timeout/retest.
 
 **1. Goal:** Support DSA, Web, Machine Learning, Backend and DevOps without deleting existing learning history.
 
@@ -990,7 +990,7 @@ and hosted rollout remain operator/release work.
 
 ### TP8.2. Path completion, assessments and bounded remedial progression
 
-**Status: complete (2026-10-20, local acceptance).** Atomic path facts and capped Core rewards, optional reviewed remediation, progress summaries and keyboard behavior implemented. Verified all five full browser journeys, 168 regression tests and 10 migration/restore checks. See [TP8.2 evidence](docs/tp8.2-evidence.md).
+**Status: complete (2026-10-20, local acceptance).** Atomic path facts and capped Core rewards, optional reviewed remediation, progress summaries and keyboard behavior implemented. Verified all five full browser journeys, 168 regression tests and 10 migration/restore checks. See [TP8.2 evidence](tp8.2-evidence.md).
 
 **1. Goal:** Complete path-level progress and help learners recover from failed checkpoints without reward farming.
 
@@ -1031,7 +1031,7 @@ and hosted rollout remain operator/release work.
 
 ### TP9.1. Pluggable inference and contextual learning resources
 
-**Status: Implemented and verified (2026-10-20), with local model grading/deployment explicitly gated off.** Fixed inference contract, optional Groq/local adapters, provider-bound reports, zero-Aura curated self-review, unlocked resource fetching and attributed contextual guidance are in place. Verification: 171 regression tests, 10 migration checks, focused provider/reset tests and provider-disabled mobile browser journey passed. No local runtime was available for quality/latency/VRAM certification; this is a recorded feasibility limitation, not a passed model gate. See [TP9.1 evidence](docs/tp9.1-evidence.md).
+**Status: Implemented and verified (2026-10-20), with local model grading/deployment explicitly gated off.** Fixed inference contract, optional Groq/local adapters, provider-bound reports, zero-Aura curated self-review, unlocked resource fetching and attributed contextual guidance are in place. Verification: 171 regression tests, 10 migration checks, focused provider/reset tests and provider-disabled mobile browser journey passed. No local runtime was available for quality/latency/VRAM certification; this is a recorded feasibility limitation, not a passed model gate. See [TP9.1 evidence](tp9.1-evidence.md).
 
 **1. Goal:** Make proprietary inference optional where feasible and improve guidance without blocking core learning.
 
@@ -1064,7 +1064,7 @@ and hosted rollout remain operator/release work.
 
 ### TP9.2. Interview redesign, bounded streaming and text lifecycle
 
-**Status: Required REST/UI/lifecycle scope implemented and verified (2026-10-20); streaming and voice explicitly optional-off.** Interview pages now use the campus editorial design, scoped cursor history, saved-answer recovery and 30-day resume expiry with bounded cleanup and generation fences. Verification: 173 regression checks, focused deletion/expiry races and desktop/mobile browser acceptance passed. No provider-stream/free-host deployment gate is claimed; the conditional transport is deferred under the phase risk/mitigation clause. See [TP9.2 evidence and transport decision](docs/tp9.2-evidence.md).
+**Status: Required REST/UI/lifecycle scope implemented and verified (2026-10-20); streaming and voice explicitly optional-off.** Interview pages now use the campus editorial design, scoped cursor history, saved-answer recovery and 30-day resume expiry with bounded cleanup and generation fences. Verification: 173 regression checks, focused deletion/expiry races and desktop/mobile browser acceptance passed. No provider-stream/free-host deployment gate is claimed; the conditional transport is deferred under the phase risk/mitigation clause. See [TP9.2 evidence and transport decision](tp9.2-evidence.md).
 
 **1. Goal:** Finish the practice experience while protecting private text and immutable evaluation.
 
@@ -1105,7 +1105,7 @@ and hosted rollout remain operator/release work.
 
 ### TP10.1. Rich progress and safe next actions across all domains
 
-**Status: implemented and locally verified (20 October 2026).** Version 2 summaries, five-domain progress, safe continuation links, bounded optional reads and fresh one-use recommendation validation are complete. All 177 regression tests and desktop/mobile browser acceptance passed. See [TP10.1 evidence](docs/tp10.1-evidence.md). Hosted deployment remains separate.
+**Status: implemented and locally verified (20 October 2026).** Version 2 summaries, five-domain progress, safe continuation links, bounded optional reads and fresh one-use recommendation validation are complete. All 177 regression tests and desktop/mobile browser acceptance passed. See [TP10.1 evidence](tp10.1-evidence.md). Hosted deployment remains separate.
 
 **1. Goal:** Evolve existing counts into useful continuation while retaining P10 ownership guarantees.
 
@@ -1138,7 +1138,7 @@ and hosted rollout remain operator/release work.
 
 ### TP10.2. Full visual parity, onboarding completion and engagement review
 
-**Status: implemented and locally audited (20 October 2026).** Optional saved-fact checklist, scoped preferences, theme-cache removal, page-error recovery and public-copy corrections are complete. Chrome and Edge each passed 105 route/viewport checks plus focused keyboard, identity, large-text and failure-state checks. Five-person rehearsal availability is documented as **0 participants**, not a measured usability success. See [TP10.2 evidence and route/state matrix](docs/tp10.2-evidence.md) for results and release-verification limitations.
+**Status: implemented and locally audited (20 October 2026).** Optional saved-fact checklist, scoped preferences, theme-cache removal, page-error recovery and public-copy corrections are complete. Chrome and Edge each passed 105 route/viewport checks plus focused keyboard, identity, large-text and failure-state checks. Five-person rehearsal availability is documented as **0 participants**, not a measured usability success. See [TP10.2 evidence and route/state matrix](tp10.2-evidence.md) for results and release-verification limitations.
 
 **1. Goal:** Ensure the entire application feels coherent and supports useful repeat visits.
 
@@ -1179,7 +1179,7 @@ and hosted rollout remain operator/release work.
 
 ### TP11.1. Free-host rollout, configuration and restore rehearsal
 
-**Status: complete (20 October 2026).** Deployed to existing free Pages/Render hosts after actual retained-data backup, copied upgrade/restore and compatible Learn rollback rehearsal. Hosted smoke passed 15/15; authenticated cookies, three module handoffs, origin/replay/CSRF rejection and direct Core WebSocket passed. Published entry assets match the local build. Google is in production; mail remains unavailable, and real Google-account login remains an explicit TP11.2 acceptance case. See [TP11.1 evidence](docs/tp11.1-evidence.md) and [release manifest](docs/tp11.1-release-manifest.json).
+**Status: complete (20 October 2026).** Deployed to existing free Pages/Render hosts after actual retained-data backup, copied upgrade/restore and compatible Learn rollback rehearsal. Hosted smoke passed 15/15; authenticated cookies, three module handoffs, origin/replay/CSRF rejection and direct Core WebSocket passed. Published entry assets match the local build. Google is in production; mail remains unavailable, and real Google-account login remains an explicit TP11.2 acceptance case. See [TP11.1 evidence](tp11.1-evidence.md) and [release manifest](tp11.1-release-manifest.json).
 
 **1. Goal:** Deploy compatible changes safely using existing free resources.
 
