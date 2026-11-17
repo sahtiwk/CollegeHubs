@@ -1,4 +1,5 @@
-import React, { lazy, Suspense, useRef, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { ArrowDown, ArrowUpRight, Braces, Code2, Gamepad2, GraduationCap, MessagesSquare, Mic, Terminal } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../auth/AuthProvider';
 import { hasSessionHint } from '../api';
@@ -8,47 +9,93 @@ import SamplePanel from '../components/landing/SamplePanel';
 import '../styles/landing.css';
 const ShaderBackdrop = lazy(() => import('../components/visual/ShaderBackdrop'));
 const source = 'https://github.com/sahtiwk/CollegeHubs';
-const intents = [['Study with classmates', 'Bring a question. Find another perspective.', 'Study', '◎'], ['Learn a skill', 'Give your curiosity a little direction.', 'Learn', '↳'], ['Practice interviews', 'Make room to think out loud.', 'Interview', '✳'], ['Take a quick challenge', 'A small puzzle for the time between classes.', 'Arcade', '↔']];
+const intents = [
+  ['Channels', 'Ask questions and share code with classmates.', MessagesSquare],
+  ['Study', 'Solve a problem, then compare approaches.', Code2],
+  ['Learn', 'Work through a technical path at your pace.', GraduationCap],
+  ['Interview', 'Rehearse answers and review feedback.', Mic],
+  ['Arcade', 'Practice debugging, sorting and more.', Gamepad2],
+];
 const faq = [
   ['Can I join with any college email?', 'Hub access requires verified ownership of your email and an exact domain listed in the active college registry. If your college is not configured, your account stays in onboarding. A college name or logo here does not imply endorsement.'],
   ['What happens after I sign up?', 'Verify your email, then open your college workspace. Mail delivery and Google sign-in depend on deployment configuration; the sign-in screens show what is available. This preview needs neither an account nor email delivery.'],
   ['Will these previews save anything?', 'No. All five previews use invented examples bundled with this page. Your sample interactions and typed practice response stay in memory and disappear when you leave or switch previews. They do not create progress or rewards.'],
   ['Why might a feature take time to open?', 'The project is designed for free hosting. Services can sleep, and AI features depend on provider availability and quotas. Your workspace shows loading or retry states. This page and its samples remain available without waking those services.'],
   ['Who can see my work?', 'Your real Hub is college-scoped. Study drafts stay private during a session and become available for peer comparison after it closes. Interview practice and resumes belong to your account. Never include sensitive information in shared messages.'],
-  ['Is everything shown here available?', 'Channels, Study, Learn, Interview and four ranked Arcade games have implemented flows. Deployment availability can vary. Badges reflect verified activity. External progress and bonuses depend on provider availability and verified ownership. Interview feedback is practice guidance, not an employment assessment.'],
+  ['Is everything shown here available?', 'Channels, Study, Learn, Interview and ten ranked Arcade games have implemented flows. Deployment availability can vary. Badges reflect verified activity. External progress and bonuses depend on provider availability and verified ownership. Interview feedback is practice guidance, not an employment assessment.'],
 ];
 export default function Landing() {
   const { user } = useAuth(), motion = useMotionPreference();
   const [selected, setSelected] = useState(0), [effect, setEffect] = useState(false);
-  const tabs = useRef([]), sample = previews[selected], returning = !!user || hasSessionHint();
+  const tabs = useRef([]), statement = useRef(null), sample = previews[selected], returning = !!user || hasSessionHint();
   const join = route => returning ? route : '/register?returnTo=' + encodeURIComponent(route);
+  useEffect(() => {
+    const target = statement.current;
+    if (!motion.motionAllowed || !target) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) target.dataset.revealed = 'true';
+    }, { threshold: .5 });
+    observer.observe(target);
+    return () => { observer.disconnect(); delete target.dataset.revealed; };
+  }, [motion.motionAllowed]);
   function choose(index, focus = false) { setSelected(index); if (focus) tabs.current[index]?.focus(); }
   function explore(name) { const index = previews.findIndex(item => item.name === name); choose(index); document.getElementById('explore').scrollIntoView({ block: 'center' }); tabs.current[index]?.focus({ preventScroll: true }); }
   return <div className="landing">
     <a href="#landing-main" className="skip-link">Skip to content</a>
     <header className="lp-header">
-      <Link className="lp-brand" to="/" aria-label="CollegeHubs home"><span aria-hidden="true">✳</span> CollegeHubs<span className="lp-brand-dot">.</span></Link>
+      <Link className="lp-brand" to="/" aria-label="CollegeHubs home"><Braces size={22} aria-hidden="true" /> CollegeHubs</Link>
       <nav aria-label="Public navigation"><a href="#explore">Explore</a><a href="#how-it-works">How it works</a><a href="#open-source">Open source</a></nav>
-      <div className="lp-entry"><Link to="/login?returnTo=%2Fdashboard">Sign in</Link><Link className="lp-button lp-button-small" to={join('/dashboard')}>{returning ? 'Continue' : 'Join your Hub'} <span aria-hidden="true">↗</span></Link></div>
+      <div className="lp-entry"><Link to="/login?returnTo=%2Fdashboard">Sign in</Link><Link className="lp-button lp-button-small btn btn--primary" to={join('/dashboard')}>{returning ? 'Continue' : 'Join your Hub'} <span aria-hidden="true">↗</span></Link></div>
     </header>
     <main id="landing-main" tabIndex={-1}>
-      <section className="lp-hero" aria-labelledby="landing-title">{effect && motion.motionAllowed && <Suspense fallback={null}><ShaderBackdrop enabled /></Suspense>}
-        <div className="lp-hero-copy"><p className="eyebrow">THE SPACE BETWEEN CLASSES. REIMAGINED.</p><h1 id="landing-title">Your campus.<br />Your next<br /><em>breakthrough.</em></h1><p className="lp-intro">Find your people. Follow your curiosity.<br />A college space to study together, build skills, and practice what comes next.</p><div className="lp-hero-actions"><Link className="lp-button" to={join('/dashboard')}>{returning ? 'Continue to your workspace' : 'Join your Hub'} <span aria-hidden="true">↗</span></Link><a href="#explore">Explore a preview <span aria-hidden="true">↓</span></a></div><p className="lp-eligibility">Your college email. Your community.<br /><a href="#eligibility">Check how Hub eligibility works</a></p><div className="lp-hero-signoff"><span>COME CURIOUS.</span><span>LEAVE WITH SOMETHING.</span></div></div>
-        <section className="lp-preview" id="explore" aria-label="Interactive sample workspace">
-          <div className="lp-preview-top"><span>THE CAMPUS COLLECTIVE</span><span className="lp-tag">SAMPLE / 01–05</span></div>
-          <div className="lp-tabs" role="tablist" aria-label="Workspace previews">{previews.map((item, index) => <button key={item.name} ref={el => { tabs.current[index] = el; }} id={'preview-tab-' + index} role="tab" aria-selected={selected === index} aria-controls="preview-panel" tabIndex={selected === index ? 0 : -1} onClick={() => choose(index)} onKeyDown={event => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); choose(event.key === 'Home' ? 0 : event.key === 'End' ? 4 : (index + (event.key === 'ArrowRight' ? 1 : 4)) % 5, true); }}>{item.name}</button>)}</div>
+      <section className="lp-hero hero" data-enter aria-labelledby="landing-title">
+        <div className="lp-hero-copy">
+          <h1 id="landing-title">Your college <em>coding workspace.</em></h1>
+          <p className="lp-intro">Study with classmates, build technical skills, and practice for interviews in your college’s Hub.</p>
+          <div className="lp-hero-actions">
+            <Link className="lp-button btn btn--primary" to={join('/dashboard')}>{returning ? 'Continue to your workspace' : 'Join your Hub'} <ArrowUpRight size={17} aria-hidden="true" /></Link>
+            <a className="m-link" href="#explore">Explore a preview <ArrowDown size={15} aria-hidden="true" /></a>
+          </div>
+          <p className="lp-eligibility"><a href="#eligibility">Check college eligibility</a></p>
+        </div>
+        <div className="lp-stage" data-visual data-enter-media>
+          {effect && motion.motionAllowed && <Suspense fallback={null}><ShaderBackdrop enabled /></Suspense>}
+          <section className="lp-preview app-frame" id="explore" aria-label="Interactive sample workspace">
+            <div className="lp-preview-top"><span><Terminal size={16} aria-hidden="true" /> Workspace preview</span><span className="lp-tag">5 samples</span></div>
+          <div className="lp-tabs" role="tablist" aria-label="Workspace previews">{previews.map((item, index) => <button key={item.name} ref={el => { tabs.current[index] = el; }} id={'preview-tab-' + index} role="tab" aria-selected={selected === index} aria-controls="preview-panel" tabIndex={selected === index ? 0 : -1} onClick={() => choose(index)} onKeyDown={event => { if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return; event.preventDefault(); choose(event.key === 'Home' ? 0 : event.key === 'End' ? previews.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : previews.length - 1)) % previews.length, true); }}>{item.name}</button>)}</div>
           <div className="lp-panel" id="preview-panel" role="tabpanel" aria-labelledby={'preview-tab-' + selected} tabIndex={0}><SamplePanel key={sample.name} name={sample.name} /></div>
-          <div className="lp-preview-bottom"><span>{sample.label}</span><Link to={join(sample.route)}>{sample.action} <span aria-hidden="true">↗</span></Link></div><p className="lp-sample-note">An interactive sample. No real students, saved activity or rewards.</p>
-        </section>
+            <div className="lp-preview-bottom"><Link className="m-link" to={join(sample.route)}>{sample.action} <ArrowUpRight size={15} aria-hidden="true" /></Link><span>Sample activity stays in this page.</span></div>
+          </section>
+        </div>
       </section>
-      <div className="lp-strip"><span>ONE CAMPUS. MANY WAYS FORWARD.</span><span>Ask better questions <i aria-hidden="true">✳</i> Make something click <i aria-hidden="true">✳</i> Pass it on</span></div>
-      <section className="lp-section" aria-labelledby="intent-title"><div className="lp-section-heading"><div><p className="eyebrow">01 / FIND YOUR STARTING POINT</p><h2 id="intent-title">What brings<br /><em>you here?</em></h2></div><p>No perfect plan required.<br />Start with one thing you want to do.</p></div><div className="lp-intentions">{intents.map(([title, detail, tab, symbol], index) => <button key={tab} onClick={() => explore(tab)}><span className="lp-intent-top"><span>0{index + 1}</span><span aria-hidden="true">{symbol}</span></span><h3>{title}</h3><p>{detail}</p><span className="lp-intent-link">Try the {tab} preview <span aria-hidden="true">↗</span></span></button>)}</div></section>
-      <section className="lp-how lp-section" id="how-it-works" aria-labelledby="how-title"><div className="lp-section-heading"><div><p className="eyebrow">02 / FROM HELLO TO YOUR NEXT IDEA</p><h2 id="how-title">A little structure.<br /><em>A lot of possibility.</em></h2></div><span className="lp-hand-drawn" aria-hidden="true">↴</span></div><ol className="lp-steps"><li><span>01</span><h3>Make it your campus.</h3><p>Sign up and verify your email. An eligible college domain connects you to your Hub.</p></li><li><span>02</span><h3>Do one useful thing.</h3><p>Ask a question, open a Study room, or pick a skill to practice. Start where you are.</p></li><li><span>03</span><h3>Pick it up tomorrow.</h3><p>Return to saved work and completed activities. Progress has a place to live.</p></li></ol></section>
-      <section className="lp-story lp-section" aria-labelledby="story-title"><div className="lp-story-copy"><p className="eyebrow">03 / CONNECT THE DOTS</p><h2 id="story-title">Good ideas<br />don’t stay<br /><em>in one place.</em></h2><p>Take a topic from a Learn checkpoint into optional Interview practice. Bring a different approach from Study back to your channel.</p><p className="lp-story-note">Your saved work is real. Practice suggestions are a starting point, not a claim of mastery.</p></div><div className="lp-story-poster"><div className="lp-poster-lines" aria-hidden="true" /><span className="eyebrow">A NOTE FOR YOUR NEXT CHAPTER</span><p>Learn it.<br /><em>Try it.</em><br />Talk it through.</p><div className="lp-story-path"><span>Learn → practice</span><span>Study → compare → share</span></div><span className="lp-poster-star" aria-hidden="true">✳</span></div></section>
-      <section className="lp-progress lp-section" aria-labelledby="progress-title"><p className="eyebrow">04 / MORE THAN A NUMBER</p><div className="lp-section-heading"><h2 id="progress-title">Make a contribution.<br /><em>See where it takes you.</em></h2><p>Aura reflects eligible, server-verified activity with daily limits. A pending award means delivery is still being checked. It never replaces what you learned.</p></div><div className="lp-progress-notes"><p><strong>Your college, your context.</strong><br />Conversations and rankings stay within your Hub.</p><p><strong>Clear about what counts.</strong><br />Badges and rewards reflect verified activity. Provider availability and ownership checks are shown in your progress.</p><p><strong>A pace that’s yours.</strong><br />Pick up saved work when you’re ready. No pressure to keep a streak alive.</p></div></section>
-      <section className="lp-faq lp-section" id="eligibility" aria-labelledby="faq-title"><div><p className="eyebrow">05 / BEFORE YOU COME IN</p><h2 id="faq-title">A few things<br /><em>worth knowing.</em></h2><p>Real expectations.<br />Room for questions.</p></div><div>{faq.map(([question, answer]) => <details key={question}><summary>{question}<span aria-hidden="true">+</span></summary><p>{answer}</p></details>)}</div></section>
-      <section className="lp-final"><p className="eyebrow">SEE YOU AT THE HUB.</p><h2>Your next chapter<br /><em>has good company.</em></h2><Link className="lp-button" to={join('/dashboard')}>{returning ? 'Continue to your workspace' : 'Join your Hub'} ↗</Link><p>Already have an account? <Link to="/login?returnTo=%2Fdashboard">Sign in</Link></p></section>
+      <section className="lp-section lp-toolkit" aria-labelledby="intent-title">
+        <div className="lp-section-heading"><h2 id="intent-title">Tools for your college Hub</h2><p>Pick a tool to try it in the workspace preview.</p></div>
+        <div className="lp-intentions">{intents.map(([tab, detail, Icon]) =>
+          <button className="lp-tool btn" key={tab} onClick={() => explore(tab)}>
+            <Icon className="lp-tool-icon" size={25} aria-hidden="true" />
+            <h3>{tab}</h3><p>{detail}</p><ArrowUpRight className="lp-tool-arrow" size={16} aria-hidden="true" />
+          </button>
+        )}</div>
+      </section>
+      <section className="lp-section lp-how" id="how-it-works" aria-labelledby="how-title">
+        <h2 id="how-title">From college email to workspace</h2>
+        <ol className="lp-steps">
+          <li><h3>Verify your email</h3><p>Use an email address from a supported college to join its Hub.</p></li>
+          <li><h3>Open a subject channel</h3><p>Ask a question or start a timed Study room with classmates.</p></li>
+          <li><h3>Return to your work</h3><p>Find saved practice, learning progress, and eligible Aura awards in your workspace.</p></li>
+        </ol>
+        <p ref={statement} className="lp-statement" data-moment="word-highlight">Take a topic from a <strong>Learn checkpoint</strong> into your next <strong>practice interview.</strong></p>
+      </section>
+      <section className="lp-faq lp-section" id="eligibility" aria-labelledby="faq-title">
+        <div><h2 id="faq-title">Hub eligibility and FAQs</h2><p>What to expect before you join.</p></div>
+        <div>{faq.map(([question, answer]) => <details key={question}><summary>{question}<span aria-hidden="true">+</span></summary><p>{answer}</p></details>)}</div>
+      </section>
+      <section className="lp-final" aria-labelledby="join-title">
+        <h2 id="join-title">Your college workspace</h2>
+        <Link className="lp-button btn btn--primary" to={join('/dashboard')}>{returning ? 'Continue to your workspace' : 'Join your Hub'} <ArrowUpRight size={17} aria-hidden="true" /></Link>
+        <p>Already have an account? <Link to="/login?returnTo=%2Fdashboard">Sign in</Link></p>
+      </section>
     </main>
-    <footer className="lp-footer" id="open-source"><div><Link className="lp-brand" to="/">CollegeHubs.</Link><p>Built to learn together.<br />Original project work is MIT licensed;<br />third-party notices retain their own terms.</p></div><nav aria-label="Source and project links"><a href={source}>Source repository ↗</a><a href={source + '/blob/main/LICENSE'}>Project license ↗</a><a href={source + '/blob/main/docs/THIRD_PARTY.md'}>Source acknowledgements ↗</a><Link to="/about">About the project</Link><a href="/privacy.html">Privacy notice</a></nav><div className="lp-motion"><p className="eyebrow">MAKE YOURSELF COMFORTABLE</p><label><input type="checkbox" checked={motion.off} onChange={event => motion.setMotionOff(event.target.checked)} /> Turn decorative motion off</label><button aria-pressed={effect} disabled={!motion.motionAllowed} onClick={() => setEffect(!effect)}>{effect ? 'Disable optional background' : 'Try optional background'}</button><small>{motion.reduced ? 'System reduced-motion is respected.' : 'Static by default. The page works without graphics support.'}</small></div><p className="lp-footer-bottom">CollegeHubs / Made for the time between classes. <span>No institution endorsement implied.</span></p></footer>
+    <footer className="lp-footer" id="open-source"><div><Link className="lp-brand" to="/"><Braces size={22} aria-hidden="true" /> CollegeHubs</Link><p>Original project work is MIT licensed. Third-party notices retain their own terms.</p></div><nav aria-label="Source and project links"><a href={source}>Source repository ↗</a><a href={source + '/blob/main/LICENSE'}>Project license ↗</a><a href={source + '/blob/main/docs/THIRD_PARTY.md'}>Source acknowledgements ↗</a><Link to="/about">About the project</Link><a href="/privacy.html">Privacy notice</a></nav><div className="lp-motion"><h2>Motion preferences</h2><label><input type="checkbox" checked={motion.off} onChange={event => motion.setMotionOff(event.target.checked)} /> Turn decorative motion off</label><button aria-pressed={effect} disabled={!motion.motionAllowed} onClick={() => setEffect(!effect)}>{effect ? 'Disable optional background' : 'Try optional background'}</button><small>{motion.reduced ? 'System reduced-motion is respected.' : 'Static by default. The page works without graphics support.'}</small></div><p className="lp-footer-bottom">CollegeHubs <span>No institution endorsement implied.</span></p></footer>
   </div>;
 }

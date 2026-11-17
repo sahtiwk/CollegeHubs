@@ -1,24 +1,26 @@
-/* Campus editorial, semantic token version 2. One tested light theme. */
+/* Shared semantic tokens for the CollegeHubs workspace. */
 :root {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, monospace;
-  --font-editorial: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
-  --canvas: #F6F5EE; --panel: #FFFFFF; --panel-subtle: #EDEEE5;
-  --ink: #20241E; --ink-muted: #50594B; --line: #737B6C;
-  --primary: #2447D8; --primary-hover: #1935AF; --on-primary: #FFFFFF;
-  --focus: #2447D8; --focus-on-dark: #DCE4FF;
+  --font-display: "Funnel Display", system-ui, sans-serif;
+  --font-sans: "Funnel Sans", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "DM Mono", ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  --font-editorial: var(--font-display);
+  --canvas: #F6F5F3; --panel: #FFFFFF; --panel-subtle: #ECEAE7;
+  --ink: #1B1B1D; --ink-muted: #525259; --line: #77747B;
+  --primary: #A23014; --primary-hover: #81250F; --on-primary: #FFFFFF;
+  --focus: #A23014; --focus-on-dark: #FFD5C8;
   --positive: #166534; --positive-surface: #F0FDF4;
   --caution: #854D0E; --caution-surface: #FFFBEB;
   --negative: #B91C1C; --negative-surface: #FEF2F2;
   --info: #1E40AF; --info-surface: #EFF6FF;
-  --hero-surface: #111827; --hero-ink: #FFFFFF; --hero-muted: #CBD5E1;
-  --hub-accent: #310A31; --hub-on-accent: #FFFFFF; --hub-secondary: #FFD3B6;
+  --hero-surface: #18191B; --hero-ink: #FFFFFF; --hero-muted: #CBD5E1;
+  --hub-accent: #18191B; --hub-on-accent: #FFFFFF; --hub-secondary: #FFD3B6;
   --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
   --space-6: 24px; --space-8: 32px; --space-12: 48px; --space-16: 64px;
-  --radius-control: 5px; --radius-card: 8px; --radius-pill: 999px;
+  --radius-control: 5px; --radius-card: 6px; --radius-pill: 999px;
   --duration-control: 150ms; --duration-panel: 220ms; --duration-enter: 320ms;
   --ease-out: cubic-bezier(.2,.8,.2,1); --reading-width: 70ch;
-  /* Compatibility bridge for existing feature CSS until its own redesign phase. */
+  --hairline: #DAD7D4;
+  --brand-bright: #FF794F;
   --background: var(--canvas); --surface: var(--panel); --surface-raised: var(--panel-subtle);
   --text: var(--ink); --text-muted: var(--ink-muted); --border: var(--line);
   --accent: var(--primary); --secondary: var(--panel-subtle);

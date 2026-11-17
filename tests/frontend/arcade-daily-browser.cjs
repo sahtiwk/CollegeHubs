@@ -11,7 +11,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
     page.setDefaultTimeout(20000);
     await page.goto('http://localhost:5182/arcade');await page.getByLabel('College email').fill('preview@cvr.ac.in');await page.getByLabel('Password',{exact:true}).fill('Preview-only-32!');await page.getByRole('button',{name:'Sign in',exact:true}).click();
     await page.getByRole('link',{name:'Explore today’s challenge'}).waitFor();
-    assert.equal(await page.locator('.arcade-catalogue > article').count(),4);
+    assert.equal(await page.locator('.arcade-catalogue > article').count(),10);
     assert.equal(await page.getByText('Snake · Unavailable',{exact:true}).isVisible(),false);
     await page.screenshot({path:'.local/tp72-catalogue-mobile.png',fullPage:true});
     await page.setViewportSize({width:1280,height:900});
@@ -60,8 +60,8 @@ const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
       assert.equal((await solve()).status,'won');
     }
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
-    const receipt=await core.collection('auraevents').findOne({eventId:daily.event.eventId});assert.equal(receipt.awardedAura,15);assert.equal(receipt.ruleVersion,'arcade-v4-daily-v1');
+    const receipt=await core.collection('auraevents').findOne({eventId:daily.event.eventId});assert.equal(receipt.awardedAura,15);assert.equal(receipt.ruleVersion,'arcade-v5-ten-games-v1');
     assert.equal(await core.collection('dailyactivities').countDocuments({userId:new mongoose.Types.ObjectId(daily.userId)}),1);
-    console.log('TP7.2: catalogue, two tabs, daily +15 receipt, all four ranked games, mobile and reduced motion passed.');
+    console.log('TP7.2: catalogue, two tabs, daily +15 receipt, all four original ranked games, mobile and reduced motion passed.');
   } finally {await browser.close();await db.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

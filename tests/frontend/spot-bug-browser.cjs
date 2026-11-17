@@ -26,24 +26,17 @@ const { chromium } = require(process.env.PLAYWRIGHT_PATH || 'playwright');
       if (index === 1) { await page.reload(); await page.getByText('Question 2: Correct.', { exact: true }).waitFor(); }
     }
     await page.getByRole('heading', { name: 'Bugs spotted!' }).waitFor();
-    await page.getByText('Result saved; Aura pending. Reload later to check the receipt.', { exact: true }).waitFor();
-    for (let i = 0; i < 20; i++) {
-      const doc = await connection.collection('gamesessions').findOne({ _id: id });
-      if (doc.deliveryStatus === 'settled') break;
-      await new Promise(resolve => setTimeout(resolve, 250));
-    }
-    await page.getByRole('button', { name: 'Reload saved game' }).click();
     await page.getByText('Aura recorded: +5 (awarded).', { exact: true }).waitFor();
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     const final = await connection.collection('gamesessions').findOne({ _id: id });
     const ledger = await core.collection('auraevents').findOne({ eventId: final.event.eventId });
-    assert.equal(ledger.awardedAura, 5); assert.equal(ledger.ruleVersion, 'arcade-v4-daily-v1');
+    assert.equal(ledger.awardedAura, 5); assert.equal(ledger.ruleVersion, 'arcade-v5-ten-games-v1');
     assert.equal(await core.collection('auraevents').countDocuments({ eventId: final.event.eventId }), 1);
     await page.screenshot({ path: '.local/tp71-mobile.png', fullPage: true });
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.getByRole('heading', { name: 'Bugs spotted!' }).waitFor();
     await page.getByText('Aura recorded: +5 (awarded).', { exact: true }).waitFor();
     await page.screenshot({ path: '.local/tp71-desktop.png', fullPage: true });
-    console.log('TP7.1 mobile keyboard, reload, pending and real Core +5 receipt passed.');
+    console.log('TP7.1 mobile keyboard, reload and real Core +5 receipt passed.');
   } finally { await browser.close(); await connection.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

@@ -19,9 +19,9 @@ export default function AuthForm({ register = false }) {
     finally { setBusy(false); }
   }
   return <main className="auth-page">
-    <section className="auth-intro"><Link to="/" className="wordmark">CollegeHubs.</Link><p className="eyebrow">Better, together</p>
-      <h1>Your campus.<br />Your people.<br />Your next idea.</h1><p>A shared space for the things you are learning and the things you have yet to build.</p><span className="auth-star" aria-hidden="true">&#10038;</span></section>
-    <section className="auth-panel"><div className="stack"><p className="eyebrow">{register ? 'Join your community' : 'Welcome back'}</p><h2>{register ? 'Make yourself at home.' : 'Pick up where you left off.'}</h2>
+    <section className="auth-intro"><Link to="/" className="wordmark">CollegeHubs<span className="brand-dot">.</span></Link>
+      <h1>Your college coding workspace.</h1><p>Study with classmates, build technical skills, and practice for interviews.</p><span className="auth-star" aria-hidden="true">{'{ }'}</span></section>
+    <section className="auth-panel"><div className="stack"><h2>{register ? 'Create your account' : 'Sign in to CollegeHubs'}</h2>
       <p className="muted">Use your college email. Hub access requires verified ownership of your email and a configured college domain.</p>
       {params.get('reason') === 'expired' && <p role="status">Your session expired. Sign in to return to your saved drafts.</p>}
       <form className="stack" onSubmit={e => { e.preventDefault(); authenticate(register ? '/auth/register' : '/auth/login', register ? values : { email: values.email, password: values.password }); }}>
@@ -29,7 +29,7 @@ export default function AuthForm({ register = false }) {
         <label htmlFor="email">College email<input id="email" type="email" autoComplete={register ? 'email' : 'username'} required maxLength={254} value={values.email} onChange={e => setValues({ ...values, email: e.target.value })} /></label>
         <label htmlFor="password">Password<input id="password" type="password" autoComplete={register ? 'new-password' : 'current-password'} required minLength={register ? 8 : undefined} value={values.password} onChange={e => setValues({ ...values, password: e.target.value })} /></label>
         {error && <p role="alert" className="error">{error}</p>}
-        <button className="primary" disabled={busy}>{busy ? 'Please wait...' : register ? 'Create account' : 'Sign in'}</button>
+        <button className="primary btn" disabled={busy}>{busy ? 'Please wait...' : register ? 'Create account' : 'Sign in'}</button>
       </form>
       {googleEnabled && <div className={busy ? 'google-signin busy' : 'google-signin'} inert={busy ? '' : undefined}>
         <GoogleLogin onSuccess={({ credential }) => authenticate('/google/auth', { credential })} onError={() => setError('Google sign-in failed. Please retry.')} /></div>}

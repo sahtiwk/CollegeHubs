@@ -15,7 +15,7 @@ function Badges() {
     api.get('/me/aura/achievements',{signal:controller.signal}).then(({data}) => { if (!controller.signal.aborted) setState({items:data.items,loading:false,error:''}); }).catch(() => { if (!controller.signal.aborted) setState(old => ({...old,loading:false,error:'Badges could not be loaded. Your recorded progress is safe.'})); });
     return () => controller.abort();
   },[attempt]);
-  return <section className="stack"><div className="section-heading"><div><p className="eyebrow">SMALL STEPS / SOMETHING TO KEEP</p><h2>Your achievements</h2></div><button disabled={state.loading} onClick={()=>setAttempt(value=>value+1)}>Refresh badges</button></div><p>Badges recognise verified activity. They add no Aura points. Earlier eligible records can earn a badge without changing their original rewards.</p>
+  return <section className="stack"><div className="section-heading"><div><h2>Your achievements</h2></div><button disabled={state.loading} onClick={()=>setAttempt(value=>value+1)}>Refresh badges</button></div><p>Badges recognise verified activity. They add no Aura points. Earlier eligible records can earn a badge without changing their original rewards.</p>
     {state.loading && <p role="status">Checking achievements...</p>}{state.error && <p role="alert">{state.error}</p>}
     <ul className="achievement-grid">{state.items.map(badge=><li className={'card achievement '+(badge.earned?'earned':'')} key={badge.id}><span className="eyebrow">{badge.earned?'EARNED':'NOT YET EARNED'}</span><h3>{badge.name}</h3><p>{badge.description}</p>{badge.earnedAt && <small>Qualified {new Date(badge.earnedAt).toLocaleDateString()}</small>}</li>)}</ul>
   </section>;
@@ -39,5 +39,5 @@ function History() {
 }
 export default function Progress() {
   const {user}=useAuth();
-  return <section className="stack progress-page" key={user._id+':'+user.hubId}><div><p className="eyebrow">EFFORT YOU CAN SEE</p><h1>A little further,<br/><em>every day.</em></h1><p>Follow your contributions, understand your rewards, and find your next milestone.</p></div><AuraCard /><LearnProgressCard /><Badges /><ExternalProgress /><History /><Link to="/dashboard#workspace-progress">Return to learning and practice</Link></section>;
+  return <section className="stack progress-page" key={user._id+':'+user.hubId}><div><h1>Your progress</h1><p>Follow your contributions, understand your rewards, and find your next milestone.</p></div><AuraCard /><LearnProgressCard /><Badges /><ExternalProgress /><History /><Link to="/dashboard#workspace-progress">Return to learning and practice</Link></section>;
 }

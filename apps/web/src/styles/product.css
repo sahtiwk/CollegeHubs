@@ -1,0 +1,126 @@
+:root { --line-strong: var(--line); }
+:where(.app-theme, .auth-page, .identity-page) :is(button, input, select, textarea) {
+  accent-color: var(--primary);
+}
+:where(.app-theme, .auth-page, .identity-page) button {
+  transition: background-color var(--duration-control), border-color var(--duration-control);
+}
+:where(.app-theme, .auth-page, .identity-page) button:hover:not(:disabled) {
+  border-color: var(--primary);
+}
+.app-theme .topbar {
+  min-height: 68px;
+  background: var(--hero-surface);
+  color: var(--hero-ink);
+  border-color: #45464c;
+  gap: 20px;
+}
+.topbar .wordmark, .topbar .menu-toggle { align-items: center; gap: 8px; }
+.topbar .wordmark { display: inline-flex; font-size: 1.33rem; }
+.topbar .wordmark svg, .auth-intro .auth-star { color: var(--brand-bright); }
+.topbar .hub-name { color: var(--hero-muted); }
+.topbar :focus-visible, .auth-intro :focus-visible { outline-color: var(--focus-on-dark); }
+.app-theme .hub-layout { gap: clamp(24px, 4vw, 64px); }
+.hub-layout .desktop-sidebar { top: 20px; max-height: calc(100dvh - 40px); overflow-y: auto; border-color: var(--hairline); }
+.app-theme .sidebar-content { gap: 14px; }
+.sidebar-content .identity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 1px 10px;
+  align-items: center;
+  border-bottom: 1px solid var(--hairline);
+}
+.sidebar-content .identity .avatar { grid-row: span 2; width: 40px; height: 40px; background: var(--hero-surface); color: var(--hero-ink); }
+.sidebar-content .identity strong { font-size: .9rem; }
+.app-theme .sidebar-content nav a { justify-content: start; align-items: center; gap: 10px; padding: 11px 10px; }
+.app-theme .sidebar-content nav a:hover:not(.active) { background: var(--panel-subtle); }
+.app-theme .sidebar-content nav a.active { background: #F2E1DB; color: var(--primary); box-shadow: inset 2px 0 var(--primary); }
+.sidebar-content .eyebrow { color: var(--ink-muted); }
+.sidebar-content > a { font-size: .85rem; padding: 8px 4px; }
+.app-theme :is(.card, .panel, .ui-card, .module-status-card, .rank-summary) { border-radius: var(--radius-card); }
+.app-theme :is(.card, .panel, .ui-card, .module-status-card):not(.arcade-daily):not(.ui-status) { border-color: var(--hairline); }
+.app-theme :is(.workspace-welcome, .channel-view-heading, .subject-grid, .subject-grid li) { border-color: var(--hairline); }
+.app-theme .workspace-welcome em { font-style: normal; }
+.app-theme :is(.learn-nav, .interview-actions) { border-color: var(--hairline); }
+.app-theme :is(.learn-nav, .interview-actions) a[aria-current="page"] { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+.app-theme .arcade-daily {
+  background: radial-gradient(ellipse at 90% 100%, #603022, transparent 65%), var(--hero-surface);
+  border: 1px solid #45464c;
+  color: var(--hero-ink);
+}
+.app-theme .arcade-daily :focus-visible { outline-color: var(--focus-on-dark); }
+.app-theme .arcade-catalogue > article { border-top: 2px solid var(--primary); }
+.auth-page .auth-intro {
+  background:
+    radial-gradient(ellipse at 93% 85%, #632f22, transparent 72%),
+    radial-gradient(circle, #595054 1px, transparent 1px) 0 0 / 18px 18px,
+    var(--hero-surface);
+  color: var(--hero-ink);
+  padding-inline: clamp(24px, 7vw, 105px);
+}
+.auth-intro .brand-dot { background: var(--brand-bright); outline: none; }
+.auth-intro h1 { max-width: 12ch; text-wrap: balance; }
+.auth-intro > p:last-of-type { color: var(--hero-muted); }
+.auth-intro .auth-star { font: clamp(52px, 10vw, 140px)/1 var(--font-mono); }
+.auth-panel { background: var(--panel); }
+.auth-panel h2 { letter-spacing: -.045em; }
+.auth-panel form { gap: 14px; }
+.auth-panel input { min-height: 47px; }
+.identity-page .identity-heading { padding-top: clamp(28px, 6vw, 80px); }
+.identity-page .identity-grid .ui-card { border-color: var(--hairline); }
+.release-about h1 { margin-top: 48px; margin-bottom: 16px; }
+.release-about .release-about-grid article { background: var(--panel); }
+.release-about article h2, .release-about aside h2 { margin-bottom: 8px; }
+.release-about > h2 { margin-top: 36px; margin-bottom: 8px; }
+@media (max-width: 760px) {
+  .app-theme .topbar { gap: 8px 12px; }
+  .topbar .menu-toggle { display: inline-flex; }
+  .auth-page .auth-intro .wordmark { margin-bottom: 24px; }
+  .auth-intro .auth-star { display: none; }
+}
+.app-theme .workspace-welcome {
+  background: radial-gradient(ellipse at 100% 100%, #603022, transparent 64%), var(--hero-surface);
+  border: 1px solid #45464c;
+  border-radius: var(--radius-card);
+  padding: clamp(22px, 4vw, 48px);
+  color: var(--hero-ink);
+}
+.app-theme .workspace-welcome h1 { overflow-wrap: anywhere; }
+.app-theme .workspace-welcome p:last-child { color: var(--hero-muted); font-size: .95rem; }
+.workspace-terminal, .subject-icon { color: var(--primary); }
+.workspace-terminal { flex: none; color: var(--brand-bright); }
+.workspace-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.workspace-shortcuts a {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 12px;
+  text-decoration: none;
+  font-size: .9rem;
+  font-weight: 600;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-card);
+  background: var(--panel);
+  transition: border-color var(--duration-control), color var(--duration-control);
+}
+.workspace-shortcuts a:hover { border-color: var(--primary); color: var(--primary); }
+.workspace-shortcuts svg { color: var(--primary); flex: none; }
+.workspace-shortcuts svg:last-child, .module-navigation a > span { margin-left: auto; }
+@media (max-width: 720px) {
+  .workspace-shortcuts { grid-template-columns: 1fr; }
+  .workspace-terminal { display: none; }
+}
+.app-theme :is(.arcade-heading, .interview-heading, .learn-heading) h1 { margin-bottom: 12px; }
+.app-theme :is(.arcade-heading, .interview-heading, .learn-heading) p { color: var(--ink-muted); }
+.app-theme .interview-drop {
+  padding: var(--space-4);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-card);
+  background: var(--panel-subtle);
+}
+.app-theme .sidebar-content nav a:focus-visible { outline-offset: -3px; }

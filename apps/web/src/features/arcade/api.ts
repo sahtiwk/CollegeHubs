@@ -5,8 +5,16 @@ type Options = { method?: string; body?: unknown; signal?: AbortSignal; timeout?
 export type ArcadeSession = { userId: string; hubId: string; membershipVersion: number; expiresAt: string; csrfToken: string; theme: any };
 export type CoreUser = { _id: string; hubId: string; membershipVersion: number };
 export type GameAction = {seq: number; guess?: number; hint: string; status: string; type?: string; questionId?: string; answer?: number; correct?: boolean; left?: number; right?: number; choice?: string};
+export type PracticeState = {
+  snake: { width: number; body: number[]; collected: number; fruit: number | null };
+  memory: { cards: (number | null)[]; open: number[]; matched: number[]; attempts: number };
+  minesweeper: { size: number; mineCount: number; revealed: Record<number, number>; flags: number[]; hit: number | null; mines: number[] };
+  pong: { lanes: number; ball: { lane: number; direction: number; steps: number } | null; last: { lane: number; paddle: number } | null; returns: number; misses: number };
+  crossword: { entries: { id: string; row: number; column: number; direction: 'across' | 'down'; clue: string; length: number; answer: string | null }[]; attempts: number; last: { id: string; correct: boolean } | null };
+  breathing: { startedAt: number | null; seconds: number };
+};
 export type DailyInfo = {challengeId:string;challengeDay:string;rulesVersion:string;contentVersion:string;gameId:string;closesAt:string;stale?:boolean};
-export type Game = { daily?: DailyInfo | null; id: string; gameId: string; rulesVersion: string; status: string; createdAt: string; expiresAt: string; serverNow: string; actions: GameAction[]; deliveryStatus: string; bug?: { total: number; passThreshold: number; correctCount: number; currentQuestion: null | {id:string;prompt:string;code:string;language:string;choices:{id:string;text:string}[]}; feedback: {seq:number;correct:boolean;explanation:string}[] }; receipt: null | {awardedAura: number; reason: string; dayKey: string}; math?: {correctCount: number; questionIndex: number; currentQuestion: null|{id:string;num1:number;num2:number;operation:string};canFinish:boolean;deadlinePassed:boolean};sorting?: {array:number[];pass:number;index:number;needsSwap:boolean;comparisons:number;swaps:number;traceComplete:boolean} };
+export type Game = { practice?: PracticeState[keyof PracticeState]; daily?: DailyInfo | null; id: string; gameId: string; rulesVersion: string; status: string; createdAt: string; expiresAt: string; serverNow: string; actions: GameAction[]; deliveryStatus: string; bug?: { total: number; passThreshold: number; correctCount: number; currentQuestion: null | {id:string;prompt:string;code:string;language:string;choices:{id:string;text:string}[]}; feedback: {seq:number;correct:boolean;explanation:string}[] }; receipt: null | {awardedAura: number; reason: string; dayKey: string}; math?: {correctCount: number; questionIndex: number; currentQuestion: null|{id:string;num1:number;num2:number;operation:string};canFinish:boolean;deadlinePassed:boolean};sorting?: {array:number[];pass:number;index:number;needsSwap:boolean;comparisons:number;swaps:number;traceComplete:boolean} };
 export type GameProps = {daily?:boolean;session:ArcadeSession;onExpired:()=>void};
 export class ArcadeError extends Error { status: number; code: string; constructor(message: string, status = 503, code = 'ARCADE_UNAVAILABLE') { super(message); this.status = status; this.code = code; } }
 const coordinator = createSessionCoordinator(getSessionKey);

@@ -1,0 +1,30 @@
+{
+  "version": "arcade-v5-ten-games-v1",
+  "timezone": "Asia/Kolkata",
+  "timezonePolicyVersion": 1,
+  "types": {
+    "arcade.game_completed": {
+      "weight": 5,
+      "countCap": 10,
+      "sourceCap": 30
+    },
+    "arcade.daily_completed": {
+      "weight": 15,
+      "countCap": 1,
+      "sourceCap": 30
+    }
+  },
+  "games": {
+    "numberguess": "numberguess-v1",
+    "mathamplitude": "mathamplitude-v1",
+    "sorting": "sorting-v1",
+    "spotbug": "spotbug-v1",
+    "snake": "snake-v1",
+    "memory": "memory-v1",
+    "minesweeper": "minesweeper-v1",
+    "pong": "pong-v1",
+    "crossword": "crossword-v1",
+    "breathing": "breathing-v1"
+  },
+  "dailyRulesVersion": "daily-v1"
+}

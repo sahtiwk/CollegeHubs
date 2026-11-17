@@ -25,6 +25,7 @@ async function start() {
   if (require('./config/modules').moduleConfig().enabled.includes('arcade')) await require('./services/nativeAuraService').activate(require('./config/auraRules.arcade.v2.json'));
   if (require('./config/modules').moduleConfig().enabled.includes('arcade')) await require('./services/nativeAuraService').activate(require('./config/auraRules.arcade.v3.json'));
   if (require('./config/modules').moduleConfig().enabled.includes('arcade')) await require('./services/nativeAuraService').activate(require('./config/auraRules.arcade.v4.json'));
+  if (require('./config/modules').moduleConfig().enabled.includes('arcade')) await require('./services/nativeAuraService').activate(require('./config/auraRules.arcade.v5.json'));
   if (require('./config/modules').moduleConfig().enabled.includes('interview')) await require('./services/nativeAuraService').activate(require('./config/auraRules.interview.v1.json'));
   if (require('./config/modules').moduleConfig().enabled.includes('learn')) await require('./services/nativeAuraService').activate(require('./config/auraRules.learn.v1.json'));
   if (require('./config/modules').moduleConfig().enabled.includes('learn')) await require('./services/nativeAuraService').activate(require('./config/auraRules.learn.v2.json'));

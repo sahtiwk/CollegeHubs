@@ -12,6 +12,27 @@ export function useServerGame(gameId:string,{session,onExpired,daily=false}:Game
     if(id)arcadeRequest('/sessions/'+id,{signal:abort.signal}).then(data=>{if(generation.current===version)setGame(checked(data.game));}).catch(err=>{if(!abort.signal.aborted){if(err instanceof ArcadeError&&err.status===401)onExpired();else setError(err.message||'Your saved round is unavailable.');}}).finally(()=>{if(generation.current===version)setBusy(false);});
     return()=>{generation.current++;abort.abort();};
   },[id,gameId,session.userId,session.hubId,session.csrfToken,revision]);
+  useEffect(() => {
+    if (!game || game.deliveryStatus !== 'pending') return;
+    const abort = new AbortController();
+    const gameId = game.id;
+    let timer: ReturnType<typeof setTimeout>;
+    async function refreshReceipt(attempt: number) {
+      try {
+        const { game: updated } = await arcadeRequest('/sessions/' + gameId, { signal: abort.signal });
+        if (abort.signal.aborted) return;
+        if (updated.deliveryStatus !== 'pending') {
+          setGame(current => current?.id === gameId ? updated : current);
+          return;
+        }
+      } catch {
+        if (abort.signal.aborted) return;
+      }
+      if (attempt < 5) timer = setTimeout(() => void refreshReceipt(attempt + 1), 2000);
+    }
+    timer = setTimeout(() => void refreshReceipt(1), 1000);
+    return () => { abort.abort(); clearTimeout(timer); };
+  }, [game?.id, game?.deliveryStatus]);
   async function send(request:Request) {
     if(flight.current)return;flight.current=true;const version=generation.current;
     setBusy(true);setError('');setPending(request);

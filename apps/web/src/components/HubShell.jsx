@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Braces, Menu } from 'lucide-react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useHubTheme } from '../theme/HubThemeProvider';
 import Sidebar from './Sidebar';
@@ -26,9 +27,9 @@ export default function HubShell() {
   return <>
     <a className="skip-link" href="#main-content">Skip to content</a>
     <header className="topbar" data-shell-instance={shellInstance}>
-      <Link className="wordmark" to="/dashboard">CollegeHubs<span className="brand-dot" aria-hidden="true">.</span></Link>
+      <Link className="wordmark" to="/dashboard"><Braces size={23} aria-hidden="true" /> CollegeHubs</Link>
       <span className="hub-name">{hub?.logoUrl && <img className="hub-logo" src={hub.logoUrl} alt="" referrerPolicy="no-referrer" />}{hub?.name || 'Your college Hub'}</span>
-      <button ref={menuButton} className="menu-toggle" aria-expanded={drawer} onClick={() => setDrawer(true)}>Menu</button>
+      <button ref={menuButton} className="menu-toggle" aria-expanded={drawer} onClick={() => setDrawer(true)}><Menu size={18} aria-hidden="true" /> Menu</button>
     </header>
     {error && <div className="notice" role="alert">{error} <button onClick={retry}>Retry branding</button></div>}
     <div className="hub-layout">

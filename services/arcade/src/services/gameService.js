@@ -4,6 +4,7 @@ const numberGuess = require('../validators/numberGuess');
 const math = require('../validators/math');
 const sorting = require('../validators/sorting');
 const spotBug = require('../validators/spotBug');
+const practice = require('../validators/practice');
 const catalogue = require('@collegehubs/contracts/arcade-games.json');
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/;
 const transactionOptions = { readConcern: { level: 'snapshot' }, writeConcern: { w: 'majority' }, maxCommitTimeMS: 5000 };
@@ -17,7 +18,7 @@ function createGameService(connection, Game) {
       id: String(game._id), gameId: game.gameId, rulesVersion: game.rulesVersion,
       status: game.status === 'active' && deadlinePassed ? game.gameId === 'mathamplitude' ? 'awaiting_completion' : 'expired' : game.status,
       createdAt: game.createdAt, expiresAt: game.expiresAt, serverNow: at,
-      actions: game.actions.map(a => Object.fromEntries(['seq','guess','hint','status','type','questionId','answer','correct','left','right','choice'].filter(key => a[key] !== undefined).map(key => [key,a[key]]))),
+      actions: game.actions.map(a => Object.fromEntries(['seq','guess','hint','status','type','questionId','answer','correct','left','right','choice','cell'].filter(key => a[key] !== undefined).map(key => [key,a[key]]))),
       daily: game.daily ? { ...game.daily, stale: game.daily.challengeDay !== require("@collegehubs/contracts/day-policy.cjs").dayKey(at) } : null,
       completedAt: game.completedAt || null, deliveryStatus: game.deliveryStatus,
       receipt: game.receipt ? { eventId: game.receipt.eventId, awardedAura: game.receipt.awardedAura, reason: game.receipt.reason, dayKey: game.receipt.dayKey } : null,
@@ -30,6 +31,7 @@ function createGameService(connection, Game) {
     }
     if (game.gameId === 'spotbug') result.bug = spotBug.publicState(game, at);
     if (game.gameId === 'sorting') result.sorting = game.sortingState;
+    if (practice.hasGame(game.gameId) && game.practiceState) result.practice = practice.publicState(game);
     return result;
   }
   async function owned(row, id, session = null) {
@@ -55,6 +57,7 @@ function createGameService(connection, Game) {
     if (input.gameId === 'numberguess') privateFields = { target: randomInt(1,101) };
     if (input.gameId === 'mathamplitude') privateFields = { challenge: math.challenge(), mathState: { questionIndex: 0, correctCount: 0 } };
     if (input.gameId === 'sorting') { const challenge = sorting.challenge(); privateFields = { challenge, sortingState: sorting.initial(challenge.initialArray) }; }
+    if (practice.hasGame(input.gameId)) privateFields = { practiceState: practice.initial(input.gameId) };
     try {
       return dto(await Game.create({ ...scope(row), ...input, ...privateFields, rulesVersion: definition.rulesVersion, createdAt: at, expiresAt: new Date(+at + definition.durationSeconds * 1000) }), at);
     } catch (error) {
@@ -79,11 +82,12 @@ function createGameService(connection, Game) {
       const game = await owned(row,id,session), at = await now();
       if (row.principal.exp * 1000 <= +at) throw fail(401, 'ARCADE_SESSION_REQUIRED');
       const result = game.gameId === 'numberguess' ? { step: numberGuess.transition(game,input,at) }
-        : game.gameId === 'mathamplitude' ? math.transition(game,input,at) : game.gameId === 'spotbug' ? spotBug.transition(game,input,at) : sorting.transition(game,input,at);
+        : game.gameId === 'mathamplitude' ? math.transition(game,input,at) : game.gameId === 'spotbug' ? spotBug.transition(game,input,at) : game.gameId === 'sorting' ? sorting.transition(game,input,at) : practice.transition(game,input,at);
       if (input.seq <= game.actions.length) return { transition: result.step, game: dto(game,at) };
       game.actions.push(result.step); game.status = result.step.status;
       if (result.mathState) game.mathState = result.mathState;
       if (result.sortingState) game.sortingState = result.sortingState;
+      if (result.practiceState) game.practiceState = result.practiceState;
       if (game.status !== 'active') seal(game,row,at);
       await game.save({ session }); return { transition: result.step, game: dto(game,at) };
     }, transactionOptions);
@@ -118,6 +122,7 @@ function createGameService(connection, Game) {
     const published = await Daily.findOne({ challengeId: input.challengeId }).select('+challenge');
     const definition = catalogue.find(g => g.id === published.gameId);
     const privateFields = { challenge: published.challenge, ...(published.gameId === 'sorting' ? { sortingState: sorting.initial(published.challenge.initialArray) } : {}) };
+    if (practice.hasGame(input.gameId)) privateFields = { practiceState: practice.initial(input.gameId) };
     try {
       return dto(await Game.create({ ...scope(row), clientSessionId: 'daily:' + published.challengeDay, gameId: published.gameId, rulesVersion: definition.rulesVersion, ...privateFields, daily: current.challenge, createdAt: at, expiresAt: new Date(Math.min(+at + definition.durationSeconds * 1000, +published.closesAt)) }), at);
     } catch (error) {

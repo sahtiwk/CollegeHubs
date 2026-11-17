@@ -14,7 +14,7 @@ A3 handoff uses one-use state and Core grants. Arcade verifies the signed 15-min
 
 All responses are no-store JSON. Owned game operations scope both user and Hub; foreign games return 404. Query selectors and extra body fields are rejected.
 
-- `GET /api/arcade/games`: four ranked entries plus explicitly unavailable legacy entries. Global new-game disable is reflected in enabled flags.
+- `GET /api/arcade/games`: ten ranked entries. Global new-game disable is reflected in enabled flags.
 - `POST /api/arcade/sessions`: `{gameId: "numberguess" | "mathamplitude" | "sorting" | "spotbug", clientSessionId: UUIDv4}`; identical creation IDs return the same game. At most five currently active games are allowed per owner (a request-time abuse bound).
 - `GET /api/arcade/sessions/:id` and `GET /api/arcade/me/activity`: saved game and latest 20 owned games.
 - `POST /api/arcade/sessions/:id/actions`: `{seq, guess}`. Integer guesses 1�100, ordered sequences 1�10, ten-minute immutable deadline. The crypto-random target is private; responses return only hints/history. Transactions serialize competing actions. Identical replay returns its original transition; a changed guess at that sequence conflicts. Wins/losses cannot be rewritten.
@@ -72,3 +72,12 @@ Daily receipts enter the existing Aura ledger/progress ticker, module completion
 Deployment: build Core, Arcade and web together. Arcade startup creates the DailyChallenge collection/indexes and the partial unique user/day session index. Extend the Arcade service credential to allow both arcade.game_completed and arcade.daily_completed before enabling traffic. Core startup prospectively activates v4; without that activation a saved daily result stays pending. ARCADE_GAMES_ENABLED=false blocks new attempts but keeps existing reads/results. Rollback must preserve publication/session records and daily service scope until pending facts settle; do not remove v4 from Core while deliveries remain. Never activate the unrelated disabled future Learn-path rules. No hosted rollout was performed here.
 
 See [TP7.2 evidence](tp7.2-evidence.md). The fixed puzzle bank is educational practice, not proof of human play.
+
+
+## Board games and breathing
+
+Snake and Pong advance in discrete turns so mobile, keyboard, and networked players use the same controls. A Snake win collects five fruit before a collision or the move limit. In Pong, the player predicts the landing lane from the current direction and distance, including wall bounces. Five returns win before three misses.
+
+Memory requires all six pairs in 20 turns. Minesweeper uses six mines on a 6-by-6 board, protects the first revealed square, and wins when all 30 safe squares are revealed. Crossword uses server-selected programming clues with up to 18 guesses per round. Breathing requires 30 server-timed seconds after the player starts the guided exercise. The timer measures elapsed time and does not measure breathing.
+
+The prospective `arcade-v5-ten-games-v1` policy adds the six games to ordinary rewards. The first qualifying completion per game each India day can earn 5 Aura, and all Arcade rewards still share a 30-Aura cap. Daily challenges keep their existing game rotation and up-to-15-Aura reward. Earlier policies remain in force for events that occurred during their activation periods.

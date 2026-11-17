@@ -34,37 +34,49 @@
   {
     "id": "snake",
     "title": "Snake",
-    "status": "unavailable",
-    "description": "Coming later. Choose a ranked game to play today."
+    "status": "ranked",
+    "description": "Guide the snake one square at a time and collect five pieces of fruit without crashing.",
+    "rulesVersion": "snake-v1",
+    "durationSeconds": 600
   },
   {
     "id": "memory",
     "title": "Memory",
-    "status": "unavailable",
-    "description": "Coming later. Choose a ranked game to play today."
+    "status": "ranked",
+    "description": "Match six pairs of cards in at most 20 turns.",
+    "rulesVersion": "memory-v1",
+    "durationSeconds": 600
   },
   {
     "id": "minesweeper",
     "title": "Minesweeper",
-    "status": "unavailable",
-    "description": "Coming later. Choose a ranked game to play today."
+    "status": "ranked",
+    "description": "Use numbered clues to uncover all 30 safe squares on a board with six mines.",
+    "rulesVersion": "minesweeper-v1",
+    "durationSeconds": 600
   },
   {
     "id": "pong",
     "title": "Pong",
-    "status": "unavailable",
-    "description": "Coming later. Choose a ranked game to play today."
+    "status": "ranked",
+    "description": "Read the ball\u2019s path, position the paddle, and return five shots before three misses.",
+    "rulesVersion": "pong-v1",
+    "durationSeconds": 600
   },
   {
     "id": "crossword",
     "title": "Crossword",
-    "status": "unavailable",
-    "description": "Coming later. Choose a ranked game to play today."
+    "status": "ranked",
+    "description": "Solve the intersecting clues in a compact programming crossword.",
+    "rulesVersion": "crossword-v1",
+    "durationSeconds": 600
   },
   {
     "id": "breathing",
     "title": "Breathing",
-    "status": "unavailable",
-    "description": "Coming later. Choose a ranked game to play today."
+    "status": "ranked",
+    "description": "Follow three gentle four-second inhales and six-second exhales in a 30-second session.",
+    "rulesVersion": "breathing-v1",
+    "durationSeconds": 600
   }
 ]

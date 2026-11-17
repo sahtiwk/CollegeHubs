@@ -24,7 +24,7 @@ export default function Leaderboard() {
   }
   useEffect(() => { setItems([]); setOwn(null); setCursor(null); load(); return () => { request.current++; }; }, [user._id, user.hubId]);
   return <section className="stack">
-    <p className="eyebrow">{hub?.name || 'Your college'}</p><h1>A little friendly<br />competition.</h1>
+    <p className="eyebrow">{hub?.name || 'Your college'}</p><h1>College leaderboard</h1>
     <p className="muted">College standings based on recorded Aura. Equal totals are ordered consistently by member ID.</p>
     <button disabled={busy} onClick={() => load()}>Refresh rankings</button>
     {own && <div className="rank-summary"><span>Your college rank <strong>#{own.rank}</strong></span><span>{own.title} / {own.auraPoints} Aura</span></div>}

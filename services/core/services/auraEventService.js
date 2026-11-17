@@ -10,6 +10,7 @@ const Hub = require('../models/Hub');
 const College = require('../models/College');
 const TYPES = Object.freeze({ 'arcade.game_completed': 'arcade', 'arcade.daily_completed': 'arcade', 'interview.completed': 'interview', 'learn.quiz_completed': 'learn', 'learn.node_mastered': 'learn', 'learn.path_completed': 'learn' });
 const DAY = 86400000;
+const rankedArcadeIds = new Set(require('@collegehubs/contracts/arcade-games.json').filter(game => game.status === 'ranked').map(game => game.id));
 const invalid = () => failure(400, 'INVALID_EVENT', 'Invalid or unsupported event facts');
 const text = value => typeof value === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,159}$/.test(value);
 const integer = (value, min, max) => Number.isSafeInteger(value) && value >= min && value <= max;
@@ -36,7 +37,7 @@ function validateEvent(body, now = new Date()) {
     'learn.path_completed': ['pathId','curriculumVersion','completedNodeCount','requiredNodeCount'] };
   if (!exact(m, ['sourceId', 'accessJti', 'domainVersion', ...extra[body.type]]) || !text(m.sourceId) || !text(m.domainVersion) ||
       typeof m.accessJti !== 'string' || !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(m.accessJti)) throw invalid();
-  if (body.type === 'arcade.game_completed' && (!['numberguess', 'mathamplitude', 'sorting', 'spotbug'].includes(m.gameId) || !text(m.rulesVersion) ||
+  if (body.type === 'arcade.game_completed' && (!rankedArcadeIds.has(m.gameId) || !text(m.rulesVersion) ||
       !['success', 'failed', 'casual'].includes(m.outcome) || !integer(m.serverDurationSeconds, 0, 86400))) throw invalid();
   if (body.source === 'interview' && (!integer(m.rawScore, 0, 100) || m.questionCount !== 5 || !integer(m.answeredCount, 0, 5) ||
       !integer(m.serverDurationSeconds, 0, 86400) || !text(m.rubricVersion))) throw invalid();
@@ -100,7 +101,7 @@ function createAuraEventService({ rules = null } = {}) {
     if (credential.service !== event.source || !credential.eventTypes?.includes(event.type)) throw failure(403, 'EVENT_SCOPE_FORBIDDEN', 'Service cannot submit this event type');
     let activeRules = rules;
     if (!activeRules && event.source === 'arcade') {
-      const stored = await require('../models/AuraRuleSet').findOne({ version: { $in: ['arcade-numberguess-v1', 'arcade-three-games-v1', 'arcade-v3-four-games-v1', 'arcade-v4-daily-v1'] }, activatedAt: { $lte: new Date(event.occurredAt) } }).sort({ activatedAt: -1, version: -1 }).lean();
+      const stored = await require('../models/AuraRuleSet').findOne({ version: { $in: ['arcade-numberguess-v1', 'arcade-three-games-v1', 'arcade-v3-four-games-v1', 'arcade-v4-daily-v1', 'arcade-v5-ten-games-v1'] }, activatedAt: { $lte: new Date(event.occurredAt) } }).sort({ activatedAt: -1, version: -1 }).lean();
       const daily = require('@collegehubs/contracts/arcade-daily.cjs').definition(event.occurredAt);
       const supported = event.type === 'arcade.daily_completed' ? stored?.rules.dailyRulesVersion === event.metadata.rulesVersion && daily.challengeId === event.metadata.challengeId : stored?.rules.games?.[event.metadata.gameId] === event.metadata.rulesVersion;
       if (stored && supported && event.metadata.domainVersion === 'v1') activeRules = stored.rules;

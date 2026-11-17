@@ -1,7 +1,14 @@
 import { lazy } from 'react';
 import manifest from '@collegehubs/contracts/arcade-games.json';
 export type GameDefinition = {id:string;title:string;status:'ranked'|'casual'|'unavailable';description:string;rulesVersion?:string;durationSeconds?:number;path:string};
+const practice = lazy(() => import('./games/PracticeGame'));
 const components = {
+  snake: practice,
+  memory: practice,
+  minesweeper: practice,
+  pong: practice,
+  crossword: practice,
+  breathing: practice,
   spotbug: lazy(() => import('./games/SpotTheBug')),
   numberguess: lazy(() => import('./games/NumberGuess')),
   mathamplitude: lazy(() => import('./games/MathAmplitude')),

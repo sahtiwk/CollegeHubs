@@ -253,16 +253,16 @@ select { display: block; width: 100%; min-height: 44px; padding: 10px; margin-to
 @media(max-width:680px){.module-progress-grid{grid-template-columns:1fr}}
 
 /* TP7.2 campus editorial Arcade: static, keyboard-first controls. */
-.arcade-daily { background: var(--color-primary, #2946e8); color: white; border: 2px solid currentColor; padding: clamp(24px, 4vw, 48px); }
+.arcade-daily { background: var(--primary); color: white; border: 2px solid currentColor; padding: clamp(24px, 4vw, 48px); }
 .arcade-daily h2 { font-size: clamp(1.8rem, 4vw, 3rem); max-width: 22ch; }
-.arcade-daily .arcade-play, .arcade-daily .primary { background: white; color: #17264d; border: 2px solid white; align-self: start; }
-.arcade-daily .pill { color: #17264d; background: #f7edca; }
+.arcade-daily .arcade-play, .arcade-daily .primary { background: white; color: var(--ink); border: 2px solid white; align-self: start; }
+.arcade-daily .pill { color: var(--ink); background: #f7edca; }
 .arcade-rule-strip { display: flex; align-items: center; gap: 20px; border-block: 1px solid currentColor; padding: 16px 0; }
 .arcade-rule-strip .pill { flex-shrink: 0; }
-.arcade-catalogue > article { border-top: 5px solid #2946e8; }
+.arcade-catalogue > article { border-top: 5px solid var(--primary); }
 .arcade-game { max-width: 1000px; }
 .arcade-game fieldset label { min-height: 48px; padding: 10px; border: 1px solid #8b9187; border-radius: 8px; cursor: pointer; }
-.arcade-game input[type="radio"] { width: 20px; height: 20px; flex-shrink: 0; accent-color: #2946e8; }
+.arcade-game input[type="radio"] { width: 20px; height: 20px; flex-shrink: 0; accent-color: var(--primary); }
 .arcade-game button, .arcade-play { min-height: 44px; }
 .arcade-game :focus-visible, .arcade-catalogue :focus-visible, .arcade-daily :focus-visible { outline: 3px solid #c96222; outline-offset: 4px; }
 .arcade-game .arcade-history { line-height: 1.8; }

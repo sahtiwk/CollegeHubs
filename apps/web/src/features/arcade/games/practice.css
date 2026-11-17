@@ -1,0 +1,146 @@
+.practice-board {
+  padding: clamp(14px, 4vw, 32px);
+}
+.practice-meter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hairline);
+}
+.practice-meter strong {
+  color: var(--primary);
+  font: 500 .875rem var(--font-mono);
+}
+.practice-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+  gap: 4px;
+}
+.practice-grid button {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border-radius: 4px;
+}
+.practice-board button[aria-disabled="true"] { cursor: default; }
+.practice-board .practice-result {
+  padding: 10px 14px;
+  background: var(--panel-subtle);
+  font-weight: 600;
+}
+.practice-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 8px; }
+.practice-controls button[aria-pressed="true"],
+.crossword-clues button[aria-pressed="true"] {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: #f7ece7;
+}
+
+.snake-grid, .pong-table {
+  border: 1px solid #595b62;
+  border-radius: 6px;
+  background: var(--hero-surface);
+  color: var(--hero-ink);
+}
+.snake-grid { width: min(100%, 420px); gap: 2px; padding: 6px; }
+.snake-grid span { aspect-ratio: 1; border-radius: 2px; background: #272a31; }
+.snake-grid .snake-body { background: #4ba58e; }
+.snake-grid .snake-head { background: #95f2d0; outline: 2px solid #c9ffe9; outline-offset: -3px; }
+.snake-grid .snake-fruit { background: #ff794f; border-radius: 50%; scale: .66; }
+.snake-controls {
+  display: grid;
+  grid-template: repeat(2, 48px) / repeat(3, 48px);
+  gap: 5px;
+}
+.snake-controls button { display: grid; place-items: center; padding: 0; }
+.snake-controls [aria-disabled="true"] { color: var(--ink-muted); background: var(--panel-subtle); }
+.snake-controls .snake-up { grid-area: 1 / 2; }
+.snake-controls .snake-left { grid-area: 2 / 1; }
+.snake-controls .snake-down { grid-area: 2 / 2; }
+.snake-controls .snake-right { grid-area: 2 / 3; }
+
+.memory-grid { width: min(100%, 420px); gap: 8px; }
+.memory-grid button { aspect-ratio: 1; font: 500 1.2rem var(--font-mono); }
+.memory-grid button[data-face="hidden"] { background: var(--hero-surface); color: var(--hero-ink); border-color: #595b62; }
+.memory-grid button[data-face="hidden"]:hover:not([aria-disabled="true"]) { background: #343842; }
+.memory-grid button[data-face="open"] { background: #f7ece7; color: var(--primary); border-color: var(--primary); }
+.memory-grid button[data-face="matched"] { background: var(--positive-surface); color: var(--positive); border-color: var(--positive); }
+
+.mines-grid { width: min(100%, 370px); }
+.mines-grid button { aspect-ratio: 1; font: 500 1rem var(--font-mono); }
+.mines-grid button[data-square="hidden"] { background: #333740; border-color: #646974; }
+.mines-grid button[data-square="hidden"]:hover:not([aria-disabled="true"]) { background: #484e59; }
+.mines-grid button[data-square="safe"] { background: var(--panel-subtle); color: var(--ink); border-color: var(--hairline); }
+.mines-grid button[data-square="flag"], .mines-grid button[data-square="mine"] { background: var(--caution-surface); color: var(--caution); }
+.mines-grid button[data-square="hit"] { background: var(--negative-surface); color: var(--negative); border-color: var(--negative); }
+
+.pong-table { width: min(100%, 510px); overflow: hidden; }
+.pong-lane {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  padding-inline: 12px;
+  border-bottom: 1px dashed #595b62;
+  font: .8rem var(--font-mono);
+}
+.pong-lane:last-child { border-bottom: 0; }
+.pong-ball, .pong-impact, .pong-paddle { position: absolute; top: 50%; translate: 0 -50%; }
+.pong-ball { left: 30%; width: 12px; height: 12px; background: #ff794f; border-radius: 50%; box-shadow: 0 0 14px #ff794f75; }
+.pong-impact { right: 29px; width: 9px; height: 9px; border: 1px solid #ff794f; border-radius: 100%; }
+.pong-paddle { right: 14px; height: 68%; width: 5px; background: #95f2d0; border-radius: 3px; }
+.pong-controls { width: min(100%, 510px); }
+.pong-controls button { min-height: 44px; }
+
+.crossword-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); align-items: start; gap: 20px; }
+.crossword-grid { width: min(100%, 396px); gap: 2px; }
+.crossword-grid > span {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  color: var(--ink);
+  background: var(--panel-subtle);
+  font: 500 clamp(.875rem, 2vw, 1.15rem) var(--font-mono);
+}
+.crossword-grid [data-cell="block"] { background: var(--hero-surface); }
+.crossword-grid [data-cell="selected"] { background: #f7ece7; box-shadow: inset 0 0 0 1px var(--primary); }
+.crossword-grid small { position: absolute; inset: 1px auto auto 2px; font: 9px var(--font-mono); }
+.crossword-clues { display: grid; gap: 5px; }
+.crossword-clues button { display: flex; gap: 8px; align-items: baseline; padding-inline: 10px; text-align: left; }
+.crossword-clues strong { white-space: nowrap; font-family: var(--font-mono); color: var(--primary); }
+.crossword-answer label { flex: 1; min-width: min(100%, 140px); }
+
+.breathing-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(100%, 510px);
+  min-height: 245px;
+  border-radius: 6px;
+  background: radial-gradient(circle, #24544d 0, transparent 68%), var(--hero-surface);
+  color: var(--hero-ink);
+}
+.breathing-ring {
+  width: 152px;
+  aspect-ratio: 1;
+  border: 1px solid #95f2d0;
+  border-radius: 50%;
+  scale: .85;
+  box-shadow: 0 0 28px #95f2d046, inset 0 0 30px #95f2d020;
+  transition: scale 6s ease-out;
+}
+.breathing-stage[data-phase="inhale"] .breathing-ring { scale: 1.22; transition-duration: 4s; }
+.breathing-caption { position: absolute; display: grid; justify-items: center; font-family: var(--font-mono); }
+.breathing-caption span { font-size: .82rem; color: var(--hero-muted); }
+@media (max-width: 700px) {
+  .crossword-layout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .breathing-ring, .breathing-stage[data-phase="inhale"] .breathing-ring { transition: none; scale: 1; }
+}
